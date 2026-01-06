@@ -1,0 +1,17 @@
+{
+    "name": "say2",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "dev": "bun run --filter '*' dev",
+        "build": "bun run --filter '*' build",
+        "test": "bun test"
+    },
+    "devDependencies": {
+        "@types/bun": "^1.3.5"
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "name": "@say2/core",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "src/index.ts",
+    "scripts": {
+        "dev": "bun --watch src/index.ts",
+        "build": "bun build src/index.ts --outdir dist",
+        "test": "bun test"
+    },
+    "dependencies": {
+        "@modelcontextprotocol/sdk": "^1.25.1",
+        "zod": "^4.3.5"
+    }
+}
