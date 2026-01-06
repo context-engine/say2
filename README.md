@@ -1,8 +1,6 @@
 # Say2
 
-**Multi-protocol inspector for AI agent communication.**
-
-Observe and debug traffic across MCP, ACP, and A2A protocols from a unified dashboard.
+**Tools for AI Agent Communication Protocols (MCP, ACP, A2A). Inspector, Gateway (planned), Protocol Translation (planned).**
 
 ## Why Say2?
 
