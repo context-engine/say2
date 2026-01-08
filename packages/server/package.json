@@ -1,16 +1,16 @@
 {
-    "name": "@say2/server",
-    "version": "0.1.0",
-    "type": "module",
-    "main": "src/index.ts",
-    "scripts": {
-        "dev": "bun --watch src/index.ts",
-        "build": "bun build src/index.ts --outdir dist",
-        "start": "bun src/index.ts",
-        "test": "bun test"
-    },
-    "dependencies": {
-        "@say2/core": "workspace:*",
-        "hono": "^4.11.3"
-    }
+	"name": "@say2/server",
+	"version": "0.1.0",
+	"type": "module",
+	"main": "src/index.ts",
+	"scripts": {
+		"dev": "bun --watch src/index.ts",
+		"build": "bun build src/index.ts --outdir dist",
+		"start": "bun src/index.ts",
+		"test": "bun test"
+	},
+	"dependencies": {
+		"@say2/core": "workspace:*",
+		"hono": "^4.11.3"
+	}
 }

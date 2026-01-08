@@ -1,6 +1,6 @@
 /**
  * @say2/core
- * 
+ *
  * Shared proxy logic, transport abstractions, and session management
  */
 
