@@ -22,6 +22,48 @@ This workflow uses the following skills (paths relative to `say2/implementation`
 
 ---
 
+# Part A0: Bare Clone Setup
+
+## Bare Clone Requirement (Human Prerequisite)
+
+**IMPORTANT**: Work must happen in a bare clone with worktrees to enable parallel development of implementation and tests.
+
+> **This is a one-time setup done by the human before starting the workflow.**
+
+If you don't have a bare clone yet, create one:
+
+```bash
+# Clone as bare repo (one-time setup)
+git clone --bare <repo-url> ~/repos/say2-impl.git
+
+# Create worktree for main development
+cd ~/repos/say2-impl.git
+git worktree add ~/repos/say2-main main
+```
+
+Once the bare clone exists, the AI can create worktrees from it.
+
+## Create Tests Worktree
+
+From the bare clone, create a worktree for tests:
+
+```bash
+cd ~/repos/say2-impl.git
+
+# Create tests worktree
+git worktree add ~/repos/tests-phase-name -b tests/phase-name
+
+# Open in editor
+cd ~/repos/tests-phase-name
+```
+
+Branch naming examples:
+- `tests/phase-0-foundation`
+- `tests/builtin-client-core`
+- `tests/message-store-refactor`
+
+---
+
 # Part A: Understand the Spec
 
 ## A1. Read Architecture Spec
