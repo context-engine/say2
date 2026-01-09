@@ -1,88 +1,160 @@
 ---
-description: How to review and improve test quality for implementation phases
+description: Review and improve test quality for implementation phases. Use when you need to assess test robustness, find fake safety patterns, or improve mutation scores.
 ---
 
 # Test Quality Review Workflow
 
 This workflow ensures tests are robust, catch real bugs, and don't give false confidence.
+It combines automated quality gates with agentic reasoning for comprehensive coverage.
+
+## Quick Start
+
+```bash
+# Run all automated quality checks
+bun run quality
+
+# Run full quality gate (includes mutation testing - slower)
+bun run quality:full
+```
+
+---
 
 ## Prerequisites
 
-- Bun test runner configured with coverage (`bunfig.toml`)
-- All tests passing (`bun test`)
+Ensure you have the following tools available:
+
+| Tool | Command | Purpose |
+|------|---------|---------|
+| Tests | `bun test` | Run test suite |
+| Coverage | `bun test --coverage` | Line/function coverage |
+| Density | `bun run test:density` | Assertion density check |
+| Lint | `bun run lint` | Code quality rules |
+| Mutation | `bun run test:mutate` | Mutation testing |
+| Property | `bun run test:property` | Property-based tests |
+| Quality | `bun run quality` | All checks combined |
+
+## Skills
+
+This workflow uses the following skills (paths relative to `say2/implementation`):
+
+| Skill | Path | Purpose | Used In |
+|-------|------|---------|---------|
+| `run-quality-checks` | `.claude/skills/run-quality-checks/SKILL.md` | Run automated test quality checks | Part A |
+| `analyze-mutation-survivors` | `.claude/skills/analyze-mutation-survivors/SKILL.md` | Analyze and kill surviving mutations | Part A |
+| `detect-test-antipatterns` | `.claude/skills/detect-test-antipatterns/SKILL.md` | Find fake safety patterns in tests | Part B |
+| `map-spec-to-tests` | `.claude/skills/map-spec-to-tests/SKILL.md` | Create spec-to-test traceability matrix | Part B |
+
+To use a skill, read the SKILL.md file at the path above for detailed instructions.
 
 ---
 
-## Phase 1: Setup & Configuration (5 min)
+# Part A: Automated Quality Gates
 
-### 1.1 Verify Coverage Configuration
+**Purpose:** Run tools, interpret results, fix failures, achieve passing metrics
 
+## A1. Quick Quality Check
+
+// turbo
 ```bash
-# Check bunfig.toml exists and has coverage enabled
-cat bunfig.toml | grep -A5 "\[test\]"
+bun run quality
 ```
 
-Expected:
-```toml
-[test]
-coverage = true
-coverageReporter = ["text", "lcov"]
-coverageThreshold = { lines = 0.80, functions = 0.80, statements = 0.80 }
+**What it checks:**
+- All tests passing
+- Assertion density ≥ 1.0 per test
+- No lint errors
+
+**On failure:**
+1. Read the output to identify failing check
+2. Fix the issue
+3. Re-run until green
+
+## A2. Mutation Testing
+
+// turbo
+```bash
+bun run test:mutate
 ```
 
-### 1.2 Add Missing Configuration
+**Target:** ≥ 80% mutation score (break threshold)
 
-If bunfig.toml doesn't exist, create it:
+**On surviving mutants:**
+1. Open the HTML report: `reports/mutation/index.html`
+2. For each survivor, analyze:
+   - What code was mutated?
+   - Why didn't existing tests catch it?
+3. Write a targeted test to kill the mutant
+4. Re-run until threshold met
 
-```toml
-[test]
-coverage = true
-coverageReporter = ["text", "lcov"]
-coverageDir = "./coverage"
-coverageThreshold = { lines = 0.80, functions = 0.80, statements = 0.80 }
-coverageSkipTestFiles = true
-timeout = 10000
-```
+**Common survivors and fixes:**
 
----
+| Mutation | Fix |
+|----------|-----|
+| `>=` → `>` | Add boundary test with exact value |
+| `&&` → `\|\|` | Add test where only one condition is true |
+| Block removed | Add test that verifies the block's effect |
+| Return value changed | Assert the exact return value |
 
-## Phase 2: Run Tests & Collect Metrics (5 min)
+## A3. Coverage Analysis
 
-### 2.1 Run Tests with Coverage
-
+// turbo
 ```bash
 bun test --coverage
 ```
 
-### 2.2 Record Metrics
+**Target:** ≥ 80% line coverage, ≥ 80% function coverage
 
-Document these metrics:
-- [ ] Total tests
-- [ ] Pass/fail count
-- [ ] Assertion count (look for "expect() calls")
-- [ ] Line coverage %
-- [ ] Function coverage %
-- [ ] Uncovered lines list
-- [ ] Execution time
+**For uncovered lines:**
+1. Identify what behavior the line covers
+2. Write a test that exercises it
+3. Re-run to verify coverage
+
+**Acceptable exceptions:**
+- Error handlers for impossible states
+- Debug/logging code
+- Platform-specific branches
+
+## A4. Property-Based Testing
+
+// turbo
+```bash
+bun run test:property
+```
+
+**When to add property tests:**
+
+| Code Type | Property Examples |
+|-----------|------------------|
+| ID generators | Always unique |
+| Serializers | Round-trip (encode→decode = original) |
+| Sorters | Output is sorted, length preserved |
+| State machines | Valid transitions only |
+
+**How to identify properties:**
+1. Ask: "What must ALWAYS be true for ANY valid input?"
+2. Write property test using fast-check
+3. Run with 100+ random inputs
 
 ---
 
-## Phase 3: Fake Safety Audit (15-20 min)
+# Part B: Agentic Review
 
-This is the CRITICAL phase. Scan for anti-patterns that create false confidence.
+**Purpose:** Human/AI reasoning to verify tests are meaningful, not just metric-passing
 
-### 3.1 🔴 Hidden Assertions (CRITICAL)
+## B1. Anti-Pattern Detection
 
-**Search for assertions inside callbacks/middlewares:**
+Scan for these patterns that create false confidence:
 
+### 🔴 Hidden Assertions (CRITICAL)
+
+**Search for:**
 ```bash
-# Look for expect() inside passed functions
 grep -rn "expect(" packages/*/src/*.test.ts | grep -E "\([^)]+\) =>"
 ```
 
 **Anti-pattern:**
 ```typescript
-// ❌ BAD - expect may never execute if middleware chain breaks
+// ❌ BAD - expect may never execute if callback never runs
 pipeline.use(async (ctx) => {
   expect(ctx.value).toBe("something");  // Hidden!
 });
@@ -99,37 +171,25 @@ pipeline.use(async (ctx) => {
   capturedValue = ctx.value;
 });
 await pipeline.run(ctx);
-expect(middlewareExecuted).toBe(true);  // Verify execution
-expect(capturedValue).toBe("something"); // Assert captured value
+expect(middlewareExecuted).toBe(true);
+expect(capturedValue).toBe("something");
 ```
 
-### 3.2 🟠 Weak toBeDefined() Assertions
-
-**Search for:**
-```bash
-grep -rn "toBeDefined()" packages/*/src/*.test.ts
-```
+### 🟠 Weak toBeDefined() Assertions
 
 **Anti-pattern:**
 ```typescript
-// ❌ BAD - passes even if id is empty string or wrong value
+// ❌ BAD - passes even if value is wrong
 expect(event.id).toBeDefined();
-expect(event.sessionId).toBeDefined();
 ```
 
 **Fix:**
 ```typescript
-// ✅ GOOD - verify actual values
+// ✅ GOOD - verify actual value
 expect(event.id).toMatch(/^[0-9a-f-]{36}$/i);  // UUID format
-expect(event.sessionId).toBe(inputSessionId);   // Exact match
 ```
 
-### 3.3 🟠 Tautological Comparisons
-
-**Search for:**
-```bash
-grep -rn "toBeGreaterThanOrEqual\|toBeLessThanOrEqual" packages/*/src/*.test.ts
-```
+### 🟠 Tautological Comparisons
 
 **Anti-pattern:**
 ```typescript
@@ -144,39 +204,7 @@ await new Promise(r => setTimeout(r, 5));
 expect(updated.getTime()).toBeGreaterThan(original.getTime());
 ```
 
-### 3.4 🟠 Existence-Only Tests
-
-**Search for tests that just check things exist:**
-```bash
-grep -rn "toBeInstanceOf\|toBeDefined" packages/*/src/*.test.ts | head -20
-```
-
-**Anti-pattern:**
-```typescript
-// ❌ BAD - doesn't verify behavior
-it("exports SessionManager", () => {
-  expect(SessionManager).toBeDefined();
-  expect(new SessionManager()).toBeInstanceOf(SessionManager);
-});
-```
-
-**Fix:**
-```typescript
-// ✅ GOOD - verify actual functionality
-it("exports working SessionManager", () => {
-  const manager = new SessionManager();
-  const session = manager.create({ name: "test", transport: "stdio" });
-  expect(session.state).toBe("CREATED");
-  expect(manager.get(session.id)).toBe(session);
-});
-```
-
-### 3.5 🟡 Length-Only Checks
-
-**Search for:**
-```bash
-grep -rn "\.length\).toBe" packages/*/src/*.test.ts
-```
+### 🟡 Length-Only Checks
 
 **Anti-pattern:**
 ```typescript
@@ -188,157 +216,181 @@ expect(sessions.length).toBe(3);
 ```typescript
 // ✅ GOOD - verify content
 expect(sessions.length).toBe(3);
-const ids = sessions.map(s => s.id);
-expect(ids).toContain(expected1.id);
-expect(ids).toContain(expected2.id);
+expect(sessions.map(s => s.id)).toContain(expected1.id);
 ```
 
-### 3.6 🟡 Missing Negative Tests
+## B2. Spec-to-Test Traceability
 
-For each positive test, verify there's a corresponding negative test:
-- [ ] Invalid input rejection
-- [ ] Not-found scenarios
-- [ ] Error propagation
-- [ ] Empty/null handling
+For each scenario in the spec document:
 
----
+1. Find the corresponding test(s)
+2. Verify the test actually covers the scenario
+3. Mark status in traceability matrix
 
-## Phase 4: Coverage Gap Analysis (10 min)
-
-### 4.1 Identify Uncovered Lines
-
-From coverage output, list all uncovered lines:
-```
-File                          | Uncovered Line #s
-------------------------------|------------------
-store/message-store.ts        | 43-47, 73-74
+**Create matrix:**
+```markdown
+| Spec Scenario | Test Location | Status | Notes |
+|---------------|---------------|--------|-------|
+| Sessions have unique IDs | manager.test.ts:L25 | ✅ | |
+| Messages preserve order | message-store.test.ts:L74 | ✅ | |
+| Middleware chain stops on no next() | pipeline.test.ts:L45 | ✅ | |
 ```
 
-### 4.2 Create Tests for Gaps
+**Status legend:**
+- ✅ Fully covered
+- ⚠️ Partially covered (document what's missing)
+- ❌ Not covered (add test)
 
-For each uncovered line/function:
-1. Identify what behavior it covers
-2. Write a test that exercises it
-3. Verify it's now covered
+## B3. Behavioral Completeness
 
----
+For each public function/method, verify tests exist for:
 
-## Phase 5: Scenario Traceability (5 min)
+- [ ] Happy path (normal usage)
+- [ ] Error cases (invalid input)
+- [ ] Boundary cases (empty, max, min)
+- [ ] Null/undefined handling
+- [ ] Concurrent access (if applicable)
 
-### 5.1 Map Spec Scenarios to Tests
+**Think:** "What could go wrong?"
+- Invalid input types
+- Missing required fields
+- Empty collections
+- Race conditions
+- State corruption
 
-Create a mapping table:
+## B4. Intent Verification
 
-| Spec Scenario | Test File | Test Name | Status |
-|---------------|-----------|-----------|--------|
-| Messages can be stored | message-store.test.ts | stores message event | ✅ |
-| ... | ... | ... | ... |
+For each test, verify:
 
-### 5.2 Identify Missing Scenarios
+1. **Name matches assertion**
+   - Test name: "creates session with unique ID"
+   - Does it actually verify uniqueness? (not just that ID exists)
 
-Any spec scenario without a corresponding test = gap
+2. **No coincidental passing**
+   - Could this test pass by accident?
+   - Is it testing the right thing?
 
----
-
-## Phase 6: Generate Report (5 min)
-
-// turbo
-### 6.1 Create Report File
-
-Create `test-quality-report.md` with:
-- Executive summary
-- Metrics table
-- Coverage matrix
-- Issues found
-- Fixes applied
-- Recommendations
-
-### 6.2 Update Spec File
-
-Update the spec with:
-- [x] Mark covered scenarios
-- [~] Mark partial scenarios
-- Add coverage metrics to header
+3. **Failure would catch the bug**
+   - If the code was broken, would this test fail?
 
 ---
 
-## Phase 7: (Optional) Advanced Checks
+# Part C: Continuous Improvement
 
-### 7.1 Mutation Testing
+**Run at the end of every review to improve the process itself.**
+
+## C1. Report Current Metrics
+
+Document current state:
+
+```markdown
+| Metric | Current | Target | Status |
+|--------|---------|--------|--------|
+| Tests | ___ | - | |
+| Assertions | ___ | - | |
+| Mutation Score | ___% | ≥80% | |
+| Line Coverage | ___% | ≥80% | |
+| Assertion Density | ___ | ≥1.0 | |
+| Property Tests | ___ | - | |
+```
+
+## C2. Assess: What's Working?
+
+Discuss:
+- What did automated checks catch that manual review would have missed?
+- What did agentic review uncover that automation missed?
+- Were there false positives (wasted effort)?
+- Did any tests feel like they were "gaming" the metrics?
+
+## C3. Discuss: Future Considerations
+
+Review this list and discuss relevance to current project state:
+
+| Practice | What It Does | When Valuable |
+|----------|--------------|---------------|
+| **Contract Testing** | Ensures API changes don't break consumers | When multiple services/clients consume your API |
+| **Fuzz Testing** | Throws random malformed input to find crashes | When parsing external input (JSON, messages) |
+| **Chaos Engineering** | Injects failures to test resilience | Before production, for distributed systems |
+| **Visual Regression** | Detects pixel-level UI changes | When building UI components |
+| **Load/Perf Testing** | Verifies performance under load | Before handling real traffic |
+| **Formal Verification** | Mathematically proves correctness | For security-critical or financial code |
+| **Snapshot Testing** | Detects unintended output changes | For stable output formats |
+
+**Discussion prompts:**
+1. Has the codebase grown to warrant any of these?
+2. Are there new risk areas that need additional testing?
+3. What's the cost/benefit of adding one now?
+4. Any production issues that suggest we need more?
+
+## C4. Decide: What to Add Next?
+
+Document decision:
+
+- [ ] Keep current practices (no changes needed)
+- [ ] Add: _________________ because _________________
+- [ ] Remove/simplify: _________________ because _________________
+- [ ] Investigate: _________________ (research before deciding)
+
+---
+
+# Commands Summary
 
 ```bash
-# Install Stryker
-npm install --save-dev @stryker-mutator/core @stryker-mutator/typescript-checker
+# Quick quality check (fast)
+bun run quality
 
-# Run mutation testing
-npx stryker run
-```
+# Full quality gate including mutation testing (slow)
+bun run quality:full
 
-Mutation score target: > 80%
+# Individual checks
+bun test                    # Run tests
+bun test --coverage         # With coverage
+bun run test:density        # Assertion density
+bun run test:mutate         # Mutation testing
+bun run test:property       # Property-based tests
+bun run lint                # Lint check
 
-### 7.2 Test Linting
-
-Add to biome.json or eslint:
-```json
-{
-  "rules": {
-    "noFocusedTests": "error",
-    "noSkippedTests": "warn"
-  }
-}
-```
-
-### 7.3 Assertion Density Check
-
-```bash
-# Calculate assertions per test
-TESTS=$(grep -r "test\|it(" packages/*/src/*.test.ts | wc -l)
-EXPECTS=$(grep -r "expect(" packages/*/src/*.test.ts | wc -l)
-echo "Assertion density: $((EXPECTS / TESTS)) per test"
-```
-
-Target: 1.5-3 assertions per test
-
----
-
-## Quick Reference: Anti-Pattern Checklist
-
-Before approving any PR with tests, verify:
-
-- [ ] **No hidden assertions** in callbacks/middlewares
-- [ ] **No weak toBeDefined()** - values are verified
-- [ ] **No tautological >= comparisons** - strict > with delays
-- [ ] **No existence-only tests** - behavior is verified
-- [ ] **No length-only checks** - content is verified
-- [ ] **Negative cases exist** for each positive case
-- [ ] **All spec scenarios covered**
-- [ ] **No uncovered lines** without justification
-
----
-
-## Commands Summary
-
-```bash
-# Run tests with coverage
-bun test --coverage
-
-# Find hidden assertions
-grep -rn "expect(" *.test.ts | grep -E "\([^)]+\) =>"
-
-# Find weak assertions
-grep -rn "toBeDefined()" *.test.ts
-
-# Find tautological comparisons
-grep -rn "toBeGreaterThanOrEqual" *.test.ts
-
-# Find length-only checks
-grep -rn "\.length\).toBe" *.test.ts
-
-# Calculate assertion density
-echo "Density: $(grep -r "expect(" *.test.ts | wc -l) / $(grep -r "test\|it(" *.test.ts | wc -l)"
+# Find anti-patterns
+grep -rn "expect(" packages/*/src/*.test.ts | grep -E "\([^)]+\) =>"
+grep -rn "toBeDefined()" packages/*/src/*.test.ts
+grep -rn "toBeGreaterThanOrEqual" packages/*/src/*.test.ts
 ```
 
 ---
 
-*Workflow created: 2026-01-09*
-*Based on Phase 0 Foundation test quality review*
+# Workflow Execution Checklist
+
+## When to Run Full Workflow
+
+| Situation | Part A | Part B | Part C |
+|-----------|--------|--------|--------|
+| Every PR | ✅ Auto (CI) | Optional | ❌ |
+| New module/feature | ✅ | ✅ | ✅ |
+| Quarterly audit | ✅ | ✅ | ✅ |
+| Bug fix | ✅ Auto (CI) | Recommended | ❌ |
+| Post-incident review | ✅ | ✅ | ✅ |
+
+## Checklist
+
+### Part A: Automated
+- [ ] `bun run quality` passes
+- [ ] `bun run test:mutate` ≥ 80%
+- [ ] Coverage ≥ 80%
+- [ ] No surviving critical mutants
+
+### Part B: Agentic
+- [ ] No hidden assertions found
+- [ ] No weak toBeDefined() patterns
+- [ ] All spec scenarios mapped to tests
+- [ ] Negative/edge cases exist
+- [ ] Test names match assertions
+
+### Part C: Improvement
+- [ ] Metrics documented
+- [ ] Future considerations discussed
+- [ ] Decision recorded
+
+---
+
+*Workflow updated: 2026-01-09*
+*Incorporates: Mutation testing, Property-based testing, CI integration, Continuous improvement*

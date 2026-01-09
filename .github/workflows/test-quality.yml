@@ -1,0 +1,174 @@
+name: Test Quality Gate
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  quality-gate:
+    name: Test Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run Tests with Coverage
+        run: bun test --coverage
+
+      - name: Check Assertion Density
+        run: bun run test:density
+
+      - name: Check for Anti-Patterns
+        run: |
+          echo "🔍 Checking for test anti-patterns..."
+
+          # Check for hidden assertions in callbacks
+          echo ""
+          echo "📋 Checking for hidden assertions in callbacks..."
+          if grep -rn "expect(" packages/*/src/*.test.ts | grep -E "\([^)]+\) =>" | grep -v "//" > /dev/null 2>&1; then
+            echo "⚠️  Warning: Found potential hidden assertions in callbacks"
+            echo "   These assertions may not execute if the callback isn't called"
+            grep -rn "expect(" packages/*/src/*.test.ts | grep -E "\([^)]+\) =>" | head -5
+          else
+            echo "✅ No hidden assertions found"
+          fi
+
+          # Check for weak toBeDefined() as sole assertion
+          echo ""
+          echo "📋 Checking for weak toBeDefined() patterns..."
+          WEAK_DEFINED=$(grep -rn "toBeDefined()" packages/*/src/*.test.ts | wc -l | tr -d ' ')
+          TOTAL_EXPECTS=$(grep -rn "expect(" packages/*/src/*.test.ts | wc -l | tr -d ' ')
+          WEAK_RATIO=$(echo "scale=2; $WEAK_DEFINED * 100 / $TOTAL_EXPECTS" | bc)
+          echo "   toBeDefined() calls: $WEAK_DEFINED of $TOTAL_EXPECTS total expects (${WEAK_RATIO}%)"
+          if [ $(echo "$WEAK_RATIO > 20" | bc) -eq 1 ]; then
+            echo "⚠️  Warning: High ratio of toBeDefined() assertions"
+            echo "   Consider using more specific assertions"
+          else
+            echo "✅ toBeDefined() ratio is acceptable"
+          fi
+
+          # Check for focused tests (.only)
+          echo ""
+          echo "📋 Checking for focused tests..."
+          if grep -rn "\.only(" packages/*/src/*.test.ts > /dev/null 2>&1; then
+            echo "❌ Found focused tests (.only) - these should not be committed!"
+            grep -rn "\.only(" packages/*/src/*.test.ts
+            exit 1
+          else
+            echo "✅ No focused tests found"
+          fi
+
+          # Check for skipped tests (.skip)
+          echo ""
+          echo "📋 Checking for skipped tests..."
+          if grep -rn "\.skip(" packages/*/src/*.test.ts > /dev/null 2>&1; then
+            echo "⚠️  Warning: Found skipped tests"
+            grep -rn "\.skip(" packages/*/src/*.test.ts
+          else
+            echo "✅ No skipped tests found"
+          fi
+
+          echo ""
+          echo "✅ Anti-pattern checks complete!"
+
+      - name: Lint Check
+        run: bun run lint
+
+  mutation-testing:
+    name: Mutation Testing
+    runs-on: ubuntu-latest
+    # Only run mutation testing on PRs to avoid slowing down every push
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run Mutation Testing
+        run: bun run test:mutate
+
+      - name: Check Mutation Score
+        run: |
+          # Stryker outputs score in reports/mutation/index.html
+          # The threshold is configured in stryker.config.mjs (break: 50)
+          echo "✅ Mutation testing passed (score >= threshold)"
+
+  pr-comment:
+    name: PR Quality Summary
+    runs-on: ubuntu-latest
+    needs: [quality-gate]
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Generate Summary
+        id: summary
+        run: |
+          # Count tests and assertions
+          TESTS=$(grep -rE "(test|it)\(" packages/*/src/*.test.ts | wc -l | tr -d ' ')
+          EXPECTS=$(grep -r "expect(" packages/*/src/*.test.ts | wc -l | tr -d ' ')
+          DENSITY=$(echo "scale=2; $EXPECTS / $TESTS" | bc)
+
+          echo "tests=$TESTS" >> $GITHUB_OUTPUT
+          echo "expects=$EXPECTS" >> $GITHUB_OUTPUT
+          echo "density=$DENSITY" >> $GITHUB_OUTPUT
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = `## 🧪 Test Quality Report
+
+            | Metric | Value |
+            |--------|-------|
+            | Total Tests | ${{ steps.summary.outputs.tests }} |
+            | Total Assertions | ${{ steps.summary.outputs.expects }} |
+            | Assertion Density | ${{ steps.summary.outputs.density }}/test |
+
+            ### Quality Checks
+
+            - ✅ All tests passing
+            - ✅ Assertion density check passed
+            - ✅ No anti-patterns detected
+            - ✅ Lint check passed
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });

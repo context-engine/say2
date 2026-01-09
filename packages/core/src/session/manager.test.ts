@@ -100,6 +100,30 @@ describe("SessionManager", () => {
 		});
 	});
 
+	describe("listAll", () => {
+		test("returns all sessions including closed and error", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const s1 = manager.create(config);
+			const s2 = manager.create(config);
+			const s3 = manager.create(config);
+
+			// Close s1, set s2 to error
+			manager.close(s1.id);
+			manager.updateState(s2.id, SessionState.ERROR);
+
+			// list() should only return s3
+			expect(manager.list().length).toBe(1);
+
+			// listAll() should return all 3
+			const allSessions = manager.listAll();
+			expect(allSessions.length).toBe(3);
+			const ids = allSessions.map((s) => s.id);
+			expect(ids).toContain(s1.id);
+			expect(ids).toContain(s2.id);
+			expect(ids).toContain(s3.id);
+		});
+	});
+
 	describe("close", () => {
 		test("updates session state to CLOSED", () => {
 			const config = { name: "test", transport: "stdio" as const };
@@ -165,6 +189,60 @@ describe("SessionManager", () => {
 
 			const updated = manager.get(session.id);
 			expect(updated?.serverCapabilities).toEqual({ resources: true });
+		});
+
+		test("only updates clientCapabilities when serverCapabilities is undefined", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+
+			// First set both
+			manager.updateCapabilities(
+				session.id,
+				{ tools: true },
+				{ resources: true },
+			);
+
+			// Now update only client
+			manager.updateCapabilities(session.id, { prompts: true }, undefined);
+
+			const updated = manager.get(session.id);
+			// Client should be updated
+			expect(updated?.clientCapabilities).toEqual({ prompts: true });
+			// Server should remain unchanged
+			expect(updated?.serverCapabilities).toEqual({ resources: true });
+		});
+
+		test("only updates serverCapabilities when clientCapabilities is undefined", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+
+			// First set both
+			manager.updateCapabilities(
+				session.id,
+				{ tools: true },
+				{ resources: true },
+			);
+
+			// Now update only server
+			manager.updateCapabilities(session.id, undefined, { sampling: true });
+
+			const updated = manager.get(session.id);
+			// Client should remain unchanged
+			expect(updated?.clientCapabilities).toEqual({ tools: true });
+			// Server should be updated
+			expect(updated?.serverCapabilities).toEqual({ sampling: true });
+		});
+
+		test("does nothing for unknown session ID", () => {
+			// This should not throw
+			manager.updateCapabilities(
+				"non-existent",
+				{ tools: true },
+				{ resources: true },
+			);
+
+			// Verify session still doesn't exist
+			expect(manager.get("non-existent")).toBeUndefined();
 		});
 	});
 
