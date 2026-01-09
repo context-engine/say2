@@ -1,0 +1,32 @@
+# Bun Configuration for Say2
+# https://bun.sh/docs/runtime/bunfig
+
+[test]
+# Coverage disabled by default (enable with --coverage flag or bun run test:coverage)
+# This allows mutation testing to work without coverage output interference
+coverage = false
+
+# Coverage reporters - text for console, lcov for CI/external tools
+coverageReporter = ["text", "lcov"]
+
+# Coverage output directory
+coverageDir = "./coverage"
+
+# Coverage thresholds (fail if below these percentages)
+coverageThreshold = { lines = 0.80, functions = 0.80, statements = 0.80 }
+
+# Skip test files from coverage calculation
+coverageSkipTestFiles = true
+
+# Patterns to ignore from coverage
+coverageIgnorePatterns = [
+  "**/node_modules/**",
+  "**/dist/**",
+  "**/*.d.ts"
+]
+
+# Test timeout in milliseconds
+timeout = 10000
+
+# Preload test setup (if needed)
+# preload = ["./test-setup.ts"]
