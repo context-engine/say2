@@ -41,20 +41,31 @@ cd ~/repos/say2-impl.git
 git worktree add ~/repos/say2-main main
 ```
 
-Once the bare clone exists, the AI can create worktrees from it.
+---
+
+### 🛑 STOP: AI Must Verify Before Proceeding
+
+**AI: Ask the user for the bare clone path before continuing.**
+
+Example prompt:
+> "This workflow requires a bare clone. Please provide the path to your bare clone (e.g., `~/repos/say2-impl.git`) or confirm you have set one up."
+
+Do NOT proceed to create worktrees until the user provides the bare clone path.
+
+---
 
 ## Create Tests Worktree
 
 From the bare clone, create a worktree for tests:
 
 ```bash
-cd ~/repos/say2-impl.git
+cd <bare-clone-path>
 
 # Create tests worktree
-git worktree add ~/repos/tests-phase-name -b tests/phase-name
+git worktree add <worktree-path> -b tests/<phase-name>
 
 # Open in editor
-cd ~/repos/tests-phase-name
+cd <worktree-path>
 ```
 
 Branch naming examples:
