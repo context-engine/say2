@@ -192,6 +192,15 @@ export type Middleware = (
 // =============================================================================
 // Factory Functions
 // =============================================================================
+//
+// Design Decision: Factory functions are co-located with types for:
+// 1. Independent testability - factories can be unit tested without managers
+// 2. Reusability - create instances without going through manager classes
+// 3. Clear data layer - types module owns both structure and creation logic
+//
+// Managers (SessionManager, etc.) delegate to these factories and add
+// persistence/lifecycle management on top.
+// =============================================================================
 
 export function createContextKey<T>(
 	name: string,
