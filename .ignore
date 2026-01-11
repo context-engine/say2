@@ -1,0 +1,5 @@
+# Override .gitignore exclusions for AI editors/indexers
+# This makes v0-docs accessible to AI coding assistants
+# even though it's excluded from Git tracking
+
+!v0-docs
