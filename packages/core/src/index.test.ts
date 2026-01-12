@@ -21,6 +21,7 @@ describe("@say2/core", () => {
 		it("exports SessionState enum with all lifecycle states", () => {
 			// Verify all required states exist
 			expect(SessionState.CREATED).toBe("CREATED");
+			expect(SessionState.CONNECTING).toBe("CONNECTING");
 			expect(SessionState.INITIALIZING).toBe("INITIALIZING");
 			expect(SessionState.ACTIVE).toBe("ACTIVE");
 			expect(SessionState.CLOSED).toBe("CLOSED");

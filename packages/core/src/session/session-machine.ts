@@ -25,6 +25,7 @@ export interface SessionContext {
 }
 
 export type SessionEvent =
+	| { type: "CONNECT" }
 	| { type: "INITIALIZE" }
 	| {
 			type: "ACTIVATE";
@@ -104,6 +105,18 @@ export const sessionMachine = setup({
 	states: {
 		created: {
 			on: {
+				CONNECT: {
+					target: "connecting",
+					actions: "updateTimestamp",
+				},
+				ERROR: {
+					target: "error",
+					actions: "setError",
+				},
+			},
+		},
+		connecting: {
+			on: {
 				INITIALIZE: {
 					target: "initializing",
 					actions: "updateTimestamp",
@@ -160,6 +173,7 @@ export const sessionMachine = setup({
  */
 export const STATE_VALUE_MAP = {
 	created: "CREATED",
+	connecting: "CONNECTING",
 	initializing: "INITIALIZING",
 	active: "ACTIVE",
 	closed: "CLOSED",

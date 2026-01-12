@@ -50,16 +50,16 @@ describe("Session State Machine", () => {
 		});
 	});
 
-	describe("INITIALIZE event", () => {
-		test("transitions from 'created' to 'initializing'", () => {
+	describe("CONNECT event", () => {
+		test("transitions from 'created' to 'connecting'", () => {
 			const actor = createActor(sessionMachine, {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
 
-			actor.send({ type: "INITIALIZE" });
+			actor.send({ type: "CONNECT" });
 
-			expect(actor.getSnapshot().value).toBe("initializing");
+			expect(actor.getSnapshot().value).toBe("connecting");
 		});
 
 		test("updates timestamp on transition", () => {
@@ -70,11 +70,50 @@ describe("Session State Machine", () => {
 			const _originalUpdatedAt = actor.getSnapshot().context.updatedAt;
 
 			// Small delay to ensure timestamp difference
-			actor.send({ type: "INITIALIZE" });
+			actor.send({ type: "CONNECT" });
 
 			// Timestamp should be updated (might be same if too fast, so just check it exists)
 			expect(actor.getSnapshot().context.updatedAt).toBeDefined();
 			expect(actor.getSnapshot().context.updatedAt).toBeInstanceOf(Date);
+		});
+
+		test("is ignored in 'connecting' state", () => {
+			const actor = createActor(sessionMachine, {
+				input: { id: "test-id", config: testConfig },
+			});
+			actor.start();
+			actor.send({ type: "CONNECT" });
+
+			// Send again
+			actor.send({ type: "CONNECT" });
+
+			// Should still be in 'connecting'
+			expect(actor.getSnapshot().value).toBe("connecting");
+		});
+	});
+
+	describe("INITIALIZE event", () => {
+		test("transitions from 'connecting' to 'initializing'", () => {
+			const actor = createActor(sessionMachine, {
+				input: { id: "test-id", config: testConfig },
+			});
+			actor.start();
+			actor.send({ type: "CONNECT" });
+
+			actor.send({ type: "INITIALIZE" });
+
+			expect(actor.getSnapshot().value).toBe("initializing");
+		});
+
+		test("is ignored in 'created' state", () => {
+			const actor = createActor(sessionMachine, {
+				input: { id: "test-id", config: testConfig },
+			});
+			actor.start();
+
+			actor.send({ type: "INITIALIZE" });
+
+			expect(actor.getSnapshot().value).toBe("created");
 		});
 
 		test("is ignored in 'initializing' state", () => {
@@ -82,6 +121,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 
 			// Send again
@@ -98,6 +138,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 
 			actor.send({ type: "ACTIVATE" });
@@ -110,6 +151,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 
 			actor.send({
@@ -135,6 +177,18 @@ describe("Session State Machine", () => {
 
 			expect(actor.getSnapshot().value).toBe("created");
 		});
+
+		test("is ignored in 'connecting' state", () => {
+			const actor = createActor(sessionMachine, {
+				input: { id: "test-id", config: testConfig },
+			});
+			actor.start();
+			actor.send({ type: "CONNECT" });
+
+			actor.send({ type: "ACTIVATE" });
+
+			expect(actor.getSnapshot().value).toBe("connecting");
+		});
 	});
 
 	describe("CLOSE event", () => {
@@ -143,6 +197,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 			actor.send({ type: "ACTIVATE" });
 
@@ -162,11 +217,24 @@ describe("Session State Machine", () => {
 			expect(actor.getSnapshot().value).toBe("created");
 		});
 
+		test("is ignored in 'connecting' state", () => {
+			const actor = createActor(sessionMachine, {
+				input: { id: "test-id", config: testConfig },
+			});
+			actor.start();
+			actor.send({ type: "CONNECT" });
+
+			actor.send({ type: "CLOSE" });
+
+			expect(actor.getSnapshot().value).toBe("connecting");
+		});
+
 		test("is ignored in 'initializing' state", () => {
 			const actor = createActor(sessionMachine, {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 
 			actor.send({ type: "CLOSE" });
@@ -182,6 +250,19 @@ describe("Session State Machine", () => {
 			});
 			actor.start();
 
+			actor.send({ type: "ERROR", reason: "Config error" });
+
+			expect(actor.getSnapshot().value).toBe("error");
+			expect(actor.getSnapshot().context.errorReason).toBe("Config error");
+		});
+
+		test("transitions from 'connecting' to 'error'", () => {
+			const actor = createActor(sessionMachine, {
+				input: { id: "test-id", config: testConfig },
+			});
+			actor.start();
+			actor.send({ type: "CONNECT" });
+
 			actor.send({ type: "ERROR", reason: "Connection failed" });
 
 			expect(actor.getSnapshot().value).toBe("error");
@@ -193,6 +274,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 
 			actor.send({ type: "ERROR", reason: "Init timeout" });
@@ -205,6 +287,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 			actor.send({ type: "ACTIVATE" });
 
@@ -220,6 +303,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 			actor.send({ type: "ACTIVATE" });
 
@@ -238,6 +322,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 			actor.send({
 				type: "ACTIVATE",
@@ -277,6 +362,7 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 			actor.send({ type: "ACTIVATE" });
 			actor.send({ type: "CLOSE" });
@@ -299,11 +385,13 @@ describe("Session State Machine", () => {
 				input: { id: "test-id", config: testConfig },
 			});
 			actor.start();
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 			actor.send({ type: "ACTIVATE" });
 			actor.send({ type: "CLOSE" });
 
 			// Try all events
+			actor.send({ type: "CONNECT" });
 			actor.send({ type: "INITIALIZE" });
 			actor.send({ type: "ACTIVATE" });
 			actor.send({ type: "ERROR" });
@@ -315,6 +403,7 @@ describe("Session State Machine", () => {
 	describe("STATE_VALUE_MAP", () => {
 		test("maps all machine states to SessionState values", () => {
 			expect(STATE_VALUE_MAP.created).toBe("CREATED");
+			expect(STATE_VALUE_MAP.connecting).toBe("CONNECTING");
 			expect(STATE_VALUE_MAP.initializing).toBe("INITIALIZING");
 			expect(STATE_VALUE_MAP.active).toBe("ACTIVE");
 			expect(STATE_VALUE_MAP.closed).toBe("CLOSED");

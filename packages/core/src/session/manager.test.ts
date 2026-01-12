@@ -83,6 +83,7 @@ describe("SessionManager", () => {
 			manager.create(config);
 
 			// Must go through valid transitions to close
+			manager.connect(session1.id);
 			manager.initialize(session1.id);
 			manager.activate(session1.id);
 			manager.close(session1.id);
@@ -112,6 +113,7 @@ describe("SessionManager", () => {
 			const s3 = manager.create(config);
 
 			// Close s1 (must go through valid transitions)
+			manager.connect(s1.id);
 			manager.initialize(s1.id);
 			manager.activate(s1.id);
 			manager.close(s1.id);
@@ -133,10 +135,21 @@ describe("SessionManager", () => {
 	});
 
 	describe("state transitions", () => {
-		test("initialize transitions from CREATED to INITIALIZING", () => {
+		test("connect transitions from CREATED to CONNECTING", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 
+			const result = manager.connect(session.id);
+
+			expect(result.success).toBe(true);
+			expect(manager.get(session.id)?.state).toBe(SessionState.CONNECTING);
+		});
+
+		test("initialize transitions from CONNECTING to INITIALIZING", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+
+			manager.connect(session.id);
 			const result = manager.initialize(session.id);
 
 			expect(result.success).toBe(true);
@@ -147,6 +160,7 @@ describe("SessionManager", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 
+			manager.connect(session.id);
 			manager.initialize(session.id);
 			const result = manager.activate(session.id);
 
@@ -158,6 +172,7 @@ describe("SessionManager", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 
+			manager.connect(session.id);
 			manager.initialize(session.id);
 			manager.activate(
 				session.id,
@@ -176,6 +191,7 @@ describe("SessionManager", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 
+			manager.connect(session.id);
 			manager.initialize(session.id);
 			manager.activate(session.id);
 			const result = manager.close(session.id);
@@ -192,14 +208,22 @@ describe("SessionManager", () => {
 			expect(manager.markError(s1.id, "Error 1").success).toBe(true);
 			expect(manager.get(s1.id)?.state).toBe(SessionState.ERROR);
 
+			// From CONNECTING
+			const s1b = manager.create(config);
+			manager.connect(s1b.id);
+			expect(manager.markError(s1b.id, "Error 1b").success).toBe(true);
+			expect(manager.get(s1b.id)?.state).toBe(SessionState.ERROR);
+
 			// From INITIALIZING
 			const s2 = manager.create(config);
+			manager.connect(s2.id);
 			manager.initialize(s2.id);
 			expect(manager.markError(s2.id, "Error 2").success).toBe(true);
 			expect(manager.get(s2.id)?.state).toBe(SessionState.ERROR);
 
 			// From ACTIVE
 			const s3 = manager.create(config);
+			manager.connect(s3.id);
 			manager.initialize(s3.id);
 			manager.activate(s3.id);
 			expect(manager.markError(s3.id, "Error 3").success).toBe(true);
@@ -211,6 +235,9 @@ describe("SessionManager", () => {
 			const session = manager.create(config);
 
 			expect(session.state).toBe(SessionState.CREATED);
+
+			manager.connect(session.id);
+			expect(manager.get(session.id)?.state).toBe(SessionState.CONNECTING);
 
 			manager.initialize(session.id);
 			expect(manager.get(session.id)?.state).toBe(SessionState.INITIALIZING);
@@ -249,6 +276,7 @@ describe("SessionManager", () => {
 		test("cannot close from INITIALIZING state", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
+			manager.connect(session.id);
 			manager.initialize(session.id);
 
 			const result = manager.close(session.id);
@@ -261,11 +289,12 @@ describe("SessionManager", () => {
 		test("cannot transition from terminal CLOSED state", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
+			manager.connect(session.id);
 			manager.initialize(session.id);
 			manager.activate(session.id);
 			manager.close(session.id);
 
-			const result = manager.initialize(session.id);
+			const result = manager.connect(session.id);
 
 			expect(result.success).toBe(false);
 			expect(result.error).toContain("terminal state");
@@ -276,32 +305,10 @@ describe("SessionManager", () => {
 			const session = manager.create(config);
 			manager.markError(session.id, "Test error");
 
-			const result = manager.initialize(session.id);
+			const result = manager.connect(session.id);
 
 			expect(result.success).toBe(false);
 			expect(result.error).toContain("terminal state");
-		});
-	});
-
-	describe("updateState (deprecated)", () => {
-		test("still works with valid transitions", () => {
-			const config = { name: "test", transport: "stdio" as const };
-			const session = manager.create(config);
-
-			const result = manager.updateState(session.id, SessionState.INITIALIZING);
-
-			expect(result.success).toBe(true);
-			expect(manager.get(session.id)?.state).toBe(SessionState.INITIALIZING);
-		});
-
-		test("rejects invalid transitions", () => {
-			const config = { name: "test", transport: "stdio" as const };
-			const session = manager.create(config);
-
-			const result = manager.updateState(session.id, SessionState.ACTIVE);
-
-			expect(result.success).toBe(false);
-			expect(manager.get(session.id)?.state).toBe(SessionState.CREATED);
 		});
 	});
 
@@ -309,6 +316,7 @@ describe("SessionManager", () => {
 		test("updates capabilities in ACTIVE state", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
+			manager.connect(session.id);
 			manager.initialize(session.id);
 			manager.activate(session.id);
 
@@ -327,6 +335,7 @@ describe("SessionManager", () => {
 		test("only updates clientCapabilities when serverCapabilities is undefined", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
+			manager.connect(session.id);
 			manager.initialize(session.id);
 			manager.activate(session.id, { tools: true }, { resources: true });
 
@@ -343,6 +352,7 @@ describe("SessionManager", () => {
 		test("only updates serverCapabilities when clientCapabilities is undefined", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
+			manager.connect(session.id);
 			manager.initialize(session.id);
 			manager.activate(session.id, { tools: true }, { resources: true });
 
@@ -418,7 +428,7 @@ describe("SessionManager", () => {
 
 			// Actual delay to ensure timestamp differs
 			await new Promise((r) => setTimeout(r, 5));
-			manager.initialize(session.id);
+			manager.connect(session.id);
 
 			const updated = manager.get(session.id);
 			expect(updated?.updatedAt.getTime()).toBeGreaterThan(
