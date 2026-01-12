@@ -12,6 +12,7 @@ import { z } from "zod";
 
 export const SessionState = {
 	CREATED: "CREATED",
+	CONNECTING: "CONNECTING",
 	INITIALIZING: "INITIALIZING",
 	ACTIVE: "ACTIVE",
 	CLOSED: "CLOSED",
@@ -65,7 +66,14 @@ export type ServerConfig = z.infer<typeof ServerConfigSchema>;
 
 export const SessionSchema = z.object({
 	id: z.string().uuid(),
-	state: z.enum(["CREATED", "INITIALIZING", "ACTIVE", "CLOSED", "ERROR"]),
+	state: z.enum([
+		"CREATED",
+		"CONNECTING",
+		"INITIALIZING",
+		"ACTIVE",
+		"CLOSED",
+		"ERROR",
+	]),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 	config: ServerConfigSchema,

@@ -74,7 +74,16 @@ export class SessionManager {
 	}
 
 	/**
-	 * Initialize a session (CREATED → INITIALIZING).
+	 * Connect a session (CREATED → CONNECTING).
+	 * This initiates the transport connection.
+	 */
+	connect(id: string): TransitionResult {
+		return this.sendEvent(id, { type: "CONNECT" });
+	}
+
+	/**
+	 * Initialize a session (CONNECTING → INITIALIZING).
+	 * This begins the MCP protocol handshake.
 	 */
 	initialize(id: string): TransitionResult {
 		return this.sendEvent(id, { type: "INITIALIZE" });
@@ -109,28 +118,6 @@ export class SessionManager {
 	 */
 	markError(id: string, reason?: string): TransitionResult {
 		return this.sendEvent(id, { type: "ERROR", reason });
-	}
-
-	/**
-	 * Update session state.
-	 * @deprecated Use specific transition methods (initialize, activate, close, markError) instead.
-	 * This method is kept for backward compatibility but validates transitions.
-	 */
-	updateState(id: string, state: SessionState): TransitionResult {
-		// Map SessionState to events
-		const eventMap: Record<string, { type: string; reason?: string }> = {
-			[SessionState.INITIALIZING]: { type: "INITIALIZE" },
-			[SessionState.ACTIVE]: { type: "ACTIVATE" },
-			[SessionState.CLOSED]: { type: "CLOSE" },
-			[SessionState.ERROR]: { type: "ERROR" },
-		};
-
-		const event = eventMap[state];
-		if (!event) {
-			return { success: false, error: `Cannot transition to state: ${state}` };
-		}
-
-		return this.sendEvent(id, event as Parameters<SessionActor["send"]>[0]);
 	}
 
 	/**

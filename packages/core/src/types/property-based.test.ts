@@ -308,7 +308,7 @@ describe("Property-Based Tests", () => {
 				),
 			).toBe(true);
 			// Property: Has exactly 5 states
-			expect(Object.values(SessionState).length).toBe(5);
+			expect(Object.values(SessionState).length).toBe(6);
 		});
 	});
 });

@@ -40,6 +40,7 @@ describe("Core E2E", () => {
 			expect(session.state).toBe(SessionState.CREATED);
 
 			// 2. Transition through proper lifecycle to ACTIVE
+			sessionManager.connect(session.id);
 			sessionManager.initialize(session.id);
 			sessionManager.activate(session.id);
 			expect(sessionManager.get(session.id)?.state).toBe(SessionState.ACTIVE);
@@ -258,6 +259,11 @@ describe("Core E2E", () => {
 			});
 
 			expect(session.state).toBe(SessionState.CREATED);
+
+			sessionManager.connect(session.id);
+			expect(sessionManager.get(session.id)?.state).toBe(
+				SessionState.CONNECTING,
+			);
 
 			sessionManager.initialize(session.id);
 			expect(sessionManager.get(session.id)?.state).toBe(

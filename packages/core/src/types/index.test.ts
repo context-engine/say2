@@ -20,6 +20,7 @@ describe("Core Types", () => {
 	describe("Enums", () => {
 		test("SessionState has correct values", () => {
 			expect(SessionState.CREATED).toBe("CREATED");
+			expect(SessionState.CONNECTING).toBe("CONNECTING");
 			expect(SessionState.INITIALIZING).toBe("INITIALIZING");
 			expect(SessionState.ACTIVE).toBe("ACTIVE");
 			expect(SessionState.CLOSED).toBe("CLOSED");
@@ -103,7 +104,14 @@ describe("Core Types", () => {
 		});
 
 		test("tracks lifecycle state", () => {
-			const states = ["CREATED", "INITIALIZING", "ACTIVE", "CLOSED", "ERROR"];
+			const states = [
+				"CREATED",
+				"CONNECTING",
+				"INITIALIZING",
+				"ACTIVE",
+				"CLOSED",
+				"ERROR",
+			];
 			for (const state of states) {
 				const session = {
 					id: crypto.randomUUID(),
