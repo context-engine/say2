@@ -16,6 +16,7 @@ export interface SessionContext {
 	id: string;
 	config: ServerConfig;
 	protocol: "mcp" | "acp" | "a2a";
+	mode: "client" | "proxy";
 	protocolVersion?: string;
 	clientCapabilities?: Record<string, unknown>;
 	serverCapabilities?: Record<string, unknown>;
@@ -45,6 +46,7 @@ export interface SessionInput {
 	id: string;
 	config: ServerConfig;
 	protocol?: "mcp" | "acp" | "a2a";
+	mode?: "client" | "proxy";
 }
 
 // =============================================================================
@@ -99,6 +101,7 @@ export const sessionMachine = setup({
 		id: input.id,
 		config: input.config,
 		protocol: input.protocol ?? "mcp",
+		mode: input.mode ?? "client",
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	}),

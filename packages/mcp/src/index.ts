@@ -7,12 +7,10 @@
 
 // Client management
 export * from "./client";
-
-// Transport decorators
-export * from "./transport";
-
 // Protocol event detection
 export * from "./events";
+// Transport decorators
+export * from "./transport";
 
 // MCP-specific types
 export * from "./types";

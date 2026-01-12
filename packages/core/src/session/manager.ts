@@ -219,6 +219,7 @@ export class SessionManager {
 			updatedAt: context.updatedAt,
 			config: context.config,
 			protocol: context.protocol,
+			mode: context.mode,
 			protocolVersion: context.protocolVersion,
 			clientCapabilities: context.clientCapabilities,
 			serverCapabilities: context.serverCapabilities,

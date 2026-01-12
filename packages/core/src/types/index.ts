@@ -78,6 +78,7 @@ export const SessionSchema = z.object({
 	updatedAt: z.date(),
 	config: ServerConfigSchema,
 	protocol: z.enum(["mcp", "acp", "a2a"]).default("mcp"),
+	mode: z.enum(["client", "proxy"]).default("client"),
 	protocolVersion: z.string().optional(),
 	clientCapabilities: z.record(z.string(), z.unknown()).optional(),
 	serverCapabilities: z.record(z.string(), z.unknown()).optional(),
@@ -264,5 +265,6 @@ export function createSession(config: ServerConfig): Session {
 		updatedAt: now,
 		config,
 		protocol: "mcp",
+		mode: "client",
 	};
 }
