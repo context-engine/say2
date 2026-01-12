@@ -39,8 +39,9 @@ describe("Core E2E", () => {
 			});
 			expect(session.state).toBe(SessionState.CREATED);
 
-			// 2. Transition to ACTIVE
-			sessionManager.updateState(session.id, SessionState.ACTIVE);
+			// 2. Transition through proper lifecycle to ACTIVE
+			sessionManager.initialize(session.id);
+			sessionManager.activate(session.id);
 			expect(sessionManager.get(session.id)?.state).toBe(SessionState.ACTIVE);
 
 			// 3. Setup middleware pipeline
@@ -258,12 +259,12 @@ describe("Core E2E", () => {
 
 			expect(session.state).toBe(SessionState.CREATED);
 
-			sessionManager.updateState(session.id, SessionState.INITIALIZING);
+			sessionManager.initialize(session.id);
 			expect(sessionManager.get(session.id)?.state).toBe(
 				SessionState.INITIALIZING,
 			);
 
-			sessionManager.updateState(session.id, SessionState.ACTIVE);
+			sessionManager.activate(session.id);
 			expect(sessionManager.get(session.id)?.state).toBe(SessionState.ACTIVE);
 
 			sessionManager.updateCapabilities(

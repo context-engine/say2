@@ -46,7 +46,8 @@ describe("@say2/core", () => {
 			// Verify it actually works, not just exists
 			expect(session.id).toBeDefined();
 			expect(session.state).toBe(SessionState.CREATED);
-			expect(manager.get(session.id)).toBe(session);
+			// Note: get() returns a snapshot-converted session, so we compare by ID
+			expect(manager.get(session.id)?.id).toBe(session.id);
 		});
 
 		it("exports MessageStore that can store and retrieve messages", () => {
