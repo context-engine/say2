@@ -26,7 +26,7 @@ interface FileStats {
 
 // Configuration
 const MIN_DENSITY = 1.0; // Minimum assertions per test (1.0 is baseline, 1.5 is recommended)
-const TEST_PATTERNS = ["*.test.ts", "*.spec.ts"];
+const _TEST_PATTERNS = ["*.test.ts", "*.spec.ts"]; // For documentation
 const EXCLUDE_PATTERNS = ["node_modules", "dist", ".stryker-tmp"];
 
 // Patterns to count

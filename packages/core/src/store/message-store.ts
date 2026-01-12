@@ -77,11 +77,13 @@ export class MessageStore {
 		}
 
 		if (filter.startTime) {
-			results = results.filter((m) => m.timestamp >= filter.startTime!);
+			const startTime = filter.startTime;
+			results = results.filter((m) => m.timestamp >= startTime);
 		}
 
 		if (filter.endTime) {
-			results = results.filter((m) => m.timestamp <= filter.endTime!);
+			const endTime = filter.endTime;
+			results = results.filter((m) => m.timestamp <= endTime);
 		}
 
 		return results;

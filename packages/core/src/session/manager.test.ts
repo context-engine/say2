@@ -81,6 +81,10 @@ describe("SessionManager", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session1 = manager.create(config);
 			manager.create(config);
+
+			// Must go through valid transitions to close
+			manager.initialize(session1.id);
+			manager.activate(session1.id);
 			manager.close(session1.id);
 
 			const sessions = manager.list();
@@ -92,7 +96,7 @@ describe("SessionManager", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session1 = manager.create(config);
 			manager.create(config);
-			manager.updateState(session1.id, SessionState.ERROR);
+			manager.markError(session1.id, "Test error");
 
 			const sessions = manager.list();
 
@@ -107,9 +111,13 @@ describe("SessionManager", () => {
 			const s2 = manager.create(config);
 			const s3 = manager.create(config);
 
-			// Close s1, set s2 to error
+			// Close s1 (must go through valid transitions)
+			manager.initialize(s1.id);
+			manager.activate(s1.id);
 			manager.close(s1.id);
-			manager.updateState(s2.id, SessionState.ERROR);
+
+			// Set s2 to error
+			manager.markError(s2.id, "Test error");
 
 			// list() should only return s3
 			expect(manager.list().length).toBe(1);
@@ -124,83 +132,203 @@ describe("SessionManager", () => {
 		});
 	});
 
-	describe("close", () => {
-		test("updates session state to CLOSED", () => {
+	describe("state transitions", () => {
+		test("initialize transitions from CREATED to INITIALIZING", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
-			manager.close(session.id);
 
-			const updated = manager.get(session.id);
+			const result = manager.initialize(session.id);
 
-			expect(updated?.state).toBe(SessionState.CLOSED);
+			expect(result.success).toBe(true);
+			expect(manager.get(session.id)?.state).toBe(SessionState.INITIALIZING);
 		});
 
-		test("updates updatedAt timestamp", async () => {
+		test("activate transitions from INITIALIZING to ACTIVE", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
-			const originalUpdatedAt = session.updatedAt;
 
-			// Actual delay to ensure timestamp differs
-			await new Promise((r) => setTimeout(r, 5));
-			manager.close(session.id);
+			manager.initialize(session.id);
+			const result = manager.activate(session.id);
 
-			const updated = manager.get(session.id);
-			// Use > not >= to ensure timestamp actually changed
-			expect(updated?.updatedAt.getTime()).toBeGreaterThan(
-				originalUpdatedAt.getTime(),
+			expect(result.success).toBe(true);
+			expect(manager.get(session.id)?.state).toBe(SessionState.ACTIVE);
+		});
+
+		test("activate stores capabilities", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+
+			manager.initialize(session.id);
+			manager.activate(
+				session.id,
+				{ tools: true },
+				{ resources: true },
+				"1.0.0",
 			);
-		});
-	});
 
-	describe("updateState", () => {
-		test("transitions through lifecycle states", () => {
+			const updated = manager.get(session.id);
+			expect(updated?.clientCapabilities).toEqual({ tools: true });
+			expect(updated?.serverCapabilities).toEqual({ resources: true });
+			expect(updated?.protocolVersion).toBe("1.0.0");
+		});
+
+		test("close transitions from ACTIVE to CLOSED", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+
+			manager.initialize(session.id);
+			manager.activate(session.id);
+			const result = manager.close(session.id);
+
+			expect(result.success).toBe(true);
+			expect(manager.get(session.id)?.state).toBe(SessionState.CLOSED);
+		});
+
+		test("markError transitions to ERROR from any state", () => {
+			const config = { name: "test", transport: "stdio" as const };
+
+			// From CREATED
+			const s1 = manager.create(config);
+			expect(manager.markError(s1.id, "Error 1").success).toBe(true);
+			expect(manager.get(s1.id)?.state).toBe(SessionState.ERROR);
+
+			// From INITIALIZING
+			const s2 = manager.create(config);
+			manager.initialize(s2.id);
+			expect(manager.markError(s2.id, "Error 2").success).toBe(true);
+			expect(manager.get(s2.id)?.state).toBe(SessionState.ERROR);
+
+			// From ACTIVE
+			const s3 = manager.create(config);
+			manager.initialize(s3.id);
+			manager.activate(s3.id);
+			expect(manager.markError(s3.id, "Error 3").success).toBe(true);
+			expect(manager.get(s3.id)?.state).toBe(SessionState.ERROR);
+		});
+
+		test("transitions through full lifecycle", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 
 			expect(session.state).toBe(SessionState.CREATED);
 
-			manager.updateState(session.id, SessionState.INITIALIZING);
+			manager.initialize(session.id);
 			expect(manager.get(session.id)?.state).toBe(SessionState.INITIALIZING);
 
-			manager.updateState(session.id, SessionState.ACTIVE);
+			manager.activate(session.id);
 			expect(manager.get(session.id)?.state).toBe(SessionState.ACTIVE);
 
-			manager.updateState(session.id, SessionState.CLOSED);
+			manager.close(session.id);
 			expect(manager.get(session.id)?.state).toBe(SessionState.CLOSED);
 		});
 	});
 
-	describe("updateCapabilities", () => {
-		test("stores client capabilities", () => {
+	describe("invalid transitions", () => {
+		test("cannot activate from CREATED state", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 
-			manager.updateCapabilities(session.id, { tools: true }, undefined);
+			const result = manager.activate(session.id);
 
-			const updated = manager.get(session.id);
-			expect(updated?.clientCapabilities).toEqual({ tools: true });
+			expect(result.success).toBe(false);
+			expect(result.error).toContain("Invalid transition");
+			expect(manager.get(session.id)?.state).toBe(SessionState.CREATED);
 		});
 
-		test("stores server capabilities", () => {
+		test("cannot close from CREATED state", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 
-			manager.updateCapabilities(session.id, undefined, { resources: true });
+			const result = manager.close(session.id);
 
+			expect(result.success).toBe(false);
+			expect(result.error).toContain("Invalid transition");
+			expect(manager.get(session.id)?.state).toBe(SessionState.CREATED);
+		});
+
+		test("cannot close from INITIALIZING state", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+			manager.initialize(session.id);
+
+			const result = manager.close(session.id);
+
+			expect(result.success).toBe(false);
+			expect(result.error).toContain("Invalid transition");
+			expect(manager.get(session.id)?.state).toBe(SessionState.INITIALIZING);
+		});
+
+		test("cannot transition from terminal CLOSED state", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+			manager.initialize(session.id);
+			manager.activate(session.id);
+			manager.close(session.id);
+
+			const result = manager.initialize(session.id);
+
+			expect(result.success).toBe(false);
+			expect(result.error).toContain("terminal state");
+		});
+
+		test("cannot transition from terminal ERROR state", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+			manager.markError(session.id, "Test error");
+
+			const result = manager.initialize(session.id);
+
+			expect(result.success).toBe(false);
+			expect(result.error).toContain("terminal state");
+		});
+	});
+
+	describe("updateState (deprecated)", () => {
+		test("still works with valid transitions", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+
+			const result = manager.updateState(session.id, SessionState.INITIALIZING);
+
+			expect(result.success).toBe(true);
+			expect(manager.get(session.id)?.state).toBe(SessionState.INITIALIZING);
+		});
+
+		test("rejects invalid transitions", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+
+			const result = manager.updateState(session.id, SessionState.ACTIVE);
+
+			expect(result.success).toBe(false);
+			expect(manager.get(session.id)?.state).toBe(SessionState.CREATED);
+		});
+	});
+
+	describe("updateCapabilities", () => {
+		test("updates capabilities in ACTIVE state", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+			manager.initialize(session.id);
+			manager.activate(session.id);
+
+			const result = manager.updateCapabilities(
+				session.id,
+				{ tools: true },
+				{ resources: true },
+			);
+
+			expect(result.success).toBe(true);
 			const updated = manager.get(session.id);
+			expect(updated?.clientCapabilities).toEqual({ tools: true });
 			expect(updated?.serverCapabilities).toEqual({ resources: true });
 		});
 
 		test("only updates clientCapabilities when serverCapabilities is undefined", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
-
-			// First set both
-			manager.updateCapabilities(
-				session.id,
-				{ tools: true },
-				{ resources: true },
-			);
+			manager.initialize(session.id);
+			manager.activate(session.id, { tools: true }, { resources: true });
 
 			// Now update only client
 			manager.updateCapabilities(session.id, { prompts: true }, undefined);
@@ -215,13 +343,8 @@ describe("SessionManager", () => {
 		test("only updates serverCapabilities when clientCapabilities is undefined", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
-
-			// First set both
-			manager.updateCapabilities(
-				session.id,
-				{ tools: true },
-				{ resources: true },
-			);
+			manager.initialize(session.id);
+			manager.activate(session.id, { tools: true }, { resources: true });
 
 			// Now update only server
 			manager.updateCapabilities(session.id, undefined, { sampling: true });
@@ -233,16 +356,29 @@ describe("SessionManager", () => {
 			expect(updated?.serverCapabilities).toEqual({ sampling: true });
 		});
 
-		test("does nothing for unknown session ID", () => {
-			// This should not throw
-			manager.updateCapabilities(
+		test("fails for non-ACTIVE sessions", () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+
+			const result = manager.updateCapabilities(
+				session.id,
+				{ tools: true },
+				undefined,
+			);
+
+			expect(result.success).toBe(false);
+			expect(result.error).toContain("Cannot update capabilities");
+		});
+
+		test("returns error for unknown session ID", () => {
+			const result = manager.updateCapabilities(
 				"non-existent",
 				{ tools: true },
 				{ resources: true },
 			);
 
-			// Verify session still doesn't exist
-			expect(manager.get("non-existent")).toBeUndefined();
+			expect(result.success).toBe(false);
+			expect(result.error).toBe("Session not found");
 		});
 	});
 
@@ -271,6 +407,23 @@ describe("SessionManager", () => {
 			manager.create(config);
 
 			expect(manager.count()).toBe(2);
+		});
+	});
+
+	describe("timestamp updates", () => {
+		test("updates updatedAt on state transitions", async () => {
+			const config = { name: "test", transport: "stdio" as const };
+			const session = manager.create(config);
+			const originalUpdatedAt = session.updatedAt;
+
+			// Actual delay to ensure timestamp differs
+			await new Promise((r) => setTimeout(r, 5));
+			manager.initialize(session.id);
+
+			const updated = manager.get(session.id);
+			expect(updated?.updatedAt.getTime()).toBeGreaterThan(
+				originalUpdatedAt.getTime(),
+			);
 		});
 	});
 });
