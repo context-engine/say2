@@ -6,11 +6,7 @@
  */
 
 import { type ActorRefFrom, createActor } from "xstate";
-import {
-	type ServerConfig,
-	type Session,
-	SessionState,
-} from "../types";
+import { type ServerConfig, type Session, SessionState } from "../types";
 import {
 	type MachineStateValue,
 	type SessionContext,

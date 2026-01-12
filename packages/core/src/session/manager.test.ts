@@ -159,7 +159,12 @@ describe("SessionManager", () => {
 			const session = manager.create(config);
 
 			manager.initialize(session.id);
-			manager.activate(session.id, { tools: true }, { resources: true }, "1.0.0");
+			manager.activate(
+				session.id,
+				{ tools: true },
+				{ resources: true },
+				"1.0.0",
+			);
 
 			const updated = manager.get(session.id);
 			expect(updated?.clientCapabilities).toEqual({ tools: true });
