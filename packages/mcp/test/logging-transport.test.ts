@@ -43,8 +43,8 @@ const createMockWrappedTransport = (): Transport & {
 		send: async (message: JSONRPCMessage) => {
 			sentMessages.push(message);
 		},
-		start: async () => { },
-		close: async () => { },
+		start: async () => {},
+		close: async () => {},
 		get onmessage() {
 			return onmessageHandler;
 		},
@@ -241,7 +241,7 @@ describe("LoggingTransport", () => {
 				pipelineResolve();
 			});
 
-			loggingTransport.onmessage = () => { };
+			loggingTransport.onmessage = () => {};
 
 			const message: JSONRPCMessage = {
 				jsonrpc: "2.0",
@@ -271,7 +271,7 @@ describe("LoggingTransport", () => {
 				pipelineResolve();
 			});
 
-			loggingTransport.onmessage = () => { };
+			loggingTransport.onmessage = () => {};
 
 			const message: JSONRPCMessage = {
 				jsonrpc: "2.0",

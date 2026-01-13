@@ -11,12 +11,12 @@ import { McpClientRegistry } from "../src/client/registry";
 // Mock types for testing
 const createMockClient = () =>
 	({
-		close: async () => { },
+		close: async () => {},
 	}) as unknown as import("@modelcontextprotocol/sdk/client/index.js").Client;
 
 const createMockTransport = () =>
 	({
-		close: async () => { },
+		close: async () => {},
 	}) as unknown as import("../src/transport").LoggingTransport;
 
 describe("McpClientRegistry", () => {

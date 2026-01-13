@@ -6,12 +6,17 @@
  * TDD-style: Tests define expected behavior before implementation.
  */
 
-import { beforeEach, describe, expect, mock, test } from "bun:test";
+import { beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import type { SessionManager } from "../session";
 import type { MessageEvent, Session } from "../types";
 import { createMessageEvent, SessionState } from "../types";
 import { createPipeline } from "./pipeline";
-import { createStateMachineMiddleware } from "./state-machine";
+import {
+	createStateMachineMiddleware,
+	protocolVersionKey,
+	serverCapabilitiesKey,
+	serverInfoKey,
+} from "./state-machine";
 
 // Test fixtures
 const createTestSession = (
@@ -173,6 +178,59 @@ describe("StateMachineMiddleware", () => {
 			// Capabilities should be stored in context for later use by activate
 			// The exact context key implementation may vary
 			expect(ctx).toBeDefined();
+			// Explicitly verify keys are set
+			expect(ctx.get(serverCapabilitiesKey)).toEqual({
+				tools: {},
+				resources: {},
+			});
+			expect(ctx.get(serverInfoKey)).toEqual({
+				name: "test-server",
+				version: "1.0.0",
+			});
+			expect(ctx.get(protocolVersionKey)).toBe("2024-11-05");
+		});
+
+		test("handles malformed server info gracefully", async () => {
+			const event = createMessageEvent(
+				session.id,
+				"inbound",
+				{
+					jsonrpc: "2.0",
+					id: 1,
+					result: {
+						protocolVersion: "2024-11-05",
+						capabilities: {},
+						serverInfo: { name: 123, version: "1.0.0" }, // Invalid name type
+					},
+				},
+				"mcp",
+			);
+
+			const { ctx } = await processEvent(event);
+
+			// Should NOT set serverInfoKey if validation fails
+			expect(ctx.get(serverInfoKey)).toBeUndefined();
+			// But capabilities should still be set
+			expect(ctx.get(serverCapabilitiesKey)).toBeDefined();
+		});
+
+		test("handles missing protocol version gracefully", async () => {
+			const event = createMessageEvent(
+				session.id,
+				"inbound",
+				{
+					jsonrpc: "2.0",
+					id: 1,
+					result: {
+						capabilities: {},
+						// No protocolVersion
+					},
+				},
+				"mcp",
+			);
+
+			const { ctx } = await processEvent(event);
+			expect(ctx.get(protocolVersionKey)).toBeUndefined();
 		});
 
 		test("does not trigger state transition for initialize response", async () => {
@@ -264,7 +322,46 @@ describe("StateMachineMiddleware", () => {
 			);
 
 			// Should not throw
-			await expect(processEvent(event)).resolves.toBeDefined();
+			const consoleSpy = spyOn(console, "warn");
+			await processEvent(event);
+
+			// Verify warning was logged
+			expect(consoleSpy).toHaveBeenCalled();
+			expect(consoleSpy.mock.calls[0]?.[0]).toContain(
+				"State transition INITIALIZE failed",
+			);
+
+			consoleSpy.mockRestore();
+		});
+
+		test("logs warning when activate fails", async () => {
+			sessionManager.activate = mock(() => ({
+				success: false,
+				error: "Activate failed",
+			}));
+
+			const event = createMessageEvent(
+				session.id,
+				"outbound",
+				{
+					jsonrpc: "2.0",
+					method: "notifications/initialized",
+				},
+				"mcp",
+			);
+
+			// Set required context to ensure we reach the activate call
+			const sessWithState = { ...session, state: SessionState.INITIALIZING };
+
+			const consoleSpy = spyOn(console, "warn");
+			await processEvent(event, sessWithState);
+
+			expect(consoleSpy).toHaveBeenCalled();
+			expect(consoleSpy.mock.calls[0]?.[0]).toContain(
+				"State transition ACTIVATE failed",
+			);
+
+			consoleSpy.mockRestore();
 		});
 	});
 
