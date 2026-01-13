@@ -177,6 +177,29 @@ export class McpClientManager {
 	}
 
 	/**
+	 * List all resource templates for a session, automatically following pagination.
+	 */
+	async listResourceTemplates(
+		sessionId: string,
+	): Promise<{ resourceTemplates: any[] }> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		let resourceTemplates: any[] = [];
+		let cursor: string | undefined;
+
+		do {
+			const result = await client.listResourceTemplates({ cursor });
+			resourceTemplates = resourceTemplates.concat(result.resourceTemplates);
+			cursor = result.nextCursor;
+		} while (cursor);
+
+		return { resourceTemplates };
+	}
+
+	/**
 	 * List all prompts for a session, automatically following pagination.
 	 */
 	async listPrompts(sessionId: string): Promise<{ prompts: any[] }> {

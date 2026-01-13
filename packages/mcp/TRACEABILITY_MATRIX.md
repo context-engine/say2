@@ -29,7 +29,7 @@
 |---------------|---------------|--------|-------|
 | Spawn process with command and args | manager.test.ts:78-95 | ✅ | Tests connect with command |
 | Process spawn failure returns error | manager.test.ts:124-141 | ✅ | Tests error marking |
-| Transport connected event emitted on success | additional-coverage.test.ts:273-295 | ✅ | **NEW: Transport events** |
+| Transport connected event emitted on success | client-features.test.ts:117-135 | ✅ | Real LoggingTransport test |
 | Transport captures stdout and stderr separately | - | ❌ | Out of scope (MCP SDK handles) |
 
 ### Initialize Handshake
@@ -41,7 +41,7 @@
 | Send `initialized` notification after response | state-machine.test.ts:213-232 | ✅ | Tests activate call |
 | Version negotiation: accept server's protocol version | version-mismatch.test.ts:39-64 | ✅ | **NEW: Protocol version tests** |
 | Version mismatch: disconnect if incompatible | e2e-client-logic.test.ts | ✅ | **NEW: Middleware validation logic** |
-| Initialize timeout: report error after timeout | additional-coverage.test.ts:338-389 | ✅ | **NEW: Timeout simulation** |
+| Initialize timeout: report error after timeout | - | ❌ | **Not Covered**: Feature missing in core |
 | Store negotiated capabilities in session | state-machine.test.ts:164-186 | ✅ | Session capabilities stored in Context |
 
 ### LoggingTransport
@@ -60,8 +60,8 @@
 |---------------|---------------|--------|-------|
 | `tools/list` called only if server has "tools" capability | e2e.test.ts:201-240 | ✅ | Mock server test |
 | `resources/list` called only if server has "resources" capability | e2e.test.ts:243-270 | ✅ | Mock server test |
-| `prompts/list` called only if server has "prompts" capability | additional-coverage.test.ts:213-271 | ✅ | **NEW: Prompts list tests** |
-| `resources/templates/list` called for resources | additional-coverage.test.ts:15-95 | ✅ | **NEW: Templates list** |
+| `prompts/list` called only if server has "prompts" capability | client-features.test.ts:67-83 | ✅ | **Integrated Manager test** |
+| `resources/templates/list` called for resources | client-features.test.ts:50-65 | ✅ | **Integrated Manager test** |
 | Pagination: follow `nextCursor` until exhausted | e2e-client-logic.test.ts | ✅ | **NEW: ClientManager auto-pagination** |
 | Empty results handled correctly | pagination.test.ts:108-244 | ✅ | Empty lists |
 | Discovery errors reported per capability | e2e-client-logic.test.ts | ✅ | **NEW: Client resilience test** |
@@ -103,18 +103,18 @@
 
 ### High Priority (New Findings)
 
-1. **Client-Side Version Validation**: Add test to verify Client disconnects on version mismatch.
-2. **Client-Side Pagination**: Add test to verify Client follows nextCursor.
-3. **Client-Side Partial Failure**: Verify Client behavior on discovery errors.
+1. **Client-Side Version Validation**: Add test to verify Client disconnects on version mismatch. (Completed)
+2. **Client-Side Pagination**: Add test to verify Client follows nextCursor. (Completed)
+3. **Client-Side Partial Failure**: Verify Client behavior on discovery errors. (Completed)
 
 ### Previously Completed
 
 4. ~~**Pagination tests (Mock)**~~ ✅ **COMPLETED** - `pagination.test.ts`
 5. ~~**Version mismatch test (Mock)**~~ ✅ **COMPLETED** - `version-mismatch.test.ts`
-6. ~~**Timeout tests**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
-7. ~~**Resources templates list**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
-8. ~~**Prompts/list explicit test**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
-9. ~~**Transport connected event**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+6. ~~**Timeout tests**~~ ❌ **OPEN** - Feature missing in core (fake tests removed)
+7. ~~**Resources templates list**~~ ✅ **COMPLETED** - `client-features.test.ts`
+8. ~~**Prompts/list explicit test**~~ ✅ **COMPLETED** - `client-features.test.ts`
+9. ~~**Transport connected event**~~ ✅ **COMPLETED** - `client-features.test.ts`
 
 ### Out of Scope (API Layer)
 
