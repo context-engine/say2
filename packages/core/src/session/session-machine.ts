@@ -112,6 +112,10 @@ export const sessionMachine = setup({
 	states: {
 		created: {
 			on: {
+				CLOSE: {
+					target: "closed",
+					actions: "updateTimestamp",
+				},
 				CONNECT: {
 					target: "connecting",
 					actions: "updateTimestamp",
@@ -134,6 +138,10 @@ export const sessionMachine = setup({
 				},
 			},
 			on: {
+				CLOSE: {
+					target: "closed",
+					actions: "updateTimestamp",
+				},
 				INITIALIZE: {
 					target: "initializing",
 					actions: "updateTimestamp",
@@ -156,6 +164,10 @@ export const sessionMachine = setup({
 				},
 			},
 			on: {
+				CLOSE: {
+					target: "closed",
+					actions: "updateTimestamp",
+				},
 				ACTIVATE: {
 					target: "active",
 					actions: "setCapabilities",

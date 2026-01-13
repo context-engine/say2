@@ -170,7 +170,9 @@ describe("McpClientManager", () => {
 				});
 
 				mockClientConnect.mockImplementation(async () => {
-					sessionManager.updateCapabilities(session.id, undefined, { tools: {} });
+					// Simulate full handshake
+					sessionManager.initialize(session.id);
+					sessionManager.activate(session.id, undefined, { tools: {} });
 				});
 
 				await clientManager.connect(session.id);
@@ -186,7 +188,9 @@ describe("McpClientManager", () => {
 				});
 
 				mockClientConnect.mockImplementation(async () => {
-					sessionManager.updateCapabilities(session.id, undefined, {
+					// Simulate full handshake
+					sessionManager.initialize(session.id);
+					sessionManager.activate(session.id, undefined, {
 						resources: {},
 					});
 				});
@@ -204,7 +208,9 @@ describe("McpClientManager", () => {
 				});
 
 				mockClientConnect.mockImplementation(async () => {
-					sessionManager.updateCapabilities(session.id, undefined, {
+					// Simulate full handshake
+					sessionManager.initialize(session.id);
+					sessionManager.activate(session.id, undefined, {
 						prompts: {},
 					});
 				});
@@ -222,7 +228,9 @@ describe("McpClientManager", () => {
 				});
 
 				mockClientConnect.mockImplementation(async () => {
-					sessionManager.updateCapabilities(session.id, undefined, {
+					// Simulate full handshake
+					sessionManager.initialize(session.id);
+					sessionManager.activate(session.id, undefined, {
 						/* no tools */
 					});
 				});

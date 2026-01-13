@@ -94,6 +94,10 @@ export class McpClientManager {
 
 			// 8. Register in registry
 			this.registry.register(sessionId, client, loggingTransport);
+
+			// 9. Discover capabilities (Tools, Resources, Prompts)
+			// Wait for session to be active (handled by middleware but we can check state)
+			await this.discoverCapabilities(sessionId);
 		} catch (error) {
 			// On failure, mark session as error
 			const errorMessage =
@@ -103,6 +107,45 @@ export class McpClientManager {
 				`Connection failed: ${errorMessage}`,
 			);
 			throw error;
+		}
+	}
+
+	/**
+	 * Discover server capabilities by querying lists based on declared support.
+	 */
+	private async discoverCapabilities(sessionId: string): Promise<void> {
+		const session = this.sessionManager.get(sessionId);
+		if (!session || !session.serverCapabilities) {
+			return;
+		}
+
+		console.log(
+			`[McpClientManager] Discovering capabilities for session ${sessionId}...`,
+		);
+
+		// Discovery is "best effort" - log errors but don't fail connection
+		try {
+			// Tools
+			if (session.serverCapabilities.tools) {
+				console.log(`[McpClientManager] Discovering tools...`);
+				await this.listTools(sessionId);
+			}
+
+			// Resources
+			if (session.serverCapabilities.resources) {
+				console.log(`[McpClientManager] Discovering resources...`);
+				await this.listResources(sessionId);
+			}
+
+			// Prompts
+			if (session.serverCapabilities.prompts) {
+				console.log(`[McpClientManager] Discovering prompts...`);
+				await this.listPrompts(sessionId);
+			}
+		} catch (error) {
+			console.warn(
+				`[McpClientManager] Capability discovery warning: ${error}`,
+			);
 		}
 	}
 
