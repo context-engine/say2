@@ -402,25 +402,34 @@ describe("Session State Machine", () => {
 
 	describe("timeouts", () => {
 		test("transitions from 'connecting' to 'error' after 10000ms", async () => {
+			const shortTimeoutConfig = {
+				...testConfig,
+				connectTimeout: 50,
+			};
+
 			const actor = createActor(sessionMachine, {
-				input: { id: "test-id", config: testConfig },
+				input: { id: "test-id", config: shortTimeoutConfig as any },
 			});
 			actor.start();
 			actor.send({ type: "CONNECT" });
 
 			expect(actor.getSnapshot().value).toBe("connecting");
 
-			// Wait for timeout (simulated or real if small)
-			// In a real environment we'd use fake timers.
-			// For this spec-driven test, we acknowledge it requires implementation handling.
-			// await new Promise(resolve => setTimeout(resolve, 10050));
-			// expect(actor.getSnapshot().value).toBe("error");
-			// expect(actor.getSnapshot().context.errorReason).toMatch(/timeout/i);
+			// Wait for timeout (using real time since it's short)
+			await new Promise((resolve) => setTimeout(resolve, 60));
+
+			expect(actor.getSnapshot().value).toBe("error");
+			expect(actor.getSnapshot().context.errorReason).toMatch(/timeout/i);
 		});
 
 		test("transitions from 'initializing' to 'error' after 30000ms", async () => {
+			const shortTimeoutConfig = {
+				...testConfig,
+				initializeTimeout: 50,
+			};
+
 			const actor = createActor(sessionMachine, {
-				input: { id: "test-id", config: testConfig },
+				input: { id: "test-id", config: shortTimeoutConfig as any },
 			});
 			actor.start();
 			actor.send({ type: "CONNECT" });
@@ -428,10 +437,11 @@ describe("Session State Machine", () => {
 
 			expect(actor.getSnapshot().value).toBe("initializing");
 
-			// Spec verification: After 30s, should be error
-			// await new Promise(resolve => setTimeout(resolve, 30050));
-			// expect(actor.getSnapshot().value).toBe("error");
-			// expect(actor.getSnapshot().context.errorReason).toMatch(/timeout/i);
+			// Wait for timeout
+			await new Promise((resolve) => setTimeout(resolve, 60));
+
+			expect(actor.getSnapshot().value).toBe("error");
+			expect(actor.getSnapshot().context.errorReason).toMatch(/timeout/i);
 		});
 	});
 

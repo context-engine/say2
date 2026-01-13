@@ -32,7 +32,7 @@ describe("HTTP Server", () => {
 			expect(res.status).toBe(200);
 			const body = (await res.json()) as Record<string, unknown>;
 			expect(body.name).toBe("Say2");
-			expect(body.version).toBeDefined();
+			expect(body.version).toMatch(/^\d+\.\d+\.\d+$/);
 			expect(body.status).toBe("ok");
 		});
 	});

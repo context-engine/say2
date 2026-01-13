@@ -9,7 +9,11 @@
 import { beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import type { SessionManager } from "../session";
 import type { MessageEvent, Session } from "../types";
-import { createMessageEvent, SessionState, LATEST_PROTOCOL_VERSION } from "../types";
+import {
+	createMessageEvent,
+	LATEST_PROTOCOL_VERSION,
+	SessionState,
+} from "../types";
 import { createPipeline } from "./pipeline";
 import {
 	createStateMachineMiddleware,
@@ -17,6 +21,22 @@ import {
 	serverCapabilitiesKey,
 	serverInfoKey,
 } from "./state-machine";
+
+// Mock Protocol Detector (matching interface expected by implementation)
+const mockDetector = {
+	// biome-ignore lint/suspicious/noExplicitAny: mock
+	isInitializeRequest: (msg: any) => msg.method === "initialize" && "id" in msg,
+	// biome-ignore lint/suspicious/noExplicitAny: mock
+	isInitializeResponse: (msg: any) =>
+		"result" in msg && "protocolVersion" in msg.result,
+	// biome-ignore lint/suspicious/noExplicitAny: mock
+	isInitializedNotification: (msg: any) =>
+		msg.method === "notifications/initialized",
+	// biome-ignore lint/suspicious/noExplicitAny: mock
+	extractCapabilities: (msg: any) => msg.result?.capabilities,
+	// biome-ignore lint/suspicious/noExplicitAny: mock
+	extractServerInfo: (msg: any) => msg.result?.serverInfo,
+};
 
 // Test fixtures
 const createTestSession = (
@@ -99,7 +119,12 @@ describe("StateMachineMiddleware", () => {
 		};
 
 		try {
-			const middleware = createStateMachineMiddleware(sessionManager);
+			// Casting to any to support API mismatch fix without changing implementation file
+			// biome-ignore lint/suspicious/noExplicitAny: needed for api mismatch fix
+			const middleware = (createStateMachineMiddleware as any)(
+				sessionManager,
+				mockDetector,
+			);
 			await middleware(ctx, next);
 		} catch (e) {
 			if ((e as Error).message.includes("Not implemented")) {
@@ -251,7 +276,9 @@ describe("StateMachineMiddleware", () => {
 			await processEvent(event);
 
 			// Should NOT mark error
-			expect(sessionManager.calls.filter(c => c.method === "markError").length).toBe(0);
+			expect(
+				sessionManager.calls.filter((c) => c.method === "markError").length,
+			).toBe(0);
 		});
 
 		test("marks error on unsupported protocol version", async () => {
@@ -273,14 +300,20 @@ describe("StateMachineMiddleware", () => {
 			await processEvent(event);
 
 			// Should mark error
-			expect(sessionManager.calls.filter(c => c.method === "markError").length).toBe(1);
-			expect(sessionManager.calls.find(c => c.method === "markError")?.args).toContain(
-				`Protocol version mismatch: expected ${LATEST_PROTOCOL_VERSION}, got 0.1.0`
+			expect(
+				sessionManager.calls.filter((c) => c.method === "markError").length,
+			).toBe(1);
+			expect(
+				sessionManager.calls.find((c) => c.method === "markError")?.args,
+			).toContain(
+				`Protocol version mismatch: expected ${LATEST_PROTOCOL_VERSION}, got 0.1.0`,
 			);
 
 			// Should warn
 			expect(consoleSpy).toHaveBeenCalled();
-			expect(consoleSpy.mock.calls[0]?.[0]).toContain("Protocol version mismatch");
+			expect(consoleSpy.mock.calls[0]?.[0]).toContain(
+				"Protocol version mismatch",
+			);
 
 			consoleSpy.mockRestore();
 		});
@@ -379,8 +412,12 @@ describe("StateMachineMiddleware", () => {
 
 			// Verify warning was logged
 			expect(consoleSpy).toHaveBeenCalled();
-			const calls = consoleSpy.mock.calls.map(c => c[0]);
-			const hasExpectedLog = calls.some(msg => typeof msg === 'string' && msg.includes("State transition INITIALIZE failed"));
+			const calls = consoleSpy.mock.calls.map((c) => c[0]);
+			const hasExpectedLog = calls.some(
+				(msg) =>
+					typeof msg === "string" &&
+					msg.includes("State transition INITIALIZE failed"),
+			);
 			expect(hasExpectedLog).toBe(true);
 
 			consoleSpy.mockRestore();
@@ -409,8 +446,12 @@ describe("StateMachineMiddleware", () => {
 			await processEvent(event, sessWithState);
 
 			expect(consoleSpy).toHaveBeenCalled();
-			const calls = consoleSpy.mock.calls.map(c => c[0]);
-			const hasExpectedLog = calls.some(msg => typeof msg === 'string' && msg.includes("State transition ACTIVATE failed"));
+			const calls = consoleSpy.mock.calls.map((c) => c[0]);
+			const hasExpectedLog = calls.some(
+				(msg) =>
+					typeof msg === "string" &&
+					msg.includes("State transition ACTIVATE failed"),
+			);
 			expect(hasExpectedLog).toBe(true);
 
 			consoleSpy.mockRestore();
