@@ -9,7 +9,7 @@
 import { beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import type { SessionManager } from "../session";
 import type { MessageEvent, Session } from "../types";
-import { createMessageEvent, SessionState } from "../types";
+import { createMessageEvent, SessionState, LATEST_PROTOCOL_VERSION } from "../types";
 import { createPipeline } from "./pipeline";
 import {
 	createStateMachineMiddleware,
@@ -165,7 +165,7 @@ describe("StateMachineMiddleware", () => {
 					jsonrpc: "2.0",
 					id: 1,
 					result: {
-						protocolVersion: "2024-11-05",
+						protocolVersion: LATEST_PROTOCOL_VERSION,
 						capabilities: { tools: {}, resources: {} },
 						serverInfo: { name: "test-server", version: "1.0.0" },
 					},
@@ -187,7 +187,7 @@ describe("StateMachineMiddleware", () => {
 				name: "test-server",
 				version: "1.0.0",
 			});
-			expect(ctx.get(protocolVersionKey)).toBe("2024-11-05");
+			expect(ctx.get(protocolVersionKey)).toBe(LATEST_PROTOCOL_VERSION);
 		});
 
 		test("handles malformed server info gracefully", async () => {
@@ -198,7 +198,7 @@ describe("StateMachineMiddleware", () => {
 					jsonrpc: "2.0",
 					id: 1,
 					result: {
-						protocolVersion: "2024-11-05",
+						protocolVersion: LATEST_PROTOCOL_VERSION,
 						capabilities: {},
 						serverInfo: { name: 123, version: "1.0.0" }, // Invalid name type
 					},
@@ -241,7 +241,7 @@ describe("StateMachineMiddleware", () => {
 					jsonrpc: "2.0",
 					id: 1,
 					result: {
-						protocolVersion: "2024-11-05", // Supported
+						protocolVersion: LATEST_PROTOCOL_VERSION, // Supported
 						capabilities: {},
 					},
 				},

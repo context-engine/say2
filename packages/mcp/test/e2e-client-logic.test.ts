@@ -5,7 +5,8 @@ import {
     SessionManager,
     createPipeline,
     createStateMachineMiddleware,
-    SessionState
+    SessionState,
+    LATEST_PROTOCOL_VERSION
 } from "@say2/core";
 import { McpClientManager } from "../src/client/manager";
 import { McpClientRegistry } from "../src/client/registry";
@@ -58,7 +59,7 @@ describe("E2E Client Logic Verification", () => {
             id: 0,
             method: "initialize",
             params: {
-                protocolVersion: "2024-11-05",
+                protocolVersion: LATEST_PROTOCOL_VERSION,
                 capabilities: {},
                 clientInfo: { name: "test", version: "1.0" }
             }
@@ -81,7 +82,7 @@ describe("E2E Client Logic Verification", () => {
         // Manually transition to ACTIVE state
         sessionManager.connect(session.id);
         sessionManager.initialize(session.id);
-        sessionManager.activate(session.id, {}, {}, "2024-11-05");
+        sessionManager.activate(session.id, {}, {}, LATEST_PROTOCOL_VERSION);
 
         // Configure paginated mock server
         const paginatedConfig = {
@@ -122,7 +123,7 @@ describe("E2E Client Logic Verification", () => {
         // Manually transition to ACTIVE state
         sessionManager.connect(session.id);
         sessionManager.initialize(session.id);
-        sessionManager.activate(session.id, {}, {}, "2024-11-05");
+        sessionManager.activate(session.id, {}, {}, LATEST_PROTOCOL_VERSION);
 
         const config = {
             name: "partial-failure-server",
