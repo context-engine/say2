@@ -27,6 +27,10 @@ export class McpClientManager {
 		private registry: McpClientRegistry,
 		private sessionManager: SessionManager,
 		private pipeline: MiddlewarePipeline,
+		private clientFactory: (
+			clientInfo: { name: string; version: string },
+			options?: { capabilities: any },
+		) => Client = (info, opts) => new Client(info, opts),
 	) { }
 
 	/**
@@ -77,7 +81,7 @@ export class McpClientManager {
 			);
 
 			// 6. Create MCP SDK Client
-			const client = new Client(
+			const client = this.clientFactory(
 				{
 					name: "Say2",
 					version: "1.0.0",

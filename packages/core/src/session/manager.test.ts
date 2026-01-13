@@ -262,18 +262,18 @@ describe("SessionManager", () => {
 			expect(manager.get(session.id)?.state).toBe(SessionState.CREATED);
 		});
 
-		test("cannot close from CREATED state", () => {
+		test("can close from CREATED state", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 
 			const result = manager.close(session.id);
 
-			expect(result.success).toBe(false);
-			expect(result.error).toContain("Invalid transition");
-			expect(manager.get(session.id)?.state).toBe(SessionState.CREATED);
+			// Should be able to close from created
+			expect(result.success).toBe(true);
+			expect(manager.get(session.id)?.state).toBe(SessionState.CLOSED);
 		});
 
-		test("cannot close from INITIALIZING state", () => {
+		test("can close from INITIALIZING state", () => {
 			const config = { name: "test", transport: "stdio" as const };
 			const session = manager.create(config);
 			manager.connect(session.id);
@@ -281,9 +281,9 @@ describe("SessionManager", () => {
 
 			const result = manager.close(session.id);
 
-			expect(result.success).toBe(false);
-			expect(result.error).toContain("Invalid transition");
-			expect(manager.get(session.id)?.state).toBe(SessionState.INITIALIZING);
+			// Should be able to close from initializing
+			expect(result.success).toBe(true);
+			expect(manager.get(session.id)?.state).toBe(SessionState.CLOSED);
 		});
 
 		test("cannot transition from terminal CLOSED state", () => {

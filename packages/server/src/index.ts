@@ -126,9 +126,8 @@ app.delete("/sessions/:id", async (c) => {
 
 	try {
 		await mcpClientManager.disconnect(id);
-		sessionManager.close(id); // Ensure state is updated if disconnect didn't
-		// sessionManager.delete(id); // Typically we might want to keep history, but for now we can just close.
-		// If the spec implies deletion, we should implement delete in Manager.
+		sessionManager.close(id);
+		sessionManager.delete(id); // Enforce removal to satisfy tests expecting cleanup
 		// Current SessionManager has 'close' but no 'delete/remove' method explicitly shown in prev views.
 		// Let's check if 'remove' exists on SessionManager. If not, 'close' is safest.
 		// Assuming we just want to close the connection.

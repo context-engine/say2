@@ -27,16 +27,15 @@ const mockClientListPrompts = mock(async () => ({
 	nextCursor: undefined,
 }));
 
-mock.module("@modelcontextprotocol/sdk/client/index.js", () => ({
-	Client: class {
-		connect = mockClientConnect;
-		close = mockClientClose;
-		listTools = mockClientListTools;
-		listResources = mockClientListResources;
-		listPrompts = mockClientListPrompts;
-		constructor(clientInfo: any, options: any) { }
-	},
-}));
+// Client factory for dependency injection
+const mockClientFactory = (_info: any, _opts: any) =>
+	({
+		connect: mockClientConnect,
+		close: mockClientClose,
+		listTools: mockClientListTools,
+		listResources: mockClientListResources,
+		listPrompts: mockClientListPrompts,
+	}) as any;
 
 // Create mock session manager with working state machine
 const createTestSessionManager = () => {
@@ -54,7 +53,12 @@ describe("McpClientManager", () => {
 		registry = new McpClientRegistry();
 		sessionManager = createTestSessionManager();
 		pipeline = createPipeline();
-		clientManager = new McpClientManager(registry, sessionManager, pipeline);
+		clientManager = new McpClientManager(
+			registry,
+			sessionManager,
+			pipeline,
+			mockClientFactory,
+		);
 
 		// Reset mocks
 		mockClientConnect.mockClear();

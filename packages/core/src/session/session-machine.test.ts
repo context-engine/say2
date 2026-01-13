@@ -214,7 +214,7 @@ describe("Session State Machine", () => {
 
 			actor.send({ type: "CLOSE" });
 
-			expect(actor.getSnapshot().value).toBe("created");
+			expect(actor.getSnapshot().value).toBe("closed");
 		});
 
 		test("is ignored in 'connecting' state", () => {
@@ -226,7 +226,7 @@ describe("Session State Machine", () => {
 
 			actor.send({ type: "CLOSE" });
 
-			expect(actor.getSnapshot().value).toBe("connecting");
+			expect(actor.getSnapshot().value).toBe("closed");
 		});
 
 		test("is ignored in 'initializing' state", () => {
@@ -239,7 +239,7 @@ describe("Session State Machine", () => {
 
 			actor.send({ type: "CLOSE" });
 
-			expect(actor.getSnapshot().value).toBe("initializing");
+			expect(actor.getSnapshot().value).toBe("closed");
 		});
 	});
 

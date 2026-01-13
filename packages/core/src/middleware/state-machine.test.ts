@@ -8,7 +8,7 @@
 
 import { beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import type { SessionManager } from "../session";
-import type { MessageEvent, Session } from "../types";
+import type { MessageEvent, Session, JsonRpcMessage } from "../types";
 import {
 	createMessageEvent,
 	LATEST_PROTOCOL_VERSION,
@@ -24,18 +24,27 @@ import {
 
 // Mock Protocol Detector (matching interface expected by implementation)
 const mockDetector = {
-	// biome-ignore lint/suspicious/noExplicitAny: mock
-	isInitializeRequest: (msg: any) => msg.method === "initialize" && "id" in msg,
-	// biome-ignore lint/suspicious/noExplicitAny: mock
-	isInitializeResponse: (msg: any) =>
-		"result" in msg && "protocolVersion" in msg.result,
-	// biome-ignore lint/suspicious/noExplicitAny: mock
-	isInitializedNotification: (msg: any) =>
-		msg.method === "notifications/initialized",
-	// biome-ignore lint/suspicious/noExplicitAny: mock
-	extractCapabilities: (msg: any) => msg.result?.capabilities,
-	// biome-ignore lint/suspicious/noExplicitAny: mock
-	extractServerInfo: (msg: any) => msg.result?.serverInfo,
+	isInitializeRequest: (msg: JsonRpcMessage) =>
+		"method" in msg && msg.method === "initialize" && "id" in msg,
+	isInitializeResponse: (msg: JsonRpcMessage) =>
+		"result" in msg &&
+		typeof msg.result === "object" &&
+		msg.result !== null &&
+		"protocolVersion" in msg.result,
+	isInitializedNotification: (msg: JsonRpcMessage) =>
+		"method" in msg && msg.method === "notifications/initialized",
+	extractCapabilities: (msg: JsonRpcMessage) =>
+		"result" in msg &&
+			typeof msg.result === "object" &&
+			msg.result !== null
+			? (msg.result as any).capabilities
+			: undefined,
+	extractServerInfo: (msg: JsonRpcMessage) =>
+		"result" in msg &&
+			typeof msg.result === "object" &&
+			msg.result !== null
+			? (msg.result as any).serverInfo
+			: undefined,
 };
 
 // Test fixtures
@@ -119,9 +128,7 @@ describe("StateMachineMiddleware", () => {
 		};
 
 		try {
-			// Casting to any to support API mismatch fix without changing implementation file
-			// biome-ignore lint/suspicious/noExplicitAny: needed for api mismatch fix
-			const middleware = (createStateMachineMiddleware as any)(
+			const middleware = createStateMachineMiddleware(
 				sessionManager,
 				mockDetector,
 			);
