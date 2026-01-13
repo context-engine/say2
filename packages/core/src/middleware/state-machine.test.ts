@@ -15,18 +15,7 @@ import type {
 import { SessionState, createContextKey, createMessageEvent } from "../types";
 import { createPipeline } from "./pipeline";
 import type { SessionManager } from "../session";
-
-// Import will be from @say2/core once implemented
-// For now, we define the expected function signature
-type CreateStateMachineMiddleware = (
-    sessionManager: SessionManager,
-) => (ctx: MiddlewareContext, next: () => Promise<void>) => Promise<void>;
-
-// Placeholder - will be imported once implemented
-const createStateMachineMiddleware: CreateStateMachineMiddleware = () => {
-    // TODO: This will be imported from @say2/core
-    throw new Error("Not implemented - import from @say2/core when available");
-};
+import { createStateMachineMiddleware } from "./state-machine";
 
 // Test fixtures
 const createTestSession = (state: SessionState = SessionState.CONNECTING): Session => ({
@@ -36,6 +25,7 @@ const createTestSession = (state: SessionState = SessionState.CONNECTING): Sessi
     updatedAt: new Date(),
     config: { name: "test-server", transport: "stdio", command: "node" },
     protocol: "mcp",
+    mode: "client",
 });
 
 const createMockSessionManager = () => {

@@ -14,18 +14,7 @@ import type {
 import { SessionState, createMessageEvent } from "../types";
 import { createPipeline } from "./pipeline";
 import { MessageStore } from "../store";
-
-// Import will be from @say2/core once implemented
-// For now, we define the expected function signature
-type CreateStoreMiddleware = (
-    store: MessageStore,
-) => (ctx: MiddlewareContext, next: () => Promise<void>) => Promise<void>;
-
-// Placeholder - will be imported once implemented
-const createStoreMiddleware: CreateStoreMiddleware = () => {
-    // TODO: This will be imported from @say2/core
-    throw new Error("Not implemented - import from @say2/core when available");
-};
+import { createStoreMiddleware } from "./store";
 
 // Test fixtures
 const createTestSession = (): Session => ({
@@ -35,6 +24,7 @@ const createTestSession = (): Session => ({
     updatedAt: new Date(),
     config: { name: "test-server", transport: "stdio", command: "node" },
     protocol: "mcp",
+    mode: "client",
 });
 
 describe("StoreMiddleware", () => {

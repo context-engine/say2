@@ -406,6 +406,7 @@ describe("MCP E2E Integration", () => {
                 direction: "outbound" as const,
                 protocol: "mcp" as const,
                 payload: { jsonrpc: "2.0" as const, id: 1, method: "test1" },
+                method: "test1",
             };
             const event2 = {
                 id: crypto.randomUUID(),
@@ -414,6 +415,7 @@ describe("MCP E2E Integration", () => {
                 direction: "outbound" as const,
                 protocol: "mcp" as const,
                 payload: { jsonrpc: "2.0" as const, id: 1, method: "test2" },
+                method: "test2",
             };
 
             messageStore.store(event1);

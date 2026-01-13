@@ -10,6 +10,8 @@ import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 interface MockServerConfig {
     name?: string;
     version?: string;
+    /** Custom protocol version for version mismatch testing */
+    protocolVersion?: string;
     capabilities?: {
         tools?: boolean;
         resources?: boolean;
@@ -22,11 +24,16 @@ interface MockServerConfig {
     responseDelay?: number;
     /** Simulate failure on specific methods */
     failOnMethods?: string[];
+    /** Enable pagination for tools/list with this page size */
+    toolsPageSize?: number;
+    /** Enable pagination for resources/list with this page size */
+    resourcesPageSize?: number;
 }
 
 const defaultConfig: MockServerConfig = {
     name: "mock-mcp-server",
     version: "1.0.0",
+    protocolVersion: "2024-11-05",
     capabilities: {
         tools: true,
         resources: false,
@@ -72,9 +79,9 @@ export function handleMessage(
             case "initialize":
                 return createInitializeResponse(id, mergedConfig);
             case "tools/list":
-                return createToolsListResponse(id, mergedConfig);
+                return createToolsListResponse(id, mergedConfig, message.params);
             case "resources/list":
-                return createResourcesListResponse(id, mergedConfig);
+                return createResourcesListResponse(id, mergedConfig, message.params);
             case "prompts/list":
                 return createPromptsListResponse(id, mergedConfig);
             case "tools/call":
@@ -116,7 +123,7 @@ function createInitializeResponse(
         jsonrpc: "2.0",
         id,
         result: {
-            protocolVersion: "2024-11-05",
+            protocolVersion: config.protocolVersion ?? "2024-11-05",
             capabilities: {
                 ...(config.capabilities?.tools ? { tools: {} } : {}),
                 ...(config.capabilities?.resources ? { resources: {} } : {}),
@@ -133,19 +140,42 @@ function createInitializeResponse(
 function createToolsListResponse(
     id: string | number,
     config: MockServerConfig,
+    params?: any,
 ): JSONRPCMessage {
+    const allTools = (config.tools ?? []).map((t) => ({
+        name: t.name,
+        description: t.description,
+        inputSchema: {
+            type: "object",
+            properties: {},
+        },
+    }));
+
+    // If pagination is configured, implement cursor-based pagination
+    if (config.toolsPageSize && config.toolsPageSize > 0) {
+        const pageSize = config.toolsPageSize;
+        const cursor = params && typeof params === "object" && "cursor" in params ? params.cursor : undefined;
+        const startIndex = cursor ? parseInt(String(cursor), 10) : 0;
+        const endIndex = startIndex + pageSize;
+        const tools = allTools.slice(startIndex, endIndex);
+        const hasMore = endIndex < allTools.length;
+
+        return {
+            jsonrpc: "2.0",
+            id,
+            result: {
+                tools,
+                ...(hasMore ? { nextCursor: endIndex.toString() } : {}),
+            },
+        };
+    }
+
+    // No pagination - return all tools
     return {
         jsonrpc: "2.0",
         id,
         result: {
-            tools: (config.tools ?? []).map((t) => ({
-                name: t.name,
-                description: t.description,
-                inputSchema: {
-                    type: "object",
-                    properties: {},
-                },
-            })),
+            tools: allTools,
         },
     };
 }
@@ -153,16 +183,39 @@ function createToolsListResponse(
 function createResourcesListResponse(
     id: string | number,
     config: MockServerConfig,
+    params?: any,
 ): JSONRPCMessage {
+    const allResources = (config.resources ?? []).map((r) => ({
+        uri: r.uri,
+        name: r.name,
+        mimeType: "text/plain",
+    }));
+
+    // If pagination is configured, implement cursor-based pagination
+    if (config.resourcesPageSize && config.resourcesPageSize > 0) {
+        const pageSize = config.resourcesPageSize;
+        const cursor = params && typeof params === "object" && "cursor" in params ? params.cursor : undefined;
+        const startIndex = cursor ? parseInt(String(cursor), 10) : 0;
+        const endIndex = startIndex + pageSize;
+        const resources = allResources.slice(startIndex, endIndex);
+        const hasMore = endIndex < allResources.length;
+
+        return {
+            jsonrpc: "2.0",
+            id,
+            result: {
+                resources,
+                ...(hasMore ? { nextCursor: endIndex.toString() } : {}),
+            },
+        };
+    }
+
+    // No pagination - return all resources
     return {
         jsonrpc: "2.0",
         id,
         result: {
-            resources: (config.resources ?? []).map((r) => ({
-                uri: r.uri,
-                name: r.name,
-                mimeType: "text/plain",
-            })),
+            resources: allResources,
         },
     };
 }

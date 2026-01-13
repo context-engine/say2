@@ -71,7 +71,7 @@ describe("McpClientManager", () => {
             });
 
             await expect(clientManager.connect(session.id)).rejects.toThrow(
-                /command.*required|missing.*command/i,
+                /command.*require|require.*command|missing.*command/i,
             );
         });
 

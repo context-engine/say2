@@ -25,6 +25,7 @@ const createTestSession = (): Session => ({
     updatedAt: new Date(),
     config: { name: "test-server", transport: "stdio", command: "node" },
     protocol: "mcp",
+    mode: "client",
 });
 
 const createMockWrappedTransport = (): Transport & {
@@ -199,9 +200,19 @@ describe("LoggingTransport", () => {
     });
 
     describe("inbound messages (onmessage)", () => {
-        test("calls registered onmessage handler", () => {
+        test("calls registered onmessage handler", async () => {
             const receivedMessages: JSONRPCMessage[] = [];
-            loggingTransport.onmessage = (msg) => receivedMessages.push(msg);
+
+            // Use a promise to wait for async pipeline processing
+            let resolveHandler: () => void;
+            const handlerPromise = new Promise<void>((resolve) => {
+                resolveHandler = resolve;
+            });
+
+            loggingTransport.onmessage = (msg) => {
+                receivedMessages.push(msg);
+                resolveHandler();
+            };
 
             const message: JSONRPCMessage = {
                 jsonrpc: "2.0",
@@ -209,6 +220,8 @@ describe("LoggingTransport", () => {
                 result: { tools: [] },
             };
             wrappedTransport.triggerOnMessage(message);
+
+            await handlerPromise;
 
             expect(receivedMessages.length).toBe(1);
             expect(receivedMessages[0]).toEqual(message);
@@ -275,9 +288,19 @@ describe("LoggingTransport", () => {
             expect(capturedEvent!.requestId).toBe(42);
         });
 
-        test("preserves message to handler (no modification)", () => {
+        test("preserves message to handler (no modification)", async () => {
             const received: JSONRPCMessage[] = [];
-            loggingTransport.onmessage = (msg) => received.push(msg);
+
+            // Use a promise to wait for async pipeline processing
+            let resolveHandler: () => void;
+            const handlerPromise = new Promise<void>((resolve) => {
+                resolveHandler = resolve;
+            });
+
+            loggingTransport.onmessage = (msg) => {
+                received.push(msg);
+                resolveHandler();
+            };
 
             const originalMessage: JSONRPCMessage = {
                 jsonrpc: "2.0",
@@ -287,6 +310,8 @@ describe("LoggingTransport", () => {
             const originalJson = JSON.stringify(originalMessage);
 
             wrappedTransport.triggerOnMessage(originalMessage);
+
+            await handlerPromise;
 
             const receivedJson = JSON.stringify(received[0]);
             expect(receivedJson).toBe(originalJson);
