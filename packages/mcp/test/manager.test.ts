@@ -11,11 +11,31 @@ import { McpClientManager } from "../src/client/manager";
 import { McpClientRegistry } from "../src/client/registry";
 
 // Mock the MCP SDK modules
-const mockClientConnect = mock(async () => {});
-const mockClientClose = mock(async () => {});
+// Mock the MCP SDK modules
+const mockClientConnect = mock(async () => { });
+const mockClientClose = mock(async () => { });
 const mockClientListTools = mock(async () => ({
 	tools: [],
 	nextCursor: undefined,
+}));
+const mockClientListResources = mock(async () => ({
+	resources: [],
+	nextCursor: undefined,
+}));
+const mockClientListPrompts = mock(async () => ({
+	prompts: [],
+	nextCursor: undefined,
+}));
+
+mock.module("@modelcontextprotocol/sdk/client/index.js", () => ({
+	Client: class {
+		connect = mockClientConnect;
+		close = mockClientClose;
+		listTools = mockClientListTools;
+		listResources = mockClientListResources;
+		listPrompts = mockClientListPrompts;
+		constructor(clientInfo: any, options: any) { }
+	},
 }));
 
 // Create mock session manager with working state machine
@@ -40,6 +60,8 @@ describe("McpClientManager", () => {
 		mockClientConnect.mockClear();
 		mockClientClose.mockClear();
 		mockClientListTools.mockClear();
+		mockClientListResources.mockClear();
+		mockClientListPrompts.mockClear();
 	});
 
 	describe("connect", () => {
@@ -139,6 +161,77 @@ describe("McpClientManager", () => {
 			// Should either be in error state or throw was caught
 			expect(updatedSession).toBeDefined();
 		});
+		describe("capability discovery", () => {
+			test("calls listTools if server has tools capability", async () => {
+				const session = sessionManager.create({
+					name: "test-server",
+					transport: "stdio",
+					command: "echo",
+				});
+
+				mockClientConnect.mockImplementation(async () => {
+					sessionManager.updateCapabilities(session.id, undefined, { tools: {} });
+				});
+
+				await clientManager.connect(session.id);
+
+				expect(mockClientListTools).toHaveBeenCalled();
+			});
+
+			test("calls listResources if server has resources capability", async () => {
+				const session = sessionManager.create({
+					name: "test-server",
+					transport: "stdio",
+					command: "echo",
+				});
+
+				mockClientConnect.mockImplementation(async () => {
+					sessionManager.updateCapabilities(session.id, undefined, {
+						resources: {},
+					});
+				});
+
+				await clientManager.connect(session.id);
+
+				expect(mockClientListResources).toHaveBeenCalled();
+			});
+
+			test("calls listPrompts if server has prompts capability", async () => {
+				const session = sessionManager.create({
+					name: "test-server",
+					transport: "stdio",
+					command: "echo",
+				});
+
+				mockClientConnect.mockImplementation(async () => {
+					sessionManager.updateCapabilities(session.id, undefined, {
+						prompts: {},
+					});
+				});
+
+				await clientManager.connect(session.id);
+
+				expect(mockClientListPrompts).toHaveBeenCalled();
+			});
+
+			test("does not call listTools if server lacks capability", async () => {
+				const session = sessionManager.create({
+					name: "test-server",
+					transport: "stdio",
+					command: "echo",
+				});
+
+				mockClientConnect.mockImplementation(async () => {
+					sessionManager.updateCapabilities(session.id, undefined, {
+						/* no tools */
+					});
+				});
+
+				await clientManager.connect(session.id);
+
+				expect(mockClientListTools).not.toHaveBeenCalled();
+			});
+		});
 	});
 
 	describe("disconnect", () => {
@@ -163,8 +256,8 @@ describe("McpClientManager", () => {
 
 			// Pre-register a mock client entry
 			// (This simulates a connected state)
-			const mockClient = { close: async () => {} } as any;
-			const mockTransport = { close: async () => {} } as any;
+			const mockClient = { close: async () => { } } as any;
+			const mockTransport = { close: async () => { } } as any;
 
 			try {
 				registry.register(session.id, mockClient, mockTransport);
@@ -184,9 +277,9 @@ describe("McpClientManager", () => {
 				command: "echo",
 			});
 
-			const mockClose = mock(async () => {});
+			const mockClose = mock(async () => { });
 			const mockClient = { close: mockClose } as any;
-			const mockTransport = { close: async () => {} } as any;
+			const mockTransport = { close: async () => { } } as any;
 
 			registry.register(session.id, mockClient, mockTransport);
 			await clientManager.disconnect(session.id);
