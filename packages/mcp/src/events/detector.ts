@@ -1,18 +1,19 @@
 /**
  * EventDetector
  *
- * Static utility for detecting MCP protocol events from JSON-RPC messages.
+ * Specific implementation of ProtocolDetector for MCP protocol.
  * Used by StateMachineMiddleware to trigger state transitions.
  */
 
-import type { JsonRpcMessage } from "@say2/core";
+import type { JsonRpcMessage, ProtocolDetector } from "@say2/core";
 
-export class EventDetector {
+export class McpProtocolDetector implements ProtocolDetector {
 	/**
 	 * Check if message is an initialize request.
 	 * Initialize requests have method === 'initialize' and an id (they're requests, not notifications).
 	 */
-	static isInitializeRequest(msg: JsonRpcMessage): boolean {
+	isInitializeRequest(msg: JsonRpcMessage): boolean {
+		if (!msg || typeof msg !== "object") return false;
 		return "method" in msg && msg.method === "initialize" && "id" in msg;
 	}
 
@@ -20,7 +21,8 @@ export class EventDetector {
 	 * Check if message is an initialize response.
 	 * Initialize responses have a 'result' with 'protocolVersion'.
 	 */
-	static isInitializeResponse(msg: JsonRpcMessage): boolean {
+	isInitializeResponse(msg: JsonRpcMessage): boolean {
+		if (!msg || typeof msg !== "object") return false;
 		if (!("result" in msg)) return false;
 		if (typeof msg.result !== "object" || msg.result === null) return false;
 		return "protocolVersion" in msg.result;
@@ -30,7 +32,8 @@ export class EventDetector {
 	 * Check if message is an initialized notification.
 	 * This is a notification (no id) with method 'notifications/initialized'.
 	 */
-	static isInitializedNotification(msg: JsonRpcMessage): boolean {
+	isInitializedNotification(msg: JsonRpcMessage): boolean {
+		if (!msg || typeof msg !== "object") return false;
 		return (
 			"method" in msg &&
 			msg.method === "notifications/initialized" &&
@@ -40,25 +43,26 @@ export class EventDetector {
 
 	/**
 	 * Check if message is a tools/list response.
-	 * Tools list responses have a 'result' with 'tools' array.
+	 * (Not part of ProtocolDetector interface but used in tests).
 	 */
-	static isToolsListResponse(msg: JsonRpcMessage): boolean {
-		if (!("result" in msg)) return false;
+	isToolsListResponse(msg: JsonRpcMessage): boolean {
+		if (!msg || typeof msg !== "object") return false;
+		if (!("result" in msg) || !("id" in msg)) return false;
 		if (typeof msg.result !== "object" || msg.result === null) return false;
-		return "tools" in msg.result;
+		return "tools" in msg.result && Array.isArray((msg.result as any).tools);
 	}
 
 	/**
 	 * Extract capabilities from an initialize response.
 	 * Returns undefined if not an initialize response or capabilities not present.
 	 */
-	static extractCapabilities(
+	extractCapabilities(
 		msg: JsonRpcMessage,
 	): Record<string, unknown> | undefined {
-		if (!EventDetector.isInitializeResponse(msg)) return undefined;
+		if (!this.isInitializeResponse(msg)) return undefined;
 		if (!("result" in msg)) return undefined;
-
-		const result = msg.result as { capabilities?: Record<string, unknown> };
+		const result = msg.result as any;
+		if (typeof result !== "object" || result === null) return undefined;
 		return result.capabilities;
 	}
 
@@ -66,15 +70,13 @@ export class EventDetector {
 	 * Extract server info from an initialize response.
 	 * Returns undefined if not an initialize response or serverInfo not present.
 	 */
-	static extractServerInfo(
+	extractServerInfo(
 		msg: JsonRpcMessage,
 	): { name: string; version: string } | undefined {
-		if (!EventDetector.isInitializeResponse(msg)) return undefined;
+		if (!this.isInitializeResponse(msg)) return undefined;
 		if (!("result" in msg)) return undefined;
-
-		const result = msg.result as {
-			serverInfo?: { name: string; version: string };
-		};
+		const result = msg.result as any;
+		if (typeof result !== "object" || result === null) return undefined;
 
 		if (
 			result.serverInfo &&
@@ -87,3 +89,11 @@ export class EventDetector {
 		return undefined;
 	}
 }
+
+export const mcpDetector = new McpProtocolDetector();
+
+/**
+ * @deprecated Use McpProtocolDetector instead. Kept for backward compatibility.
+ * Exporting the instance as EventDetector to match static-like usage in tests (EventDetector.method).
+ */
+export const EventDetector = mcpDetector;

@@ -58,6 +58,9 @@ export const ServerConfigSchema = z.object({
 	env: z.record(z.string(), z.string()).optional(),
 	// HTTP transport
 	url: z.string().url().optional(),
+	// Timeouts (ms)
+	connectTimeout: z.number().int().positive().optional(),
+	initializeTimeout: z.number().int().positive().optional(),
 });
 
 export type ServerConfig = z.infer<typeof ServerConfigSchema>;
@@ -270,4 +273,18 @@ export function createSession(config: ServerConfig): Session {
 		protocol: "mcp",
 		mode: "client",
 	};
+}
+
+// =============================================================================
+// Protocol Detection (Strategy Pattern)
+// =============================================================================
+
+export interface ProtocolDetector {
+	isInitializeRequest(msg: JsonRpcMessage): boolean;
+	isInitializeResponse(msg: JsonRpcMessage): boolean;
+	isInitializedNotification(msg: JsonRpcMessage): boolean;
+	extractCapabilities(msg: JsonRpcMessage): Record<string, unknown> | undefined;
+	extractServerInfo(
+		msg: JsonRpcMessage,
+	): { name: string; version: string } | undefined;
 }

@@ -29,18 +29,18 @@ export type SessionEvent =
 	| { type: "CONNECT" }
 	| { type: "INITIALIZE" }
 	| {
-			type: "ACTIVATE";
-			clientCapabilities?: Record<string, unknown>;
-			serverCapabilities?: Record<string, unknown>;
-			protocolVersion?: string;
-	  }
+		type: "ACTIVATE";
+		clientCapabilities?: Record<string, unknown>;
+		serverCapabilities?: Record<string, unknown>;
+		protocolVersion?: string;
+	}
 	| { type: "CLOSE" }
 	| { type: "ERROR"; reason?: string }
 	| {
-			type: "UPDATE_CAPABILITIES";
-			clientCapabilities?: Record<string, unknown>;
-			serverCapabilities?: Record<string, unknown>;
-	  };
+		type: "UPDATE_CAPABILITIES";
+		clientCapabilities?: Record<string, unknown>;
+		serverCapabilities?: Record<string, unknown>;
+	};
 
 export interface SessionInput {
 	id: string;
@@ -58,6 +58,10 @@ export const sessionMachine = setup({
 		context: {} as SessionContext,
 		events: {} as SessionEvent,
 		input: {} as SessionInput,
+	},
+	delays: {
+		connectTimeout: ({ context }) => context.config.connectTimeout ?? 10000,
+		initializeTimeout: ({ context }) => context.config.initializeTimeout ?? 30000,
 	},
 	actions: {
 		updateTimestamp: assign({
@@ -119,6 +123,16 @@ export const sessionMachine = setup({
 			},
 		},
 		connecting: {
+			after: {
+				connectTimeout: {
+					target: "error",
+					actions: assign({
+						errorReason: ({ context }: { context: SessionContext }) =>
+							`Connection timeout (${context.config.connectTimeout ?? 10000}ms)`,
+						updatedAt: () => new Date(),
+					}),
+				},
+			},
 			on: {
 				INITIALIZE: {
 					target: "initializing",
@@ -131,6 +145,16 @@ export const sessionMachine = setup({
 			},
 		},
 		initializing: {
+			after: {
+				initializeTimeout: {
+					target: "error",
+					actions: assign({
+						errorReason: ({ context }: { context: SessionContext }) =>
+							`Initialize timeout (${context.config.initializeTimeout ?? 30000}ms)`,
+						updatedAt: () => new Date(),
+					}),
+				},
+			},
 			on: {
 				ACTIVATE: {
 					target: "active",
