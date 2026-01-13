@@ -233,6 +233,58 @@ describe("StateMachineMiddleware", () => {
 			expect(ctx.get(protocolVersionKey)).toBeUndefined();
 		});
 
+		test("validates supported protocol version", async () => {
+			const event = createMessageEvent(
+				session.id,
+				"inbound",
+				{
+					jsonrpc: "2.0",
+					id: 1,
+					result: {
+						protocolVersion: "2024-11-05", // Supported
+						capabilities: {},
+					},
+				},
+				"mcp",
+			);
+
+			await processEvent(event);
+
+			// Should NOT mark error
+			expect(sessionManager.calls.filter(c => c.method === "markError").length).toBe(0);
+		});
+
+		test("marks error on unsupported protocol version", async () => {
+			const event = createMessageEvent(
+				session.id,
+				"inbound",
+				{
+					jsonrpc: "2.0",
+					id: 1,
+					result: {
+						protocolVersion: "0.1.0", // Unsupported
+						capabilities: {},
+					},
+				},
+				"mcp",
+			);
+
+			const consoleSpy = spyOn(console, "warn");
+			await processEvent(event);
+
+			// Should mark error
+			expect(sessionManager.calls.filter(c => c.method === "markError").length).toBe(1);
+			expect(sessionManager.calls.find(c => c.method === "markError")?.args).toContain(
+				"Protocol version mismatch: expected 2024-11-05, got 0.1.0"
+			);
+
+			// Should warn
+			expect(consoleSpy).toHaveBeenCalled();
+			expect(consoleSpy.mock.calls[0]?.[0]).toContain("Protocol version mismatch");
+
+			consoleSpy.mockRestore();
+		});
+
 		test("does not trigger state transition for initialize response", async () => {
 			const event = createMessageEvent(
 				session.id,

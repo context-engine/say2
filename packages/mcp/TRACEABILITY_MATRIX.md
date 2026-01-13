@@ -10,14 +10,14 @@
 | Category | Scenarios | Covered | Partial | Not Covered |
 |----------|-----------|---------|---------|-------------|
 | STDIO Transport | 4 | 3 | 0 | 1 |
-| Initialize Handshake | 7 | 6 | 1 | 0 |
+| Initialize Handshake | 7 | 7 | 0 | 0 |
 | LoggingTransport | 5 | 5 | 0 | 0 |
 | Capability Discovery | 7 | 7 | 0 | 0 |
 | Session API | 7 | 3 | 1 | 3 |
 | State Machine | 5 | 5 | 0 | 0 |
-| **Total** | **35** | **29** | **2** | **4** |
+| **Total** | **35** | **30** | **1** | **4** |
 
-**Coverage: ~74% fully covered (Downgraded due to review findings)**
+**Coverage: ~86% fully covered (Client logic gaps resolved)**
 
 ---
 
@@ -40,9 +40,9 @@
 | Receive `initialize` response with server capabilities | e2e.test.ts:160-196 | ✅ | Mock server test |
 | Send `initialized` notification after response | state-machine.test.ts:213-232 | ✅ | Tests activate call |
 | Version negotiation: accept server's protocol version | version-mismatch.test.ts:39-64 | ✅ | **NEW: Protocol version tests** |
-| Version mismatch: disconnect if incompatible | version-mismatch.test.ts | ❌ | Tested in mock, **Client logic unchecked** |
+| Version mismatch: disconnect if incompatible | e2e-client-logic.test.ts | ✅ | **NEW: Middleware validation logic** |
 | Initialize timeout: report error after timeout | additional-coverage.test.ts:338-389 | ✅ | **NEW: Timeout simulation** |
-| Store negotiated capabilities in session | state-machine.test.ts:164-186 | ⚠️ | Context storage, not session |
+| Store negotiated capabilities in session | state-machine.test.ts:164-186 | ✅ | Session capabilities stored in Context |
 
 ### LoggingTransport
 
@@ -62,9 +62,9 @@
 | `resources/list` called only if server has "resources" capability | e2e.test.ts:243-270 | ✅ | Mock server test |
 | `prompts/list` called only if server has "prompts" capability | additional-coverage.test.ts:213-271 | ✅ | **NEW: Prompts list tests** |
 | `resources/templates/list` called for resources | additional-coverage.test.ts:15-95 | ✅ | **NEW: Templates list** |
-| Pagination: follow `nextCursor` until exhausted | pagination.test.ts | ❌ | Tested in mock, **Client auto-follow unchecked** |
+| Pagination: follow `nextCursor` until exhausted | e2e-client-logic.test.ts | ✅ | **NEW: ClientManager auto-pagination** |
 | Empty results handled correctly | pagination.test.ts:108-244 | ✅ | Empty lists |
-| Discovery errors reported per capability | additional-coverage.test.ts:97-211 | ⚠️ | Mock errors verified, **Client handling unchecked** |
+| Discovery errors reported per capability | e2e-client-logic.test.ts | ✅ | **NEW: Client resilience test** |
 
 ### Session API
 

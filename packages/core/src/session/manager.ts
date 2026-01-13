@@ -223,6 +223,7 @@ export class SessionManager {
 			protocolVersion: context.protocolVersion,
 			clientCapabilities: context.clientCapabilities,
 			serverCapabilities: context.serverCapabilities,
+			error: context.errorReason,
 		};
 	}
 }

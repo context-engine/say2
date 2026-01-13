@@ -27,7 +27,7 @@ export class McpClientManager {
 		private registry: McpClientRegistry,
 		private sessionManager: SessionManager,
 		private pipeline: MiddlewarePipeline,
-	) {}
+	) { }
 
 	/**
 	 * Connect to an MCP server for the given session.
@@ -132,6 +132,69 @@ export class McpClientManager {
 	 */
 	getClient(sessionId: string): Client | undefined {
 		return this.registry.get(sessionId)?.client;
+	}
+
+	/**
+	 * List all tools for a session, automatically following pagination.
+	 */
+	async listTools(sessionId: string): Promise<{ tools: any[] }> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		let tools: any[] = [];
+		let cursor: string | undefined;
+
+		do {
+			const result = await client.listTools({ cursor });
+			tools = tools.concat(result.tools);
+			cursor = result.nextCursor;
+		} while (cursor);
+
+		return { tools };
+	}
+
+	/**
+	 * List all resources for a session, automatically following pagination.
+	 */
+	async listResources(sessionId: string): Promise<{ resources: any[] }> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		let resources: any[] = [];
+		let cursor: string | undefined;
+
+		do {
+			const result = await client.listResources({ cursor });
+			resources = resources.concat(result.resources);
+			cursor = result.nextCursor;
+		} while (cursor);
+
+		return { resources };
+	}
+
+	/**
+	 * List all prompts for a session, automatically following pagination.
+	 */
+	async listPrompts(sessionId: string): Promise<{ prompts: any[] }> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		let prompts: any[] = [];
+		let cursor: string | undefined;
+
+		do {
+			const result = await client.listPrompts({ cursor });
+			prompts = prompts.concat(result.prompts);
+			cursor = result.nextCursor;
+		} while (cursor);
+
+		return { prompts };
 	}
 
 	/**

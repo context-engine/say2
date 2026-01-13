@@ -82,6 +82,7 @@ export const SessionSchema = z.object({
 	protocolVersion: z.string().optional(),
 	clientCapabilities: z.record(z.string(), z.unknown()).optional(),
 	serverCapabilities: z.record(z.string(), z.unknown()).optional(),
+	error: z.string().optional(),
 });
 
 export type Session = z.infer<typeof SessionSchema>;

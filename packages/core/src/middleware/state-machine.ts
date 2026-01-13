@@ -127,8 +127,6 @@ export function createStateMachineMiddleware(
 		const { event, session } = ctx;
 		const payload = event.payload;
 
-		// Detect and trigger appropriate state transitions
-
 		// 1. Initialize request (outbound) - Client sending initialize request
 		if (isInitializeRequest(payload) && event.direction === "outbound") {
 			const result = sessionManager.initialize(session.id);
@@ -151,6 +149,18 @@ export function createStateMachineMiddleware(
 				};
 				if (result.protocolVersion) {
 					ctx.set(protocolVersionKey, result.protocolVersion);
+
+					// Validate protocol version
+					const SUPPORTED_VERSION = "2024-11-05";
+					if (result.protocolVersion !== SUPPORTED_VERSION) {
+						const errorMsg = `Protocol version mismatch: expected ${SUPPORTED_VERSION}, got ${result.protocolVersion}`;
+						console.warn(
+							`[StateMachineMiddleware] ${errorMsg}`,
+						);
+						sessionManager.markError(session.id, errorMsg);
+						// We continue to allow the pipeline to proceed so the message reaches the client,
+						// but the session is now in ERROR state.
+					}
 				}
 			}
 
