@@ -80,14 +80,19 @@ describe("HTTP Server", () => {
 
 			// These assertions verify that the config was passed through
 			// Note: The session machine implementation needs to actually USE these
-			expect(session?.config.connectTimeout).toBe(5000);
-			expect(session?.config.initializeTimeout).toBe(15000);
+			// biome-ignore lint/suspicious/noExplicitAny: config is typed as ServerConfig which misses this field
+			expect((session?.config as any).connectTimeout).toBe(5000);
+			// biome-ignore lint/suspicious/noExplicitAny: config is typed as ServerConfig which misses this field
+			expect((session?.config as any).initializeTimeout).toBe(15000);
 		});
 	});
 
 	describe("DELETE /sessions/:id", () => {
 		test("closes and removes session", async () => {
-			const session = sessionManager.create({ name: "to-delete", transport: "stdio" });
+			const session = sessionManager.create({
+				name: "to-delete",
+				transport: "stdio",
+			});
 
 			const res = await app.request(`/sessions/${session.id}`, {
 				method: "DELETE",

@@ -411,7 +411,7 @@ describe("Session State Machine", () => {
 			expect(actor.getSnapshot().value).toBe("connecting");
 
 			// Wait for timeout (simulated or real if small)
-			// In a real environment we'd use fake timers. 
+			// In a real environment we'd use fake timers.
 			// For this spec-driven test, we acknowledge it requires implementation handling.
 			// await new Promise(resolve => setTimeout(resolve, 10050));
 			// expect(actor.getSnapshot().value).toBe("error");
