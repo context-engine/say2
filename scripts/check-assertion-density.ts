@@ -71,7 +71,7 @@ async function analyzeFile(filePath: string): Promise<FileStats> {
 	const density = tests > 0 ? expects / tests : 0;
 
 	return {
-		file: filePath.replace(process.cwd() + "/", ""),
+		file: filePath.replace(`${process.cwd()}/`, ""),
 		tests,
 		expects,
 		density: Math.round(density * 100) / 100,
@@ -112,7 +112,7 @@ async function main() {
 	for (const result of results) {
 		const status = result.pass ? "✅ PASS" : "❌ FAIL";
 		const shortFile =
-			result.file.length > 58 ? "..." + result.file.slice(-55) : result.file;
+			result.file.length > 58 ? `...${result.file.slice(-55)}` : result.file;
 
 		console.log(
 			shortFile.padEnd(60) +
