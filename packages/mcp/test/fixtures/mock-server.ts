@@ -19,6 +19,8 @@ interface MockServerConfig {
     };
     tools?: Array<{ name: string; description: string }>;
     resources?: Array<{ uri: string; name: string }>;
+    /** Resource templates for resources/templates/list */
+    resourceTemplates?: Array<{ uriTemplate: string; name: string; description?: string }>;
     prompts?: Array<{ name: string; description: string }>;
     /** Simulate delay in ms before responding */
     responseDelay?: number;
@@ -82,6 +84,8 @@ export function handleMessage(
                 return createToolsListResponse(id, mergedConfig, message.params);
             case "resources/list":
                 return createResourcesListResponse(id, mergedConfig, message.params);
+            case "resources/templates/list":
+                return createResourceTemplatesListResponse(id, mergedConfig);
             case "prompts/list":
                 return createPromptsListResponse(id, mergedConfig);
             case "tools/call":
@@ -231,6 +235,23 @@ function createPromptsListResponse(
             prompts: (config.prompts ?? []).map((p) => ({
                 name: p.name,
                 description: p.description,
+            })),
+        },
+    };
+}
+
+function createResourceTemplatesListResponse(
+    id: string | number,
+    config: MockServerConfig,
+): JSONRPCMessage {
+    return {
+        jsonrpc: "2.0",
+        id,
+        result: {
+            resourceTemplates: (config.resourceTemplates ?? []).map((t) => ({
+                uriTemplate: t.uriTemplate,
+                name: t.name,
+                description: t.description,
             })),
         },
     };

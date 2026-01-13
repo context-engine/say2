@@ -9,15 +9,15 @@
 
 | Category | Scenarios | Covered | Partial | Not Covered |
 |----------|-----------|---------|---------|-------------|
-| STDIO Transport | 4 | 2 | 0 | 2 |
-| Initialize Handshake | 7 | 5 | 1 | 1 |
+| STDIO Transport | 4 | 3 | 0 | 1 |
+| Initialize Handshake | 7 | 6 | 1 | 0 |
 | LoggingTransport | 5 | 5 | 0 | 0 |
-| Capability Discovery | 7 | 6 | 0 | 1 |
+| Capability Discovery | 7 | 7 | 0 | 0 |
 | Session API | 7 | 3 | 1 | 3 |
 | State Machine | 5 | 5 | 0 | 0 |
-| **Total** | **35** | **26** | **2** | **7** |
+| **Total** | **35** | **29** | **2** | **4** |
 
-**Coverage: 74% fully covered, 80% including partial**
+**Coverage: 83% fully covered, 89% including partial**
 
 ---
 
@@ -29,8 +29,8 @@
 |---------------|---------------|--------|-------|
 | Spawn process with command and args | manager.test.ts:78-95 | ✅ | Tests connect with command |
 | Process spawn failure returns error | manager.test.ts:124-141 | ✅ | Tests error marking |
-| Transport connected event emitted on success | - | ❌ | Not explicitly tested |
-| Transport captures stdout and stderr separately | - | ❌ | Not in scope (MCP SDK handles) |
+| Transport connected event emitted on success | additional-coverage.test.ts:273-295 | ✅ | **NEW: Transport events** |
+| Transport captures stdout and stderr separately | - | ❌ | Out of scope (MCP SDK handles) |
 
 ### Initialize Handshake
 
@@ -41,7 +41,7 @@
 | Send `initialized` notification after response | state-machine.test.ts:213-232 | ✅ | Tests activate call |
 | Version negotiation: accept server's protocol version | version-mismatch.test.ts:39-64 | ✅ | **NEW: Protocol version tests** |
 | Version mismatch: disconnect if incompatible | version-mismatch.test.ts:66-94 | ✅ | **NEW: Detects incompatibility** |
-| Initialize timeout: report error after timeout | - | ❌ | Timeouts planned for Phase API |
+| Initialize timeout: report error after timeout | additional-coverage.test.ts:338-389 | ✅ | **NEW: Timeout simulation** |
 | Store negotiated capabilities in session | state-machine.test.ts:164-186 | ⚠️ | Context storage, not session |
 
 ### LoggingTransport
@@ -60,11 +60,11 @@
 |---------------|---------------|--------|-------|
 | `tools/list` called only if server has "tools" capability | e2e.test.ts:201-240 | ✅ | Mock server test |
 | `resources/list` called only if server has "resources" capability | e2e.test.ts:243-270 | ✅ | Mock server test |
-| `prompts/list` called only if server has "prompts" capability | mock-server.ts:78-79 | ⚠️ | Handler exists, no explicit test |
-| `resources/templates/list` called for resources | - | ❌ | Not implemented |
-| Pagination: follow `nextCursor` until exhausted | pagination.test.ts:10-106 | ✅ | **NEW: Tools/resources pagination** |
-| Empty results handled correctly | pagination.test.ts:108-244 | ✅ | **NEW: Empty lists** |
-| Discovery errors reported per capability | - | ❌ | Not tested |
+| `prompts/list` called only if server has "prompts" capability | additional-coverage.test.ts:213-271 | ✅ | **NEW: Prompts list tests** |
+| `resources/templates/list` called for resources | additional-coverage.test.ts:15-95 | ✅ | **NEW: Templates list** |
+| Pagination: follow `nextCursor` until exhausted | pagination.test.ts:10-106 | ✅ | Tools/resources pagination |
+| Empty results handled correctly | pagination.test.ts:108-244 | ✅ | Empty lists |
+| Discovery errors reported per capability | additional-coverage.test.ts:97-211 | ✅ | **NEW: Partial failures** |
 
 ### Session API
 
@@ -101,22 +101,24 @@
 
 ## Recommendations
 
-### High Priority (Should Add)
+### High Priority ✅ All Completed
 
 1. ~~**Pagination tests**~~ ✅ **COMPLETED** - `pagination.test.ts`
 2. ~~**Version mismatch test**~~ ✅ **COMPLETED** - `version-mismatch.test.ts`
-3. **Timeout tests** - Connection and initialization timeouts (requires Phase API config)
+3. ~~**Timeout tests**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
 
-### Medium Priority (Could Add)
+### Medium Priority ✅ All Completed
 
-4. **Resources templates list** - Complete resources discovery
-5. **Discovery error per capability** - Partial discovery failures
-6. **Prompts/list explicit test** - Currently only mock handler
+4. ~~**Resources templates list**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+5. ~~**Discovery error per capability**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+6. ~~**Prompts/list explicit test**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+7. ~~**Transport connected event**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
 
 ### Out of Scope (API Layer)
 
-7. Session API timeout configuration - Belongs in `@say2/server` tests
-8. POST /sessions background connection - Server integration test
+8. Session API timeout configuration - Belongs in `@say2/server` tests
+9. POST /sessions background connection - Server integration test
+10. Stdout/stderr capture - MCP SDK internal
 
 ---
 
@@ -139,4 +141,5 @@ Found in some tests - generally followed by stronger assertions.
 ---
 
 *Matrix created: 2026-01-13*
-*Test count: 123 Phase 1 tests (263 total including Phase 0)*
+*Test count: 303 tests across 20 files*
+*Coverage: 83% fully covered, 89% including partial*
