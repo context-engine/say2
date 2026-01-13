@@ -28,7 +28,11 @@ import type {
 	NextFn,
 } from "../types";
 import { createContextKey } from "../types";
+import { LATEST_PROTOCOL_VERSION } from "../types";
 
+/**
+ * Middleware that manages the session state machine.
+ */
 // ============================================================================
 // Inline Protocol Detection
 // ============================================================================
@@ -151,9 +155,8 @@ export function createStateMachineMiddleware(
 					ctx.set(protocolVersionKey, result.protocolVersion);
 
 					// Validate protocol version
-					const SUPPORTED_VERSION = "2024-11-05";
-					if (result.protocolVersion !== SUPPORTED_VERSION) {
-						const errorMsg = `Protocol version mismatch: expected ${SUPPORTED_VERSION}, got ${result.protocolVersion}`;
+					if (result.protocolVersion !== LATEST_PROTOCOL_VERSION) {
+						const errorMsg = `Protocol version mismatch: expected ${LATEST_PROTOCOL_VERSION}, got ${result.protocolVersion}`;
 						console.warn(
 							`[StateMachineMiddleware] ${errorMsg}`,
 						);

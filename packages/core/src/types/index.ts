@@ -43,7 +43,7 @@ export const Protocol = {
 
 export type Protocol = (typeof Protocol)[keyof typeof Protocol];
 
-export const LATEST_PROTOCOL_VERSION = "2024-11-05";
+export const LATEST_PROTOCOL_VERSION = "2025-11-25";
 
 // =============================================================================
 // Server Config

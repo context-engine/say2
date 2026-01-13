@@ -275,7 +275,7 @@ describe("StateMachineMiddleware", () => {
 			// Should mark error
 			expect(sessionManager.calls.filter(c => c.method === "markError").length).toBe(1);
 			expect(sessionManager.calls.find(c => c.method === "markError")?.args).toContain(
-				"Protocol version mismatch: expected 2024-11-05, got 0.1.0"
+				`Protocol version mismatch: expected ${LATEST_PROTOCOL_VERSION}, got 0.1.0`
 			);
 
 			// Should warn
@@ -379,9 +379,9 @@ describe("StateMachineMiddleware", () => {
 
 			// Verify warning was logged
 			expect(consoleSpy).toHaveBeenCalled();
-			expect(consoleSpy.mock.calls[0]?.[0]).toContain(
-				"State transition INITIALIZE failed",
-			);
+			const calls = consoleSpy.mock.calls.map(c => c[0]);
+			const hasExpectedLog = calls.some(msg => typeof msg === 'string' && msg.includes("State transition INITIALIZE failed"));
+			expect(hasExpectedLog).toBe(true);
 
 			consoleSpy.mockRestore();
 		});
@@ -409,9 +409,9 @@ describe("StateMachineMiddleware", () => {
 			await processEvent(event, sessWithState);
 
 			expect(consoleSpy).toHaveBeenCalled();
-			expect(consoleSpy.mock.calls[0]?.[0]).toContain(
-				"State transition ACTIVATE failed",
-			);
+			const calls = consoleSpy.mock.calls.map(c => c[0]);
+			const hasExpectedLog = calls.some(msg => typeof msg === 'string' && msg.includes("State transition ACTIVATE failed"));
+			expect(hasExpectedLog).toBe(true);
 
 			consoleSpy.mockRestore();
 		});
