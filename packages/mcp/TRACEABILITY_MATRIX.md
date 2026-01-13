@@ -17,7 +17,7 @@
 | State Machine | 5 | 5 | 0 | 0 |
 | **Total** | **35** | **29** | **2** | **4** |
 
-**Coverage: 83% fully covered, 89% including partial**
+**Coverage: ~74% fully covered (Downgraded due to review findings)**
 
 ---
 
@@ -40,7 +40,7 @@
 | Receive `initialize` response with server capabilities | e2e.test.ts:160-196 | ✅ | Mock server test |
 | Send `initialized` notification after response | state-machine.test.ts:213-232 | ✅ | Tests activate call |
 | Version negotiation: accept server's protocol version | version-mismatch.test.ts:39-64 | ✅ | **NEW: Protocol version tests** |
-| Version mismatch: disconnect if incompatible | version-mismatch.test.ts:66-94 | ✅ | **NEW: Detects incompatibility** |
+| Version mismatch: disconnect if incompatible | version-mismatch.test.ts | ❌ | Tested in mock, **Client logic unchecked** |
 | Initialize timeout: report error after timeout | additional-coverage.test.ts:338-389 | ✅ | **NEW: Timeout simulation** |
 | Store negotiated capabilities in session | state-machine.test.ts:164-186 | ⚠️ | Context storage, not session |
 
@@ -62,9 +62,9 @@
 | `resources/list` called only if server has "resources" capability | e2e.test.ts:243-270 | ✅ | Mock server test |
 | `prompts/list` called only if server has "prompts" capability | additional-coverage.test.ts:213-271 | ✅ | **NEW: Prompts list tests** |
 | `resources/templates/list` called for resources | additional-coverage.test.ts:15-95 | ✅ | **NEW: Templates list** |
-| Pagination: follow `nextCursor` until exhausted | pagination.test.ts:10-106 | ✅ | Tools/resources pagination |
+| Pagination: follow `nextCursor` until exhausted | pagination.test.ts | ❌ | Tested in mock, **Client auto-follow unchecked** |
 | Empty results handled correctly | pagination.test.ts:108-244 | ✅ | Empty lists |
-| Discovery errors reported per capability | additional-coverage.test.ts:97-211 | ✅ | **NEW: Partial failures** |
+| Discovery errors reported per capability | additional-coverage.test.ts:97-211 | ⚠️ | Mock errors verified, **Client handling unchecked** |
 
 ### Session API
 
@@ -101,18 +101,20 @@
 
 ## Recommendations
 
-### High Priority ✅ All Completed
+### High Priority (New Findings)
 
-1. ~~**Pagination tests**~~ ✅ **COMPLETED** - `pagination.test.ts`
-2. ~~**Version mismatch test**~~ ✅ **COMPLETED** - `version-mismatch.test.ts`
-3. ~~**Timeout tests**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+1. **Client-Side Version Validation**: Add test to verify Client disconnects on version mismatch.
+2. **Client-Side Pagination**: Add test to verify Client follows nextCursor.
+3. **Client-Side Partial Failure**: Verify Client behavior on discovery errors.
 
-### Medium Priority ✅ All Completed
+### Previously Completed
 
-4. ~~**Resources templates list**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
-5. ~~**Discovery error per capability**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
-6. ~~**Prompts/list explicit test**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
-7. ~~**Transport connected event**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+4. ~~**Pagination tests (Mock)**~~ ✅ **COMPLETED** - `pagination.test.ts`
+5. ~~**Version mismatch test (Mock)**~~ ✅ **COMPLETED** - `version-mismatch.test.ts`
+6. ~~**Timeout tests**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+7. ~~**Resources templates list**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+8. ~~**Prompts/list explicit test**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
+9. ~~**Transport connected event**~~ ✅ **COMPLETED** - `additional-coverage.test.ts`
 
 ### Out of Scope (API Layer)
 
