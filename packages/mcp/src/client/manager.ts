@@ -367,6 +367,7 @@ export class McpClientManager {
 						// Cast to any to bypass strict type checking against SDK's unknown
 						content: result.content as any,
 						isError: true,
+						structuredContent: (result as any).structuredContent,
 					},
 				});
 			} else {
@@ -376,6 +377,7 @@ export class McpClientManager {
 						// Cast to any to bypass strict type checking against SDK's unknown
 						content: result.content as any,
 						isError: false,
+						structuredContent: (result as any).structuredContent,
 					},
 				});
 			}

@@ -12,8 +12,8 @@ import { McpClientRegistry } from "../src/client/registry";
 
 // Mock the MCP SDK modules
 // Mock the MCP SDK modules
-const mockClientConnect = mock(async () => {});
-const mockClientClose = mock(async () => {});
+const mockClientConnect = mock(async () => { });
+const mockClientClose = mock(async () => { });
 const mockClientListTools = mock(async () => ({
 	tools: [],
 	nextCursor: undefined,
@@ -28,6 +28,7 @@ const mockClientListPrompts = mock(async () => ({
 }));
 
 // Client factory for dependency injection
+const mockSetNotificationHandler = mock(() => { });
 const mockClientFactory = (_info: any, _opts: any) =>
 	({
 		connect: mockClientConnect,
@@ -35,6 +36,7 @@ const mockClientFactory = (_info: any, _opts: any) =>
 		listTools: mockClientListTools,
 		listResources: mockClientListResources,
 		listPrompts: mockClientListPrompts,
+		setNotificationHandler: mockSetNotificationHandler,
 	}) as any;
 
 // Create mock session manager with working state machine
@@ -268,8 +270,8 @@ describe("McpClientManager", () => {
 
 			// Pre-register a mock client entry
 			// (This simulates a connected state)
-			const mockClient = { close: async () => {} } as any;
-			const mockTransport = { close: async () => {} } as any;
+			const mockClient = { close: async () => { } } as any;
+			const mockTransport = { close: async () => { } } as any;
 
 			try {
 				registry.register(session.id, mockClient, mockTransport);
@@ -289,9 +291,9 @@ describe("McpClientManager", () => {
 				command: "echo",
 			});
 
-			const mockClose = mock(async () => {});
+			const mockClose = mock(async () => { });
 			const mockClient = { close: mockClose } as any;
-			const mockTransport = { close: async () => {} } as any;
+			const mockTransport = { close: async () => { } } as any;
 
 			registry.register(session.id, mockClient, mockTransport);
 			await clientManager.disconnect(session.id);
