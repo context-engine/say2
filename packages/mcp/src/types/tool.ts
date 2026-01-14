@@ -169,6 +169,20 @@ export const ToolOperationSchema = z.object({
     error: JsonRpcErrorSchema.optional(),
     startedAt: z.date(),
     completedAt: z.date().optional(),
+    // Phase 2a Task 03: Progress tracking
+    progressToken: z.union([z.string(), z.number()]).optional(),
+    progress: z
+        .array(
+            z.object({
+                progress: z.number(),
+                total: z.number().optional(),
+                message: z.string().optional(),
+                timestamp: z.date(),
+            }),
+        )
+        .optional(),
+    // Phase 2a Task 04: Cancellation
+    cancelReason: z.string().optional(),
 });
 
 export type ToolOperation = z.infer<typeof ToolOperationSchema>;

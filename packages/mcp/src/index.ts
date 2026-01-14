@@ -13,6 +13,10 @@ export * from "./events";
 export * from "./transport";
 // Operation stores (Phase 2a)
 export * from "./store";
+// Tool operations extensions (Phase 2a)
+export * from "./progress/tracker";
+export * from "./cancel/manager";
+export * from "./content/parser";
 
 // MCP-specific types
 export * from "./types";

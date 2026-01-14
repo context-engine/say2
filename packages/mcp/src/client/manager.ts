@@ -317,5 +317,14 @@ export class McpClientManager {
 	isConnected(sessionId: string): boolean {
 		return this.registry.get(sessionId) !== undefined;
 	}
+
+	/**
+	 * Cancel a running tool operation.
+	 * @param operationId - The operation ID
+	 * @param reason - Optional cancellation reason
+	 */
+	async cancelOperation(operationId: string, reason?: string): Promise<void> {
+		throw new Error("Not implemented: McpClientManager.cancelOperation");
+	}
 }
 

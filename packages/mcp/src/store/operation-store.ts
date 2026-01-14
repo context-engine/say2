@@ -15,6 +15,7 @@ import type {
     ToolOperation,
     JsonRpcError,
 } from "../types/tool";
+import type { ProgressUpdate } from "../types/progress";
 
 export class ToolOperationStore {
     private operations = new Map<string, ToolOperation>();
@@ -46,11 +47,31 @@ export class ToolOperationStore {
             status?: ToolOperation["status"];
             result?: ToolCallResult;
             error?: JsonRpcError;
+            progressToken?: string | number;
+            cancelReason?: string;
+            completedAt?: Date;
         },
     ): void {
         throw new Error("Not implemented: ToolOperationStore.update");
     }
 
+    /**
+     * Add a progress update to an operation.
+     * @param id - The operation ID
+     * @param update - The progress update
+     */
+    updateProgress(id: string, update: ProgressUpdate): void {
+        throw new Error("Not implemented: ToolOperationStore.updateProgress");
+    }
+
+    /**
+     * Mark an operation as cancelled.
+     * @param id - The operation ID
+     * @param reason - Optional cancellation reason
+     */
+    markCancelled(id: string, reason?: string): void {
+        throw new Error("Not implemented: ToolOperationStore.markCancelled");
+    }
     /**
      * Get an operation by ID.
      * @param id - The operation ID
