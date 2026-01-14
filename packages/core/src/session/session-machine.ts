@@ -29,18 +29,18 @@ export type SessionEvent =
 	| { type: "CONNECT" }
 	| { type: "INITIALIZE" }
 	| {
-		type: "ACTIVATE";
-		clientCapabilities?: Record<string, unknown>;
-		serverCapabilities?: Record<string, unknown>;
-		protocolVersion?: string;
-	}
+			type: "ACTIVATE";
+			clientCapabilities?: Record<string, unknown>;
+			serverCapabilities?: Record<string, unknown>;
+			protocolVersion?: string;
+	  }
 	| { type: "CLOSE" }
 	| { type: "ERROR"; reason?: string }
 	| {
-		type: "UPDATE_CAPABILITIES";
-		clientCapabilities?: Record<string, unknown>;
-		serverCapabilities?: Record<string, unknown>;
-	};
+			type: "UPDATE_CAPABILITIES";
+			clientCapabilities?: Record<string, unknown>;
+			serverCapabilities?: Record<string, unknown>;
+	  };
 
 export interface SessionInput {
 	id: string;
@@ -61,7 +61,8 @@ export const sessionMachine = setup({
 	},
 	delays: {
 		connectTimeout: ({ context }) => context.config.connectTimeout ?? 10000,
-		initializeTimeout: ({ context }) => context.config.initializeTimeout ?? 30000,
+		initializeTimeout: ({ context }) =>
+			context.config.initializeTimeout ?? 30000,
 	},
 	actions: {
 		updateTimestamp: assign({

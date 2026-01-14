@@ -31,7 +31,7 @@ export class McpClientManager {
 			clientInfo: { name: string; version: string },
 			options?: { capabilities: any },
 		) => Client = (info, opts) => new Client(info, opts),
-	) { }
+	) {}
 
 	/**
 	 * Connect to an MCP server for the given session.
@@ -147,9 +147,7 @@ export class McpClientManager {
 				await this.listPrompts(sessionId);
 			}
 		} catch (error) {
-			console.warn(
-				`[McpClientManager] Capability discovery warning: ${error}`,
-			);
+			console.warn(`[McpClientManager] Capability discovery warning: ${error}`);
 		}
 	}
 

@@ -8,7 +8,7 @@
 
 import { beforeEach, describe, expect, mock, spyOn, test } from "bun:test";
 import type { SessionManager } from "../session";
-import type { MessageEvent, Session, JsonRpcMessage } from "../types";
+import type { JsonRpcMessage, MessageEvent, Session } from "../types";
 import {
 	createMessageEvent,
 	LATEST_PROTOCOL_VERSION,
@@ -34,15 +34,11 @@ const mockDetector = {
 	isInitializedNotification: (msg: JsonRpcMessage) =>
 		"method" in msg && msg.method === "notifications/initialized",
 	extractCapabilities: (msg: JsonRpcMessage) =>
-		"result" in msg &&
-			typeof msg.result === "object" &&
-			msg.result !== null
+		"result" in msg && typeof msg.result === "object" && msg.result !== null
 			? (msg.result as any).capabilities
 			: undefined,
 	extractServerInfo: (msg: JsonRpcMessage) =>
-		"result" in msg &&
-			typeof msg.result === "object" &&
-			msg.result !== null
+		"result" in msg && typeof msg.result === "object" && msg.result !== null
 			? (msg.result as any).serverInfo
 			: undefined,
 };

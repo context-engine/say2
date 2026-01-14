@@ -85,10 +85,7 @@ app.post("/sessions", async (c) => {
 		if (errorMessage.includes("requires 'command'")) {
 			return c.json({ error: errorMessage }, 400);
 		}
-		return c.json(
-			{ error: errorMessage },
-			500,
-		);
+		return c.json({ error: errorMessage }, 500);
 	}
 });
 

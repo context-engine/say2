@@ -22,14 +22,12 @@
 
 import type { SessionManager } from "../session";
 import type {
-	JsonRpcMessage,
 	Middleware,
 	MiddlewareContext,
 	NextFn,
 	ProtocolDetector,
 } from "../types";
-import { createContextKey } from "../types";
-import { LATEST_PROTOCOL_VERSION } from "../types";
+import { createContextKey, LATEST_PROTOCOL_VERSION } from "../types";
 
 // ============================================================================
 // Context Keys
@@ -75,7 +73,10 @@ export function createStateMachineMiddleware(
 		const payload = event.payload;
 
 		// 1. Initialize request (outbound) - Client sending initialize request
-		if (detector.isInitializeRequest(payload) && event.direction === "outbound") {
+		if (
+			detector.isInitializeRequest(payload) &&
+			event.direction === "outbound"
+		) {
 			const result = sessionManager.initialize(session.id);
 			if (!result.success) {
 				console.warn(
@@ -85,7 +86,10 @@ export function createStateMachineMiddleware(
 		}
 
 		// 2. Initialize response (inbound) - Server responded with capabilities
-		if (detector.isInitializeResponse(payload) && event.direction === "inbound") {
+		if (
+			detector.isInitializeResponse(payload) &&
+			event.direction === "inbound"
+		) {
 			const serverInfo = detector.extractServerInfo(payload);
 			const capabilities = detector.extractCapabilities(payload);
 
@@ -100,9 +104,7 @@ export function createStateMachineMiddleware(
 					// Validate protocol version
 					if (result.protocolVersion !== LATEST_PROTOCOL_VERSION) {
 						const errorMsg = `Protocol version mismatch: expected ${LATEST_PROTOCOL_VERSION}, got ${result.protocolVersion}`;
-						console.warn(
-							`[StateMachineMiddleware] ${errorMsg}`,
-						);
+						console.warn(`[StateMachineMiddleware] ${errorMsg}`);
 						sessionManager.markError(session.id, errorMsg);
 						// We continue to allow the pipeline to proceed so the message reaches the client,
 						// but the session is now in ERROR state.
@@ -125,7 +127,10 @@ export function createStateMachineMiddleware(
 		}
 
 		// 3. Initialized notification (outbound) - Handshake complete
-		if (detector.isInitializedNotification(payload) && event.direction === "outbound") {
+		if (
+			detector.isInitializedNotification(payload) &&
+			event.direction === "outbound"
+		) {
 			// Retrieve stored capabilities from context
 			const serverCaps = ctx.get(serverCapabilitiesKey);
 			const protocolVersion = ctx.get(protocolVersionKey);
