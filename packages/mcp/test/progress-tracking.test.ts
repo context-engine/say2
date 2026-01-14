@@ -198,7 +198,7 @@ describe("Progress Tracking Integration", () => {
 		// Progress should be 1, 2, 3 (monotonically increasing)
 		expect(progressValues).toEqual([1, 2, 3]);
 		for (let i = 1; i < progressValues.length; i++) {
-			expect(progressValues[i]).toBeGreaterThan(progressValues[i - 1]);
+			expect(progressValues[i]!).toBeGreaterThan(progressValues[i - 1]!);
 		}
 	});
 
@@ -275,7 +275,7 @@ describe("Progress Tracking Integration", () => {
 
 		// We should have exactly one token with 3 notifications
 		expect(tokenToNotifications.size).toBe(1);
-		const notifications = Array.from(tokenToNotifications.values())[0];
+		const notifications = Array.from(tokenToNotifications.values())[0]!;
 		expect(notifications.length).toBe(3);
 	});
 });
