@@ -97,7 +97,21 @@ export class ToolOperationStore {
      * @param update - The progress update
      */
     updateProgress(id: string, update: ProgressUpdate): void {
-        throw new Error("Not implemented: ToolOperationStore.updateProgress");
+        const operation = this.operations.get(id);
+        if (!operation) {
+            throw new Error(`Tool operation not found: ${id}`);
+        }
+
+        if (!operation.progress) {
+            operation.progress = [];
+        }
+
+        operation.progress.push({
+            progress: update.progress,
+            total: update.total,
+            message: update.message,
+            timestamp: update.timestamp,
+        });
     }
 
     /**

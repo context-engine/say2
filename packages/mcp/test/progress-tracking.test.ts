@@ -14,6 +14,8 @@ import {
 	type MockServerTransport,
 } from "./fixtures/mock-server";
 import { scenarioMockConfig } from "./fixtures/tool-scenarios";
+import { progressTracker } from "../src/progress/tracker";
+import { McpProgressNotificationSchema } from "../src/types/progress";
 
 /**
  * Progress Tracking Integration Tests
@@ -79,6 +81,20 @@ describe("Progress Tracking Integration", () => {
 
 		// Initialize connection
 		await client.connect(loggingTransport);
+
+		// Set up progress notification handler (mirrors McpClientManager.connect())
+		client.setNotificationHandler(
+			McpProgressNotificationSchema,
+			(notification) => {
+				progressTracker.handleNotification({
+					progressToken: notification.params.progressToken,
+					progress: notification.params.progress,
+					total: notification.params.total,
+					message: notification.params.message,
+				});
+			},
+		);
+
 		registry.register(sessionId, client, loggingTransport);
 
 		// Manually transition to ACTIVE
