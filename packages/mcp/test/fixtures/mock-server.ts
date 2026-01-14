@@ -348,6 +348,18 @@ function createToolCallResponse(
 		}
 	}
 
+	// Default validation for echo tool (used in tests)
+	if (toolName === "echo" && !args.message) {
+		return {
+			jsonrpc: "2.0",
+			id,
+			error: {
+				code: -32602,
+				message: "Missing required argument: message",
+			},
+		};
+	}
+
 	// Check for custom tool behavior
 	const behavior = config.toolBehaviors?.[toolName];
 

@@ -33,7 +33,18 @@ export class ToolOperationStore {
         request: ToolCallRequest,
         requestId: string,
     ): ToolOperation {
-        throw new Error("Not implemented: ToolOperationStore.create");
+        const id = uuidv4();
+        const operation: ToolOperation = {
+            id,
+            sessionId,
+            requestId,
+            request,
+            status: "pending",
+            startedAt: new Date(),
+        };
+
+        this.operations.set(operation.id, operation);
+        return operation;
     }
 
     /**
@@ -53,7 +64,31 @@ export class ToolOperationStore {
             completedAt?: Date;
         },
     ): void {
-        throw new Error("Not implemented: ToolOperationStore.update");
+        const operation = this.operations.get(id);
+        if (!operation) {
+            throw new Error(`Tool operation not found: ${id}`);
+        }
+
+        if (updates.status) {
+            operation.status = updates.status;
+        }
+
+        if (updates.result) {
+            operation.result = updates.result;
+        }
+
+        if (updates.error) {
+            operation.error = updates.error;
+        }
+
+        // Set completedAt for terminal states
+        if (
+            updates.status === "completed" ||
+            updates.status === "error" ||
+            updates.status === "cancelled"
+        ) {
+            operation.completedAt = new Date();
+        }
     }
 
     /**
@@ -80,7 +115,7 @@ export class ToolOperationStore {
      * @returns The operation or undefined if not found
      */
     get(id: string): ToolOperation | undefined {
-        throw new Error("Not implemented: ToolOperationStore.get");
+        return this.operations.get(id);
     }
 
     /**
@@ -89,7 +124,9 @@ export class ToolOperationStore {
      * @returns Array of operations for the session
      */
     getBySession(sessionId: string): ToolOperation[] {
-        throw new Error("Not implemented: ToolOperationStore.getBySession");
+        return Array.from(this.operations.values()).filter(
+            (op) => op.sessionId === sessionId,
+        );
     }
 
     /**
@@ -99,7 +136,9 @@ export class ToolOperationStore {
      * @returns The operation or undefined if not found
      */
     getByRequestId(requestId: string): ToolOperation | undefined {
-        throw new Error("Not implemented: ToolOperationStore.getByRequestId");
+        return Array.from(this.operations.values()).find(
+            (op) => op.requestId === requestId,
+        );
     }
 
     /**
@@ -108,14 +147,18 @@ export class ToolOperationStore {
      * @param sessionId - The session ID
      */
     clear(sessionId: string): void {
-        throw new Error("Not implemented: ToolOperationStore.clear");
+        for (const [id, op] of this.operations.entries()) {
+            if (op.sessionId === sessionId) {
+                this.operations.delete(id);
+            }
+        }
     }
 
     /**
      * Get count of operations (for testing).
      */
     count(): number {
-        throw new Error("Not implemented: ToolOperationStore.count");
+        return this.operations.size;
     }
 }
 

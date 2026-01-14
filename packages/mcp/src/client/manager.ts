@@ -26,6 +26,7 @@ import type {
 	ToolOperation,
 	CallToolOptions,
 } from "../types/tool";
+import { toolOperationStore } from "../store";
 
 export class McpClientManager {
 	constructor(
@@ -290,7 +291,60 @@ export class McpClientManager {
 		request: ToolCallRequest,
 		options?: CallToolOptions,
 	): Promise<ToolOperation> {
-		throw new Error("Not implemented: McpClientManager.callTool");
+		const entry = this.registry.get(sessionId);
+		if (!entry) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		// Generate request ID for correlation
+		const requestId = `call-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+		// Create pending operation
+		const operation = toolOperationStore.create(sessionId, request, requestId);
+
+		try {
+			// Call tool via MCP SDK
+			const result = await entry.client.callTool(
+				{
+					name: request.name,
+					arguments: request.arguments ?? {},
+				},
+				// Phase 2a: No cancellation token or result schema validation yet
+			);
+
+			// Update operation with result
+			if (result.isError) {
+				toolOperationStore.update(operation.id, {
+					status: "error",
+					result: {
+						// Cast to any to bypass strict type checking against SDK's unknown
+						content: result.content as any,
+						isError: true,
+					},
+				});
+			} else {
+				toolOperationStore.update(operation.id, {
+					status: "completed",
+					result: {
+						// Cast to any to bypass strict type checking against SDK's unknown
+						content: result.content as any,
+						isError: false,
+					},
+				});
+			}
+		} catch (error: any) {
+			// Protocol error (JSON-RPC error from server)
+			toolOperationStore.update(operation.id, {
+				status: "error",
+				error: {
+					code: error.code ?? -32603,
+					message: error.message || String(error),
+					data: error.data,
+				},
+			});
+		}
+
+		return toolOperationStore.get(operation.id)!;
 	}
 
 	/**
@@ -299,7 +353,7 @@ export class McpClientManager {
 	 * @returns The ToolOperation or undefined if not found
 	 */
 	getToolOperation(operationId: string): ToolOperation | undefined {
-		throw new Error("Not implemented: McpClientManager.getToolOperation");
+		return toolOperationStore.get(operationId);
 	}
 
 	/**
@@ -308,7 +362,7 @@ export class McpClientManager {
 	 * @returns Array of ToolOperations for the session
 	 */
 	getToolOperations(sessionId: string): ToolOperation[] {
-		throw new Error("Not implemented: McpClientManager.getToolOperations");
+		return toolOperationStore.getBySession(sessionId);
 	}
 
 	/**
@@ -327,4 +381,3 @@ export class McpClientManager {
 		throw new Error("Not implemented: McpClientManager.cancelOperation");
 	}
 }
-
