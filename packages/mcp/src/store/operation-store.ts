@@ -4,11 +4,12 @@
  * Manages the lifecycle of tool operations.
  * Tracks pending, completed, error, and cancelled operations.
  *
- * Phase 2a: Basic execution (create, update, get, getBySession)
- * Phase 2a Task 03: Progress tracking extensions
- * Phase 2a Task 04: Cancellation extensions
+ * Basic execution (create, update, get, getBySession)
+ * Progress tracking extensions
+ * Cancellation extensions
  */
 
+import { v4 as uuidv4 } from "uuid";
 import type {
     ToolCallRequest,
     ToolCallResult,
@@ -36,7 +37,7 @@ export class ToolOperationStore {
     }
 
     /**
-     * Update an existing operation with result or error.
+     * Update an existing operation with result, error, or other fields.
      * @param id - The operation ID
      * @param updates - Partial updates to apply
      * @throws Error if operation not found
@@ -72,6 +73,7 @@ export class ToolOperationStore {
     markCancelled(id: string, reason?: string): void {
         throw new Error("Not implemented: ToolOperationStore.markCancelled");
     }
+
     /**
      * Get an operation by ID.
      * @param id - The operation ID
