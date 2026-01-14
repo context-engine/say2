@@ -43,6 +43,8 @@ export const Protocol = {
 
 export type Protocol = (typeof Protocol)[keyof typeof Protocol];
 
+export const LATEST_PROTOCOL_VERSION = "2025-11-25";
+
 // =============================================================================
 // Server Config
 // =============================================================================
@@ -56,6 +58,9 @@ export const ServerConfigSchema = z.object({
 	env: z.record(z.string(), z.string()).optional(),
 	// HTTP transport
 	url: z.string().url().optional(),
+	// Timeouts (ms)
+	connectTimeout: z.number().int().positive().optional(),
+	initializeTimeout: z.number().int().positive().optional(),
 });
 
 export type ServerConfig = z.infer<typeof ServerConfigSchema>;
@@ -78,9 +83,11 @@ export const SessionSchema = z.object({
 	updatedAt: z.date(),
 	config: ServerConfigSchema,
 	protocol: z.enum(["mcp", "acp", "a2a"]).default("mcp"),
+	mode: z.enum(["client", "proxy"]).default("client"),
 	protocolVersion: z.string().optional(),
 	clientCapabilities: z.record(z.string(), z.unknown()).optional(),
 	serverCapabilities: z.record(z.string(), z.unknown()).optional(),
+	error: z.string().optional(),
 });
 
 export type Session = z.infer<typeof SessionSchema>;
@@ -264,5 +271,20 @@ export function createSession(config: ServerConfig): Session {
 		updatedAt: now,
 		config,
 		protocol: "mcp",
+		mode: "client",
 	};
+}
+
+// =============================================================================
+// Protocol Detection (Strategy Pattern)
+// =============================================================================
+
+export interface ProtocolDetector {
+	isInitializeRequest(msg: JsonRpcMessage): boolean;
+	isInitializeResponse(msg: JsonRpcMessage): boolean;
+	isInitializedNotification(msg: JsonRpcMessage): boolean;
+	extractCapabilities(msg: JsonRpcMessage): Record<string, unknown> | undefined;
+	extractServerInfo(
+		msg: JsonRpcMessage,
+	): { name: string; version: string } | undefined;
 }

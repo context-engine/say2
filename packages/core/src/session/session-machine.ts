@@ -16,6 +16,7 @@ export interface SessionContext {
 	id: string;
 	config: ServerConfig;
 	protocol: "mcp" | "acp" | "a2a";
+	mode: "client" | "proxy";
 	protocolVersion?: string;
 	clientCapabilities?: Record<string, unknown>;
 	serverCapabilities?: Record<string, unknown>;
@@ -45,6 +46,7 @@ export interface SessionInput {
 	id: string;
 	config: ServerConfig;
 	protocol?: "mcp" | "acp" | "a2a";
+	mode?: "client" | "proxy";
 }
 
 // =============================================================================
@@ -56,6 +58,11 @@ export const sessionMachine = setup({
 		context: {} as SessionContext,
 		events: {} as SessionEvent,
 		input: {} as SessionInput,
+	},
+	delays: {
+		connectTimeout: ({ context }) => context.config.connectTimeout ?? 10000,
+		initializeTimeout: ({ context }) =>
+			context.config.initializeTimeout ?? 30000,
 	},
 	actions: {
 		updateTimestamp: assign({
@@ -99,12 +106,17 @@ export const sessionMachine = setup({
 		id: input.id,
 		config: input.config,
 		protocol: input.protocol ?? "mcp",
+		mode: input.mode ?? "client",
 		createdAt: new Date(),
 		updatedAt: new Date(),
 	}),
 	states: {
 		created: {
 			on: {
+				CLOSE: {
+					target: "closed",
+					actions: "updateTimestamp",
+				},
 				CONNECT: {
 					target: "connecting",
 					actions: "updateTimestamp",
@@ -116,7 +128,21 @@ export const sessionMachine = setup({
 			},
 		},
 		connecting: {
+			after: {
+				connectTimeout: {
+					target: "error",
+					actions: assign({
+						errorReason: ({ context }: { context: SessionContext }) =>
+							`Connection timeout (${context.config.connectTimeout ?? 10000}ms)`,
+						updatedAt: () => new Date(),
+					}),
+				},
+			},
 			on: {
+				CLOSE: {
+					target: "closed",
+					actions: "updateTimestamp",
+				},
 				INITIALIZE: {
 					target: "initializing",
 					actions: "updateTimestamp",
@@ -128,7 +154,21 @@ export const sessionMachine = setup({
 			},
 		},
 		initializing: {
+			after: {
+				initializeTimeout: {
+					target: "error",
+					actions: assign({
+						errorReason: ({ context }: { context: SessionContext }) =>
+							`Initialize timeout (${context.config.initializeTimeout ?? 30000}ms)`,
+						updatedAt: () => new Date(),
+					}),
+				},
+			},
 			on: {
+				CLOSE: {
+					target: "closed",
+					actions: "updateTimestamp",
+				},
 				ACTIVATE: {
 					target: "active",
 					actions: "setCapabilities",

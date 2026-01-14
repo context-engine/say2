@@ -214,7 +214,7 @@ describe("Session State Machine", () => {
 
 			actor.send({ type: "CLOSE" });
 
-			expect(actor.getSnapshot().value).toBe("created");
+			expect(actor.getSnapshot().value).toBe("closed");
 		});
 
 		test("is ignored in 'connecting' state", () => {
@@ -226,7 +226,7 @@ describe("Session State Machine", () => {
 
 			actor.send({ type: "CLOSE" });
 
-			expect(actor.getSnapshot().value).toBe("connecting");
+			expect(actor.getSnapshot().value).toBe("closed");
 		});
 
 		test("is ignored in 'initializing' state", () => {
@@ -239,7 +239,7 @@ describe("Session State Machine", () => {
 
 			actor.send({ type: "CLOSE" });
 
-			expect(actor.getSnapshot().value).toBe("initializing");
+			expect(actor.getSnapshot().value).toBe("closed");
 		});
 	});
 
@@ -397,6 +397,51 @@ describe("Session State Machine", () => {
 			actor.send({ type: "ERROR" });
 
 			expect(actor.getSnapshot().value).toBe("closed");
+		});
+	});
+
+	describe("timeouts", () => {
+		test("transitions from 'connecting' to 'error' after 10000ms", async () => {
+			const shortTimeoutConfig = {
+				...testConfig,
+				connectTimeout: 50,
+			};
+
+			const actor = createActor(sessionMachine, {
+				input: { id: "test-id", config: shortTimeoutConfig as any },
+			});
+			actor.start();
+			actor.send({ type: "CONNECT" });
+
+			expect(actor.getSnapshot().value).toBe("connecting");
+
+			// Wait for timeout (using real time since it's short)
+			await new Promise((resolve) => setTimeout(resolve, 60));
+
+			expect(actor.getSnapshot().value).toBe("error");
+			expect(actor.getSnapshot().context.errorReason).toMatch(/timeout/i);
+		});
+
+		test("transitions from 'initializing' to 'error' after 30000ms", async () => {
+			const shortTimeoutConfig = {
+				...testConfig,
+				initializeTimeout: 50,
+			};
+
+			const actor = createActor(sessionMachine, {
+				input: { id: "test-id", config: shortTimeoutConfig as any },
+			});
+			actor.start();
+			actor.send({ type: "CONNECT" });
+			actor.send({ type: "INITIALIZE" });
+
+			expect(actor.getSnapshot().value).toBe("initializing");
+
+			// Wait for timeout
+			await new Promise((resolve) => setTimeout(resolve, 60));
+
+			expect(actor.getSnapshot().value).toBe("error");
+			expect(actor.getSnapshot().context.errorReason).toMatch(/timeout/i);
 		});
 	});
 
