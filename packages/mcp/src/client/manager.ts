@@ -29,6 +29,7 @@ import type {
 import { toolOperationStore } from "../store";
 import { progressTracker } from "../progress/tracker";
 import { McpProgressNotificationSchema } from "../types/progress";
+import { cancellationManager } from "../cancel/manager";
 
 export class McpClientManager {
 	constructor(
@@ -325,6 +326,15 @@ export class McpClientManager {
 			toolOperationStore.update(operation.id, { progressToken });
 		}
 
+		// Cancellation setup with abort capability
+		let cancelReject: ((reason: Error) => void) | undefined;
+		const cancelPromise = new Promise<never>((_, reject) => {
+			cancelReject = reject;
+		});
+
+		cancellationManager.setClient(entry.client);
+		cancellationManager.register(requestId, operation.id, options?.timeout, cancelReject);
+
 		try {
 			// Build request params with optional progress token
 			const callParams: { name: string; arguments: Record<string, unknown>; _meta?: { progressToken: string } } = {
@@ -335,8 +345,19 @@ export class McpClientManager {
 				callParams._meta = { progressToken };
 			}
 
-			// Call tool via MCP SDK
-			const result = await entry.client.callTool(callParams);
+			// Call tool via MCP SDK with cancellation support
+			// Race between the SDK call and the cancel promise
+			const result = await Promise.race([
+				entry.client.callTool(callParams),
+				cancelPromise,
+			]);
+
+			// Check if operation was cancelled while waiting for response
+			const currentOp = toolOperationStore.get(operation.id);
+			if (currentOp?.status === "cancelled") {
+				// Response arrived after cancel - ignore it
+				return toolOperationStore.get(operation.id)!;
+			}
 
 			// Update operation with result
 			if (result.isError) {
@@ -359,6 +380,13 @@ export class McpClientManager {
 				});
 			}
 		} catch (error: any) {
+			// Check if this was a cancellation
+			const currentOp = toolOperationStore.get(operation.id);
+			if (currentOp?.status === "cancelled") {
+				// Already marked as cancelled - just return
+				return toolOperationStore.get(operation.id)!;
+			}
+
 			// Protocol error (JSON-RPC error from server)
 			toolOperationStore.update(operation.id, {
 				status: "error",
@@ -369,6 +397,9 @@ export class McpClientManager {
 				},
 			});
 		} finally {
+			// Notify cancellation manager that response arrived
+			cancellationManager.onResponse(requestId);
+
 			// Cleanup progress token registration
 			if (progressToken) {
 				progressTracker.unregister(progressToken);
@@ -409,6 +440,15 @@ export class McpClientManager {
 	 * @param reason - Optional cancellation reason
 	 */
 	async cancelOperation(operationId: string, reason?: string): Promise<void> {
-		throw new Error("Not implemented: McpClientManager.cancelOperation");
+		// Verify operation exists and is still pending
+		const operation = toolOperationStore.get(operationId);
+		if (!operation) {
+			return; // Unknown operation - ignore
+		}
+		if (operation.status !== "pending") {
+			return; // Already completed/error/cancelled - ignore
+		}
+
+		await cancellationManager.cancel(operationId, reason);
 	}
 }

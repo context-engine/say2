@@ -120,7 +120,22 @@ export class ToolOperationStore {
      * @param reason - Optional cancellation reason
      */
     markCancelled(id: string, reason?: string): void {
-        throw new Error("Not implemented: ToolOperationStore.markCancelled");
+        const operation = this.operations.get(id);
+        if (!operation) {
+            // Operation may have been cleared or never existed - silently ignore
+            return;
+        }
+
+        // Only mark as cancelled if still pending
+        if (operation.status !== "pending") {
+            return;
+        }
+
+        operation.status = "cancelled";
+        if (reason) {
+            operation.cancelReason = reason;
+        }
+        operation.completedAt = new Date();
     }
 
     /**
