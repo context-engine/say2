@@ -68,6 +68,7 @@ export function createStateMachineMiddleware(
 	sessionManager: SessionManager,
 	detector: ProtocolDetector,
 ): Middleware {
+	// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Protocol detection requires sequential checks
 	return async (ctx: MiddlewareContext, next: NextFn) => {
 		const { event, session } = ctx;
 		const payload = event.payload;
