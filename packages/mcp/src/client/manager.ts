@@ -27,6 +27,9 @@ import type {
 	CallToolOptions,
 } from "../types/tool";
 import { toolOperationStore } from "../store";
+import { progressTracker } from "../progress/tracker";
+import { McpProgressNotificationSchema } from "../types/progress";
+import { cancellationManager } from "../cancel/manager";
 
 export class McpClientManager {
 	constructor(
@@ -102,7 +105,20 @@ export class McpClientManager {
 			// as it observes the initialize/initialized messages
 			await client.connect(loggingTransport);
 
-			// 8. Register in registry
+			// 8. Set up progress notification handler
+			client.setNotificationHandler(
+				McpProgressNotificationSchema,
+				(notification) => {
+					progressTracker.handleNotification({
+						progressToken: notification.params.progressToken,
+						progress: notification.params.progress,
+						total: notification.params.total,
+						message: notification.params.message,
+					});
+				},
+			);
+
+			// 9. Register in registry
 			this.registry.register(sessionId, client, loggingTransport);
 
 			// 9. Discover capabilities (Tools, Resources, Prompts)
@@ -278,7 +294,7 @@ export class McpClientManager {
 	/**
 	 * Call a tool on the connected MCP server.
 	 *
-	 * Basic execution without progress tracking or cancellation.
+	 * Supports progress tracking when options.includeProgress is true.
 	 *
 	 * @param sessionId - The session to execute the tool on
 	 * @param request - The tool call request (name + arguments)
@@ -302,15 +318,46 @@ export class McpClientManager {
 		// Create pending operation
 		const operation = toolOperationStore.create(sessionId, request, requestId);
 
+		// Progress tracking setup
+		let progressToken: string | undefined;
+		if (options?.includeProgress) {
+			progressToken = progressTracker.generateToken();
+			progressTracker.register(progressToken, operation.id);
+			toolOperationStore.update(operation.id, { progressToken });
+		}
+
+		// Cancellation setup with abort capability
+		let cancelReject: ((reason: Error) => void) | undefined;
+		const cancelPromise = new Promise<never>((_, reject) => {
+			cancelReject = reject;
+		});
+
+		cancellationManager.setClient(entry.client);
+		cancellationManager.register(requestId, operation.id, options?.timeout, cancelReject);
+
 		try {
-			// Call tool via MCP SDK
-			const result = await entry.client.callTool(
-				{
-					name: request.name,
-					arguments: request.arguments ?? {},
-				},
-				// Phase 2a: No cancellation token or result schema validation yet
-			);
+			// Build request params with optional progress token
+			const callParams: { name: string; arguments: Record<string, unknown>; _meta?: { progressToken: string } } = {
+				name: request.name,
+				arguments: request.arguments ?? {},
+			};
+			if (progressToken) {
+				callParams._meta = { progressToken };
+			}
+
+			// Call tool via MCP SDK with cancellation support
+			// Race between the SDK call and the cancel promise
+			const result = await Promise.race([
+				entry.client.callTool(callParams),
+				cancelPromise,
+			]);
+
+			// Check if operation was cancelled while waiting for response
+			const currentOp = toolOperationStore.get(operation.id);
+			if (currentOp?.status === "cancelled") {
+				// Response arrived after cancel - ignore it
+				return toolOperationStore.get(operation.id)!;
+			}
 
 			// Update operation with result
 			if (result.isError) {
@@ -333,6 +380,13 @@ export class McpClientManager {
 				});
 			}
 		} catch (error: any) {
+			// Check if this was a cancellation
+			const currentOp = toolOperationStore.get(operation.id);
+			if (currentOp?.status === "cancelled") {
+				// Already marked as cancelled - just return
+				return toolOperationStore.get(operation.id)!;
+			}
+
 			// Protocol error (JSON-RPC error from server)
 			toolOperationStore.update(operation.id, {
 				status: "error",
@@ -342,6 +396,14 @@ export class McpClientManager {
 					data: error.data,
 				},
 			});
+		} finally {
+			// Notify cancellation manager that response arrived
+			cancellationManager.onResponse(requestId);
+
+			// Cleanup progress token registration
+			if (progressToken) {
+				progressTracker.unregister(progressToken);
+			}
 		}
 
 		return toolOperationStore.get(operation.id)!;
@@ -378,6 +440,15 @@ export class McpClientManager {
 	 * @param reason - Optional cancellation reason
 	 */
 	async cancelOperation(operationId: string, reason?: string): Promise<void> {
-		throw new Error("Not implemented: McpClientManager.cancelOperation");
+		// Verify operation exists and is still pending
+		const operation = toolOperationStore.get(operationId);
+		if (!operation) {
+			return; // Unknown operation - ignore
+		}
+		if (operation.status !== "pending") {
+			return; // Already completed/error/cancelled - ignore
+		}
+
+		await cancellationManager.cancel(operationId, reason);
 	}
 }

@@ -28,6 +28,15 @@ export const ProgressNotificationSchema = z.object({
 export type ProgressNotification = z.infer<typeof ProgressNotificationSchema>;
 
 /**
+ * MCP SDK-compatible notification schema with method field.
+ * Used for setNotificationHandler to register progress notification handler.
+ */
+export const McpProgressNotificationSchema = z.object({
+    method: z.literal("notifications/progress"),
+    params: ProgressNotificationSchema,
+});
+
+/**
  * Progress update stored in ToolOperation.
  * Adds timestamp and ID to the raw notification data.
  */
