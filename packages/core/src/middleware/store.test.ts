@@ -124,9 +124,13 @@ describe("StoreMiddleware", () => {
 					session,
 					extensions: new Map(),
 					get: () => undefined,
-					set: () => {},
+					set: () => {
+						/* no-op */
+					},
 				};
-				await middleware(ctx, async () => {});
+				await middleware(ctx, async () => {
+					/* no-op */
+				});
 			} catch (e) {
 				if ((e as Error).message.includes("Not implemented")) {
 					// Expected
@@ -219,7 +223,9 @@ describe("StoreMiddleware", () => {
 					session,
 					extensions: new Map(),
 					get: () => undefined,
-					set: () => {},
+					set: () => {
+						/* no-op */
+					},
 				};
 
 				await middleware(ctx, async () => {
@@ -302,18 +308,26 @@ describe("StoreMiddleware", () => {
 						event: event1,
 						session,
 						get: () => undefined,
-						set: () => {},
+						set: () => {
+							/* no-op */
+						},
 					},
-					async () => {},
+					async () => {
+						/* no-op */
+					},
 				);
 				await middleware(
 					{
 						event: event2,
 						session: session2,
 						get: () => undefined,
-						set: () => {},
+						set: () => {
+							/* no-op */
+						},
 					},
-					async () => {},
+					async () => {
+						/* no-op */
+					},
 				);
 
 				const session1Events = store.getBySession(session.id);
