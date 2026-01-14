@@ -11,6 +11,9 @@ export * from "./client";
 export * from "./events";
 // Transport decorators
 export * from "./transport";
+// Operation stores (Phase 2a)
+export * from "./store";
 
 // MCP-specific types
 export * from "./types";
+

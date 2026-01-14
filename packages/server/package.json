@@ -12,6 +12,6 @@
 	"dependencies": {
 		"@say2/core": "workspace:*",
 		"@say2/mcp": "workspace:*",
-		"hono": "^4.11.3"
+		"hono": "^4.11.4"
 	}
 }

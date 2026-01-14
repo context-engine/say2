@@ -21,6 +21,11 @@ import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
 import type { MiddlewarePipeline, SessionManager } from "@say2/core";
 import { LoggingTransport } from "../transport";
 import type { McpClientRegistry } from "./registry";
+import type {
+	ToolCallRequest,
+	ToolOperation,
+	CallToolOptions,
+} from "../types/tool";
 
 export class McpClientManager {
 	constructor(
@@ -31,7 +36,7 @@ export class McpClientManager {
 			clientInfo: { name: string; version: string },
 			options?: { capabilities: any },
 		) => Client = (info, opts) => new Client(info, opts),
-	) {}
+	) { }
 
 	/**
 	 * Connect to an MCP server for the given session.
@@ -265,6 +270,47 @@ export class McpClientManager {
 		return { prompts };
 	}
 
+	// =========================================================================
+	// Phase 2a: Tool Operations
+	// =========================================================================
+
+	/**
+	 * Call a tool on the connected MCP server.
+	 *
+	 * Phase 2a: Basic execution without progress tracking or cancellation.
+	 *
+	 * @param sessionId - The session to execute the tool on
+	 * @param request - The tool call request (name + arguments)
+	 * @param options - Optional configuration (timeout, progress tracking)
+	 * @returns A ToolOperation tracking the execution lifecycle
+	 * @throws Error if session not connected or tool execution fails
+	 */
+	async callTool(
+		sessionId: string,
+		request: ToolCallRequest,
+		options?: CallToolOptions,
+	): Promise<ToolOperation> {
+		throw new Error("Not implemented: McpClientManager.callTool");
+	}
+
+	/**
+	 * Get a tool operation by ID.
+	 * @param operationId - The operation ID
+	 * @returns The ToolOperation or undefined if not found
+	 */
+	getToolOperation(operationId: string): ToolOperation | undefined {
+		throw new Error("Not implemented: McpClientManager.getToolOperation");
+	}
+
+	/**
+	 * Get all tool operations for a session.
+	 * @param sessionId - The session ID
+	 * @returns Array of ToolOperations for the session
+	 */
+	getToolOperations(sessionId: string): ToolOperation[] {
+		throw new Error("Not implemented: McpClientManager.getToolOperations");
+	}
+
 	/**
 	 * Check if a session has an active MCP connection.
 	 */
@@ -272,3 +318,4 @@ export class McpClientManager {
 		return this.registry.get(sessionId) !== undefined;
 	}
 }
+

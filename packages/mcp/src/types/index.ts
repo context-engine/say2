@@ -17,3 +17,6 @@ export interface McpClientEntry {
 
 // Forward reference - LoggingTransport is defined in transport module
 import type { LoggingTransport } from "../transport";
+
+// Tool operation types (Phase 2a)
+export * from "./tool";

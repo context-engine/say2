@@ -1,0 +1,100 @@
+/**
+ * Tool Operation Store
+ *
+ * Manages the lifecycle of tool operations.
+ * Tracks pending, completed, error, and cancelled operations.
+ *
+ * Phase 2a: Basic execution (create, update, get, getBySession)
+ * Phase 2a Task 03: Progress tracking extensions
+ * Phase 2a Task 04: Cancellation extensions
+ */
+
+import type {
+    ToolCallRequest,
+    ToolCallResult,
+    ToolOperation,
+    JsonRpcError,
+} from "../types/tool";
+
+export class ToolOperationStore {
+    private operations = new Map<string, ToolOperation>();
+
+    /**
+     * Create a new pending tool operation.
+     * @param sessionId - The session this operation belongs to
+     * @param request - The tool call request
+     * @param requestId - The JSON-RPC request ID for correlation
+     * @returns The created ToolOperation in pending status
+     */
+    create(
+        sessionId: string,
+        request: ToolCallRequest,
+        requestId: string,
+    ): ToolOperation {
+        throw new Error("Not implemented: ToolOperationStore.create");
+    }
+
+    /**
+     * Update an existing operation with result or error.
+     * @param id - The operation ID
+     * @param updates - Partial updates to apply
+     * @throws Error if operation not found
+     */
+    update(
+        id: string,
+        updates: {
+            status?: ToolOperation["status"];
+            result?: ToolCallResult;
+            error?: JsonRpcError;
+        },
+    ): void {
+        throw new Error("Not implemented: ToolOperationStore.update");
+    }
+
+    /**
+     * Get an operation by ID.
+     * @param id - The operation ID
+     * @returns The operation or undefined if not found
+     */
+    get(id: string): ToolOperation | undefined {
+        throw new Error("Not implemented: ToolOperationStore.get");
+    }
+
+    /**
+     * Get all operations for a session.
+     * @param sessionId - The session ID
+     * @returns Array of operations for the session
+     */
+    getBySession(sessionId: string): ToolOperation[] {
+        throw new Error("Not implemented: ToolOperationStore.getBySession");
+    }
+
+    /**
+     * Get an operation by its JSON-RPC request ID.
+     * Useful for correlating responses with pending operations.
+     * @param requestId - The JSON-RPC request ID
+     * @returns The operation or undefined if not found
+     */
+    getByRequestId(requestId: string): ToolOperation | undefined {
+        throw new Error("Not implemented: ToolOperationStore.getByRequestId");
+    }
+
+    /**
+     * Clear all operations for a session.
+     * Called when session is closed.
+     * @param sessionId - The session ID
+     */
+    clear(sessionId: string): void {
+        throw new Error("Not implemented: ToolOperationStore.clear");
+    }
+
+    /**
+     * Get count of operations (for testing).
+     */
+    count(): number {
+        throw new Error("Not implemented: ToolOperationStore.count");
+    }
+}
+
+// Singleton instance
+export const toolOperationStore = new ToolOperationStore();
