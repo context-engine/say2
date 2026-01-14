@@ -271,13 +271,13 @@ export class McpClientManager {
 	}
 
 	// =========================================================================
-	// Phase 2a: Tool Operations
+	// Tool Operations
 	// =========================================================================
 
 	/**
 	 * Call a tool on the connected MCP server.
 	 *
-	 * Phase 2a: Basic execution without progress tracking or cancellation.
+	 * Basic execution without progress tracking or cancellation.
 	 *
 	 * @param sessionId - The session to execute the tool on
 	 * @param request - The tool call request (name + arguments)

@@ -1,7 +1,7 @@
 /**
- * Phase 2a Test Fixtures
+ * Basic Tool Execution Test Fixtures
  *
- * Pre-configured mock server configs and sample data for Phase 2a tool operation testing.
+ * Pre-configured mock server configs and sample data for tool operation testing.
  */
 
 import type { ToolBehavior, ToolContentConfig } from "./mock-server";

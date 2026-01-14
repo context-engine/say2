@@ -8,7 +8,7 @@
 import type { JSONRPCMessage } from "@modelcontextprotocol/sdk/types.js";
 
 // =============================================================================
-// Tool Behavior Configuration (Phase 2a)
+// Tool Behavior Configuration (Execution Tests)
 // =============================================================================
 
 /** Content item returned by a tool */
@@ -104,7 +104,7 @@ const defaultConfig: MockServerConfig = {
 	prompts: [],
 	responseDelay: 0,
 	failOnMethods: [],
-	strictToolValidation: true, // Default to strict for Phase 2a
+	strictToolValidation: true, // Default to strict for executed tests
 };
 
 

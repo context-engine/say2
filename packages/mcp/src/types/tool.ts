@@ -1,7 +1,7 @@
 /**
  * Tool Operation Types
  *
- * Zod schemas and TypeScript types for Phase 2a Tool Operations.
+ * Zod schemas and TypeScript types for Tool Operations.
  * Following MCP spec: https://spec.modelcontextprotocol.io/specification/2024-11-05/server/tools/
  */
 
@@ -169,7 +169,7 @@ export const ToolOperationSchema = z.object({
     error: JsonRpcErrorSchema.optional(),
     startedAt: z.date(),
     completedAt: z.date().optional(),
-    // Phase 2a Task 03: Progress tracking
+    // Progress tracking
     progressToken: z.union([z.string(), z.number()]).optional(),
     progress: z
         .array(
@@ -181,7 +181,7 @@ export const ToolOperationSchema = z.object({
             }),
         )
         .optional(),
-    // Phase 2a Task 04: Cancellation
+    // Cancellation
     cancelReason: z.string().optional(),
 });
 

@@ -1,7 +1,7 @@
 /**
  * Cancellation Types
  *
- * Zod schemas and TypeScript types for Phase 2a Task 04.
+ * Zod schemas and TypeScript types for Cancellation.
  * Following MCP spec: https://spec.modelcontextprotocol.io/specification/2024-11-05/client/utilities/cancellation/
  */
 

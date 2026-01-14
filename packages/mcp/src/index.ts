@@ -11,9 +11,9 @@ export * from "./client";
 export * from "./events";
 // Transport decorators
 export * from "./transport";
-// Operation stores (Phase 2a)
+// Operation stores (Tool Execution)
 export * from "./store";
-// Tool operations extensions (Phase 2a)
+// Tool operations extensions (Progress, Cancel, Content)
 export * from "./progress/tracker";
 export * from "./cancel/manager";
 export * from "./content/parser";

@@ -1,7 +1,7 @@
 /**
  * Progress Tracking Types
  *
- * Zod schemas and TypeScript types for Phase 2a Task 03.
+ * Zod schemas and TypeScript types for Progress Tracking.
  * Following MCP spec: https://spec.modelcontextprotocol.io/specification/2024-11-05/client/utilities/progress/
  */
 
