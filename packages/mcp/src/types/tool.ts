@@ -12,6 +12,29 @@ import { z } from "zod";
 // =============================================================================
 
 /**
+ * Supported audio MIME types per MCP spec.
+ */
+export const AudioMimeTypes = [
+    "audio/wav",
+    "audio/mp3",
+    "audio/mpeg",
+    "audio/ogg",
+    "audio/webm",
+    "audio/flac",
+] as const;
+
+/**
+ * Supported image MIME types per MCP spec.
+ */
+export const ImageMimeTypes = [
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+] as const;
+
+/**
  * Annotations for content items.
  * Used to indicate intended audience and priority.
  */

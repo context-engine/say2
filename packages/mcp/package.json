@@ -12,6 +12,7 @@
 	"dependencies": {
 		"@modelcontextprotocol/sdk": "^1.25.2",
 		"@say2/core": "workspace:*",
+		"ajv": "^8.17.1",
 		"uuid": "^13.0.0",
 		"zod": "^4.3.5"
 	},
