@@ -54,16 +54,18 @@ export class TaskManager {
     }
 
     /**
-     * Poll until task reaches a terminal status.
+     * Poll until task reaches a terminal status or shouldStop returns true.
      * @param taskId - The task to poll
      * @param fetchStatus - Callback to fetch current task status from server
      * @param onProgress - Optional callback for status updates
+     * @param shouldStop - Optional callback to stop polling early (e.g., for input_required)
      * @returns The final task state
      */
     async pollUntilComplete(
         taskId: string,
         fetchStatus: () => Promise<Task>,
         onProgress?: (task: Task) => void,
+        shouldStop?: (task: Task) => boolean,
     ): Promise<Task> {
         let attempts = 0;
 
@@ -79,6 +81,11 @@ export class TaskManager {
                 return task;
             }
 
+            // Check early exit condition (e.g., input_required)
+            if (shouldStop && shouldStop(task)) {
+                return task;
+            }
+
             // Use task's suggested pollInterval if available
             const interval = task.pollInterval ?? this.pollIntervalMs;
             await this.sleep(interval);
@@ -89,10 +96,11 @@ export class TaskManager {
     }
 
     /**
-     * Check if a status is terminal (no more updates expected without user action).
+     * Check if a status is terminal (task processing complete per MCP spec).
+     * Note: input_required is NOT terminal - task waits for input.
      */
     private isTerminalStatus(status: TaskStatus): boolean {
-        return ["completed", "failed", "cancelled", "input_required"].includes(status);
+        return ["completed", "failed", "cancelled"].includes(status);
     }
 
     /**
