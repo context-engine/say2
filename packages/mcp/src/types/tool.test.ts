@@ -191,4 +191,137 @@ describe("Tool Types Schemas", () => {
 			expect(() => ToolOperationSchema.parse(invalid)).toThrow();
 		});
 	});
+
+	describe("ToolOperationSchema (Task 03: Progress Fields)", () => {
+		it("validates operation with progressToken as string", () => {
+			const op = {
+				id: "123e4567-e89b-12d3-a456-426614174000",
+				sessionId: "123e4567-e89b-12d3-a456-426614174000",
+				requestId: "req-1",
+				request: { name: "test" },
+				status: "pending",
+				startedAt: new Date(),
+				progressToken: "prog-12345",
+			};
+			expect(ToolOperationSchema.parse(op)).toBeTruthy();
+		});
+
+		it("validates operation with progressToken as number", () => {
+			const op = {
+				id: "123e4567-e89b-12d3-a456-426614174000",
+				sessionId: "123e4567-e89b-12d3-a456-426614174000",
+				requestId: "req-1",
+				request: { name: "test" },
+				status: "pending",
+				startedAt: new Date(),
+				progressToken: 12345,
+			};
+			expect(ToolOperationSchema.parse(op)).toBeTruthy();
+		});
+
+		it("validates operation with progressUpdates array", () => {
+			const op = {
+				id: "123e4567-e89b-12d3-a456-426614174000",
+				sessionId: "123e4567-e89b-12d3-a456-426614174000",
+				requestId: "req-1",
+				request: { name: "test" },
+				status: "pending",
+				startedAt: new Date(),
+				progressUpdates: [
+					{
+						id: "pu-1234-5678-9012-3456",
+						operationId: "123e4567-e89b-12d3-a456-426614174000",
+						progress: 50,
+						total: 100,
+						message: "Processing...",
+						timestamp: new Date(),
+					},
+				],
+			};
+			expect(ToolOperationSchema.parse(op)).toBeTruthy();
+		});
+
+		it("defaults progressUpdates to empty array", () => {
+			const op = {
+				id: "123e4567-e89b-12d3-a456-426614174000",
+				sessionId: "123e4567-e89b-12d3-a456-426614174000",
+				requestId: "req-1",
+				request: { name: "test" },
+				status: "pending",
+				startedAt: new Date(),
+			};
+			const parsed = ToolOperationSchema.parse(op);
+			expect(parsed.progressUpdates).toEqual([]);
+		});
+	});
+
+	describe("ToolOperationSchema (Task 04: Cancellation Fields)", () => {
+		it("defaults cancelRequested to false", () => {
+			const op = {
+				id: "123e4567-e89b-12d3-a456-426614174000",
+				sessionId: "123e4567-e89b-12d3-a456-426614174000",
+				requestId: "req-1",
+				request: { name: "test" },
+				status: "pending",
+				startedAt: new Date(),
+			};
+			const parsed = ToolOperationSchema.parse(op);
+			expect(parsed.cancelRequested).toBe(false);
+		});
+
+		it("validates operation with cancelRequested: true", () => {
+			const op = {
+				id: "123e4567-e89b-12d3-a456-426614174000",
+				sessionId: "123e4567-e89b-12d3-a456-426614174000",
+				requestId: "req-1",
+				request: { name: "test" },
+				status: "pending",
+				startedAt: new Date(),
+				cancelRequested: true,
+			};
+			expect(ToolOperationSchema.parse(op)).toBeTruthy();
+		});
+
+		it("validates operation with cancelReason", () => {
+			const op = {
+				id: "123e4567-e89b-12d3-a456-426614174000",
+				sessionId: "123e4567-e89b-12d3-a456-426614174000",
+				requestId: "req-1",
+				request: { name: "test" },
+				status: "cancelled",
+				startedAt: new Date(),
+				completedAt: new Date(),
+				cancelRequested: true,
+				cancelReason: "User requested cancellation",
+			};
+			expect(ToolOperationSchema.parse(op)).toBeTruthy();
+		});
+
+		it("validates operation with all progress and cancel fields", () => {
+			const op = {
+				id: "123e4567-e89b-12d3-a456-426614174000",
+				sessionId: "123e4567-e89b-12d3-a456-426614174000",
+				requestId: "req-1",
+				request: { name: "test", arguments: { foo: "bar" } },
+				status: "completed",
+				startedAt: new Date(),
+				completedAt: new Date(),
+				result: { content: [{ type: "text", text: "done" }] },
+				progressToken: "prog-123",
+				progressUpdates: [
+					{
+						id: "pu-1234-5678-9012-3456",
+						operationId: "123e4567-e89b-12d3-a456-426614174000",
+						progress: 100,
+						total: 100,
+						message: "Complete",
+						timestamp: new Date(),
+					},
+				],
+			};
+			const parsed = ToolOperationSchema.parse(op);
+			expect(parsed.progressToken).toBe("prog-123");
+			expect(parsed.progressUpdates).toHaveLength(1);
+		});
+	});
 });
