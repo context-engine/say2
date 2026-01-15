@@ -218,3 +218,118 @@ describe("Content Parsing Integration", () => {
         }
     });
 });
+
+/**
+ * GAP DETECTION TESTS
+ *
+ * These tests verify that contentParser is integrated into callTool().
+ * They will FAIL if the parser is not called, because invalid data
+ * should be rejected during parsing.
+ *
+ * Expected behavior when parser IS integrated:
+ * - Invalid MIME types → operation.status = "error"
+ * - Invalid structuredContent → validation error stored
+ */
+describe("ContentParser Integration Gap Detection", () => {
+    let sessionManager: SessionManager;
+    let pipeline: ReturnType<typeof createPipeline>;
+    let registry: McpClientRegistry;
+    let clientManager: McpClientManager;
+    let mockTransport: MockServerTransport;
+    let sessionId: string;
+    let client: Client;
+
+    beforeEach(async () => {
+        sessionManager = new SessionManager();
+        pipeline = createPipeline();
+
+        const mockDetector = {
+            isInitializeRequest: (msg: any) =>
+                msg.method === "initialize" && "id" in msg,
+            isInitializeResponse: (msg: any) =>
+                "result" in msg && "protocolVersion" in msg.result,
+            isInitializedNotification: (msg: any) =>
+                msg.method === "notifications/initialized",
+            extractCapabilities: (msg: any) => msg.result?.capabilities,
+            extractServerInfo: (msg: any) => msg.result?.serverInfo,
+        };
+
+        pipeline.use(
+            (createStateMachineMiddleware as any)(sessionManager, mockDetector),
+        );
+
+        registry = new McpClientRegistry();
+        clientManager = new McpClientManager(registry, sessionManager, pipeline);
+
+        const session = sessionManager.create({
+            name: "gap-test-session",
+            transport: "stdio",
+            command: "node",
+        });
+        sessionId = session.id;
+
+        mockTransport = createMockServerTransport(scenarioMockConfig);
+        client = new Client(
+            { name: "test-client", version: "1.0.0" },
+            { capabilities: {} },
+        );
+
+        const loggingTransport = new LoggingTransport(
+            mockTransport,
+            session,
+            pipeline,
+        );
+
+        await client.connect(loggingTransport);
+        registry.register(sessionId, client, loggingTransport);
+
+        sessionManager.connect(sessionId);
+        sessionManager.initialize(sessionId);
+        sessionManager.activate(sessionId, {}, {}, LATEST_PROTOCOL_VERSION);
+    });
+
+    afterEach(async () => {
+        if (mockTransport && !mockTransport.isClosed) {
+            await mockTransport.close();
+        }
+    });
+
+    // SKIPPED: Enable after contentParser is integrated into callTool()
+    test.skip("tool returning invalid audio MIME type should fail parsing", async () => {
+        // This tool returns audio with mimeType "audio/x-invalid-fake"
+        // If contentParser.parseContent() is integrated, it should throw
+        const result = await clientManager.callTool(sessionId, {
+            name: "getInvalidAudioMime",
+        });
+
+        // Expected: operation should have error status due to parsing failure
+        expect(result.status).toBe("error");
+        expect(result.error?.message).toContain("Invalid audio MIME type");
+    });
+
+    // SKIPPED: Enable after contentParser is integrated into callTool()
+    test.skip("tool returning invalid image MIME type should fail parsing", async () => {
+        // This tool returns image with mimeType "image/x-invalid-fake"
+        const result = await clientManager.callTool(sessionId, {
+            name: "getInvalidImageMime",
+        });
+
+        // Expected: operation should have error status due to parsing failure
+        expect(result.status).toBe("error");
+        expect(result.error?.message).toContain("Invalid image MIME type");
+    });
+
+    // SKIPPED: Enable after validateStructuredOutput is integrated
+    test.skip("tool returning invalid structuredContent should fail validation", async () => {
+        // This tool returns structuredContent that doesn't match outputSchema
+        // The outputSchema requires 'result' field which is missing
+        const result = await clientManager.callTool(sessionId, {
+            name: "getInvalidStructuredOutput",
+        });
+
+        // Expected: validation should fail and be recorded in operation
+        // The exact behavior depends on implementation - could be error status
+        // or could store validation errors in operation metadata
+        expect(result.status).toBe("error");
+    });
+});
