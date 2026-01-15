@@ -6,7 +6,14 @@
  */
 
 import Ajv from "ajv";
-import { ToolContentSchema, type ToolContent } from "../types/tool";
+import {
+    ToolContentSchema,
+    AudioContentSchema,
+    AudioMimeTypes,
+    ImageMimeTypes,
+    type ToolContent,
+    type AudioContent,
+} from "../types/content";
 
 export interface ValidationResult {
     valid: boolean;
@@ -35,8 +42,39 @@ export class ContentParser {
                     .join(", ");
                 throw new Error(`Invalid content at index ${index}: ${issues}`);
             }
-            return result.data;
+            const content = result.data;
+
+            // Enforce strict MIME type validation for image and audio
+            if (content.type === "image") {
+                if (!this.validateMimeType(content.mimeType, ImageMimeTypes)) {
+                    throw new Error(`Invalid image MIME type: ${content.mimeType}`);
+                }
+            }
+
+            if (content.type === "audio") {
+                if (!this.validateMimeType(content.mimeType, AudioMimeTypes)) {
+                    throw new Error(`Invalid audio MIME type: ${content.mimeType}`);
+                }
+            }
+
+            return content;
         });
+    }
+
+    /**
+     * Parse audio content item.
+     * Validates that the item matches the AudioContent schema.
+     * @param item - The content item to parse
+     */
+    parseAudio(item: unknown): AudioContent {
+        const result = AudioContentSchema.safeParse(item);
+        if (!result.success) {
+            const issues = result.error.issues
+                .map((i) => `${i.path.join(".")}: ${i.message}`)
+                .join(", ");
+            throw new Error(`Invalid audio content: ${issues}`);
+        }
+        return result.data;
     }
 
     /**
