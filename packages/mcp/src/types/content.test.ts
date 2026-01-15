@@ -7,7 +7,7 @@ import {
     ImageMimeTypes,
     ResourceLinkContentSchema,
     TextContentSchema,
-} from "./tool";
+} from "./content";
 
 describe("Content Schemas", () => {
     describe("AnnotationsSchema", () => {

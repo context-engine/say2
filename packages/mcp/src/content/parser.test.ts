@@ -122,7 +122,8 @@ describe("ContentParser", () => {
         });
 
         // SKIPPED: Requires implementation changes to enforce strict mime type validation
-        test.skip("throws on invalid image mime type", () => {
+        // SKIPPED: Requires implementation changes to enforce strict mime type validation
+        test("throws on invalid image mime type", () => {
             const raw = [
                 {
                     type: "image",
@@ -133,7 +134,7 @@ describe("ContentParser", () => {
             expect(() => parser.parseContent(raw)).toThrow("Invalid image MIME type");
         });
 
-        test.skip("throws on invalid audio mime type", () => {
+        test("throws on invalid audio mime type", () => {
             const raw = [
                 {
                     type: "audio",
