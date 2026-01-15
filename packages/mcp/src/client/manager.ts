@@ -41,7 +41,11 @@ import {
 	TaskListResultSchema,
 	TaskGetResultSchema,
 	EmptyResultSchema,
+	TaskStatusNotificationSchema,
+	CreateTaskResultSchema,
 	type Task,
+	type TaskMetadata,
+	type CreateTaskResult,
 } from "../types/task";
 import { taskManager } from "../task/manager";
 
@@ -129,6 +133,14 @@ export class McpClientManager {
 						total: notification.params.total,
 						message: notification.params.message,
 					});
+				},
+			);
+
+			// 9. Set up task status notification handler (optional per spec)
+			client.setNotificationHandler(
+				TaskStatusNotificationSchema,
+				(notification) => {
+					taskManager.handleStatusNotification(notification.params);
 				},
 			);
 
@@ -686,5 +698,101 @@ export class McpClientManager {
 
 		// Default to 'forbidden' if not specified
 		return tool?.execution?.taskSupport ?? "forbidden";
+	}
+
+	/**
+	 * Call a tool with task-augmented execution.
+	 * Returns a task that can be polled for completion.
+	 *
+	 * @param sessionId - The session ID
+	 * @param request - The tool call request
+	 * @param taskOptions - Task metadata (e.g., ttl)
+	 * @returns CreateTaskResult with the created task
+	 * @throws Error if tool doesn't support tasks
+	 */
+	async callToolAsTask(
+		sessionId: string,
+		request: ToolCallRequest,
+		taskOptions: TaskMetadata = {},
+	): Promise<CreateTaskResult> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		// Check if tool supports task execution
+		const taskSupport = this.getToolTaskSupport(sessionId, request.name);
+		if (taskSupport === "forbidden") {
+			throw new Error(
+				`Tool "${request.name}" does not support task-augmented execution`,
+			);
+		}
+
+		// Call tool with task metadata
+		const result = await client.request(
+			{
+				method: "tools/call",
+				params: {
+					name: request.name,
+					arguments: request.arguments,
+					task: taskOptions,
+				},
+			},
+			CreateTaskResultSchema,
+		);
+
+		// Register task in local manager
+		taskManager.registerTask(result.task.taskId, sessionId, result.task);
+
+		return result;
+	}
+
+	/**
+	 * Call a tool as a task and wait for completion.
+	 * Combines callToolAsTask with polling.
+	 *
+	 * @param sessionId - The session ID
+	 * @param request - The tool call request
+	 * @param taskOptions - Task metadata
+	 * @param onProgress - Optional progress callback
+	 * @returns The final tool result
+	 */
+	async callToolAsTaskAndWait(
+		sessionId: string,
+		request: ToolCallRequest,
+		taskOptions: TaskMetadata = {},
+		onProgress?: (task: Task) => void,
+	): Promise<unknown> {
+		// Start the task
+		const createResult = await this.callToolAsTask(
+			sessionId,
+			request,
+			taskOptions,
+		);
+
+		const taskId = createResult.task.taskId;
+
+		// Poll until complete
+		const finalTask = await taskManager.pollUntilComplete(
+			taskId,
+			() => this.getTask(sessionId, taskId),
+			onProgress,
+		);
+
+		// Handle terminal states
+		if (finalTask.status === "failed") {
+			throw new Error(
+				finalTask.statusMessage ?? `Task ${taskId} failed`,
+			);
+		}
+
+		if (finalTask.status === "cancelled") {
+			throw new Error(
+				finalTask.statusMessage ?? `Task ${taskId} was cancelled`,
+			);
+		}
+
+		// Get the actual result
+		return await this.getTaskResult(sessionId, taskId);
 	}
 }
