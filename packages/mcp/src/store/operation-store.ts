@@ -138,6 +138,31 @@ export class ToolOperationStore {
     }
 
     /**
+     * Get all progress updates for an operation.
+     * @param operationId - The operation ID
+     * @returns Array of progress updates (empty if not found)
+     */
+    getProgress(operationId: string): ToolOperation["progressUpdates"] {
+        const operation = this.operations.get(operationId);
+        if (!operation) {
+            return [];
+        }
+        return operation.progressUpdates;
+    }
+
+    /**
+     * Get the most recent progress update.
+     * @param operationId - The operation ID
+     * @returns Latest update or undefined
+     */
+    getLatestProgress(
+        operationId: string,
+    ): ToolOperation["progressUpdates"][number] | undefined {
+        const updates = this.getProgress(operationId);
+        return updates.length > 0 ? updates[updates.length - 1] : undefined;
+    }
+
+    /**
      * Get an operation by ID.
      * @param id - The operation ID
      * @returns The operation or undefined if not found
