@@ -9,7 +9,8 @@ const config = {
 	// Use command runner since Bun doesn't have a native Stryker plugin yet
 	testRunner: "command",
 	commandRunner: {
-		command: "bun test",
+		// Only run tests from packages/ to avoid v0-docs reference project
+		command: "bun test packages/",
 	},
 
 	// TypeScript checker disabled for now (Bun compatibility)
@@ -23,6 +24,15 @@ const config = {
 		"!packages/*/src/**/*.test.ts",
 		"!packages/*/src/**/*.spec.ts",
 		"!packages/*/src/**/index.ts", // Skip barrel exports
+	],
+
+	// Exclude v0-docs from being copied to sandbox (has uninstalled deps)
+	ignorePatterns: [
+		"v0-docs/**",
+		".git/**",
+		"node_modules/**",
+		"reports/**",
+		"coverage/**",
 	],
 
 	// Reporter configuration

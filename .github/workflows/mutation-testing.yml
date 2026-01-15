@@ -1,0 +1,53 @@
+name: Mutation Testing (Scheduled)
+
+# Run weekly on Sunday at 3am UTC, or manually
+on:
+  schedule:
+    - cron: '0 3 * * 0'  # Every Sunday at 3:00 AM UTC
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      packages:
+        description: 'Package to test (leave empty for all)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  mutation-testing:
+    name: Full Mutation Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 180  # 3 hour timeout
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run Mutation Testing
+        run: bun run test:mutate
+
+      - name: Upload Mutation Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mutation-report
+          path: reports/mutation/
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## 🧬 Mutation Testing Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Report available in artifacts: mutation-report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Run locally with: \`bun run test:mutate\`" >> $GITHUB_STEP_SUMMARY
