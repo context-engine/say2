@@ -792,6 +792,13 @@ export class McpClientManager {
 			);
 		}
 
+		// input_required is terminal for polling - requires user interaction
+		if (finalTask.status === "input_required") {
+			throw new Error(
+				`Task ${taskId} requires input: ${finalTask.statusMessage ?? "waiting for elicitation or sampling"}`,
+			);
+		}
+
 		// Get the actual result
 		return await this.getTaskResult(sessionId, taskId);
 	}
