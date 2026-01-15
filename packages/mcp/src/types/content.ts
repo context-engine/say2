@@ -33,13 +33,20 @@ export const ImageMimeTypes = [
 /**
  * Annotations for content items.
  * Used to indicate intended audience and priority.
+ *
+ * NOTE: This is ContentAnnotationsSchema (audience/priority for content).
+ * For tool behavioral hints, see ToolAnnotationsSchema in tool-annotations.ts.
  */
-export const AnnotationsSchema = z.object({
+export const ContentAnnotationsSchema = z.object({
     audience: z.array(z.enum(["user", "assistant"])).optional(),
     priority: z.number().min(0).max(1).optional(),
 });
 
-export type Annotations = z.infer<typeof AnnotationsSchema>;
+export type ContentAnnotations = z.infer<typeof ContentAnnotationsSchema>;
+
+// Backward compatibility alias
+export const AnnotationsSchema = ContentAnnotationsSchema;
+export type Annotations = ContentAnnotations;
 
 /**
  * Text content returned by a tool.
