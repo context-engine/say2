@@ -720,7 +720,19 @@ export class McpClientManager {
 			throw new Error(`Session ${sessionId} not connected`);
 		}
 
-		// Check if tool supports task execution
+		// 1. Check server-level capability first (per spec)
+		const session = this.sessionManager.get(sessionId);
+		const serverCaps = session?.serverCapabilities as
+			| { tasks?: { requests?: { tools?: { call?: boolean } } } }
+			| undefined;
+
+		if (!serverCaps?.tasks?.requests?.tools?.call) {
+			throw new Error(
+				"Server does not support task-augmented tool execution",
+			);
+		}
+
+		// 2. Check tool-level support
 		const taskSupport = this.getToolTaskSupport(sessionId, request.name);
 		if (taskSupport === "forbidden") {
 			throw new Error(
