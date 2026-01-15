@@ -30,6 +30,7 @@ import { toolOperationStore } from "../store";
 import { progressTracker } from "../progress/tracker";
 import { McpProgressNotificationSchema } from "../types/progress";
 import { cancellationManager } from "../cancel/manager";
+import { ContentParser } from "../content/parser";
 
 export class McpClientManager {
 	constructor(
@@ -359,13 +360,29 @@ export class McpClientManager {
 				return toolOperationStore.get(operation.id)!;
 			}
 
+			// Parse and validate content via ContentParser
+			const contentParser = new ContentParser();
+			let parsedContent;
+			try {
+				parsedContent = contentParser.parseContent(result.content as unknown[]);
+			} catch (parseError) {
+				// Content parsing failed - store as error
+				toolOperationStore.update(operation.id, {
+					status: "error",
+					error: {
+						code: -32602, // Invalid params
+						message: parseError instanceof Error ? parseError.message : String(parseError),
+					},
+				});
+				return toolOperationStore.get(operation.id)!;
+			}
+
 			// Update operation with result
 			if (result.isError) {
 				toolOperationStore.update(operation.id, {
 					status: "error",
 					result: {
-						// Cast to any to bypass strict type checking against SDK's unknown
-						content: result.content as any,
+						content: parsedContent,
 						isError: true,
 						structuredContent: (result as any).structuredContent,
 					},
@@ -374,8 +391,7 @@ export class McpClientManager {
 				toolOperationStore.update(operation.id, {
 					status: "completed",
 					result: {
-						// Cast to any to bypass strict type checking against SDK's unknown
-						content: result.content as any,
+						content: parsedContent,
 						isError: false,
 						structuredContent: (result as any).structuredContent,
 					},
