@@ -155,3 +155,19 @@ export type TaskGetResult = z.infer<typeof TaskGetResultSchema>;
 export const EmptyResultSchema = z.object({});
 
 export type EmptyResult = z.infer<typeof EmptyResultSchema>;
+
+// =============================================================================
+// Task Status Notification (for setNotificationHandler)
+// =============================================================================
+
+/**
+ * MCP SDK-compatible notification schema with method field.
+ * Used for setNotificationHandler to register task status notification handler.
+ */
+export const TaskStatusNotificationSchema = z.object({
+    method: z.literal("notifications/tasks/status"),
+    params: TaskSchema,
+});
+
+export type TaskStatusNotification = z.infer<typeof TaskStatusNotificationSchema>;
+
