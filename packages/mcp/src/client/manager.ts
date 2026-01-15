@@ -18,6 +18,7 @@
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { z } from "zod";
 import type { MiddlewarePipeline, SessionManager } from "@say2/core";
 import { LoggingTransport } from "../transport";
 import type { McpClientRegistry } from "./registry";
@@ -36,6 +37,13 @@ import {
 	type Tool,
 	type ToolAnnotations,
 } from "../types/tool-annotations";
+import {
+	TaskListResultSchema,
+	TaskGetResultSchema,
+	EmptyResultSchema,
+	type Task,
+} from "../types/task";
+import { taskManager } from "../task/manager";
 
 export class McpClientManager {
 	constructor(
@@ -571,5 +579,112 @@ export class McpClientManager {
 		}
 
 		await cancellationManager.cancel(operationId, reason);
+	}
+
+	// =========================================================================
+	// Task Operations (Phase 2a Task 07)
+	// =========================================================================
+
+	/**
+	 * List all active tasks for a session.
+	 * @param sessionId - The session ID
+	 * @returns Array of active tasks
+	 */
+	async listTasks(sessionId: string): Promise<Task[]> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		const tasks: Task[] = [];
+		let cursor: string | undefined;
+
+		do {
+			const result = await client.request(
+				{ method: "tasks/list", params: { cursor } },
+				TaskListResultSchema,
+			);
+			tasks.push(...result.tasks);
+			cursor = result.nextCursor;
+		} while (cursor);
+
+		return tasks;
+	}
+
+	/**
+	 * Get a specific task's status.
+	 * @param sessionId - The session ID
+	 * @param taskId - The task identifier
+	 * @returns Task metadata
+	 */
+	async getTask(sessionId: string, taskId: string): Promise<Task> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		return await client.request(
+			{ method: "tasks/get", params: { taskId } },
+			TaskGetResultSchema,
+		);
+	}
+
+	/**
+	 * Get the actual result of a completed task.
+	 * @param sessionId - The session ID
+	 * @param taskId - The task identifier
+	 * @returns The tool call result
+	 */
+	async getTaskResult(sessionId: string, taskId: string): Promise<unknown> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		// Return unknown for now - will be typed when integrating with callTool
+		return await client.request(
+			{ method: "tasks/result", params: { taskId } },
+			z.unknown(),
+		);
+	}
+
+	/**
+	 * Cancel a running task.
+	 * @param sessionId - The session ID
+	 * @param taskId - The task identifier
+	 */
+	async cancelTask(sessionId: string, taskId: string): Promise<void> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		await client.request(
+			{ method: "tasks/cancel", params: { taskId } },
+			EmptyResultSchema,
+		);
+
+		// Update local cache
+		taskManager.removeTask(taskId);
+	}
+
+	/**
+	 * Check if a tool supports task-augmented execution.
+	 * @param sessionId - The session ID
+	 * @param toolName - The tool name
+	 * @returns Task support level
+	 */
+	getToolTaskSupport(
+		sessionId: string,
+		toolName: string,
+	): "forbidden" | "optional" | "required" {
+		const session = this.sessionManager.get(sessionId);
+		const discovered = session?.serverCapabilities?.discovered as
+			| { tools?: Tool[] }
+			| undefined;
+		const tool = discovered?.tools?.find((t) => t.name === toolName);
+
+		// Default to 'forbidden' if not specified
+		return tool?.execution?.taskSupport ?? "forbidden";
 	}
 }
