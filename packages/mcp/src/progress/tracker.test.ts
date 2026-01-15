@@ -49,17 +49,23 @@ describe("ProgressTracker", () => {
 		// where the actual store singleton is used with real operations
 	});
 
-	test("handleNotification() ignores unknown tokens", () => {
-		const token = "unknown-token";
+	test("handleNotification() ignores unknown tokens without updating store", () => {
+		const sessionId = randomUUID();
+		const knownToken = tracker.generateToken();
+		const unknownToken = "unknown-token";
 
-		// Should not throw or explode
+		// Create a real operation and register a known token
+		const op = store.create(sessionId, { name: "test-tool" }, "req-1");
+		tracker.register(knownToken, op.id);
+
+		// Send notification with UNKNOWN token
 		tracker.handleNotification({
-			progressToken: token,
+			progressToken: unknownToken,
 			progress: 50,
 		});
 
-		// No side effects to check easily without access to all stores,
-		// but robust implementation shouldn't crash.
+		// Verify known operation has NO progress updates (store wasn't touched)
+		expect(op.progressUpdates).toHaveLength(0);
 	});
 
 	test("unregister() removes mapping", () => {
