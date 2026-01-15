@@ -89,10 +89,10 @@ export class TaskManager {
     }
 
     /**
-     * Check if a status is terminal (no more updates expected).
+     * Check if a status is terminal (no more updates expected without user action).
      */
     private isTerminalStatus(status: TaskStatus): boolean {
-        return ["completed", "failed", "cancelled"].includes(status);
+        return ["completed", "failed", "cancelled", "input_required"].includes(status);
     }
 
     /**
