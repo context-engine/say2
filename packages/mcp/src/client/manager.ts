@@ -772,11 +772,13 @@ export class McpClientManager {
 
 		const taskId = createResult.task.taskId;
 
-		// Poll until complete
+		// Poll until complete or input_required (which needs user action)
 		const finalTask = await taskManager.pollUntilComplete(
 			taskId,
 			() => this.getTask(sessionId, taskId),
 			onProgress,
+			// Stop early on input_required since this method can't provide input
+			(task) => task.status === "input_required",
 		);
 
 		// Handle terminal states
@@ -792,7 +794,7 @@ export class McpClientManager {
 			);
 		}
 
-		// input_required is terminal for polling - requires user interaction
+		// input_required requires user interaction - this method can't handle it
 		if (finalTask.status === "input_required") {
 			throw new Error(
 				`Task ${taskId} requires input: ${finalTask.statusMessage ?? "waiting for elicitation or sampling"}`,
