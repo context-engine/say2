@@ -294,8 +294,8 @@ describe("ContentParser Integration Gap Detection", () => {
         }
     });
 
-    // SKIPPED: Enable after contentParser is integrated into callTool()
-    test.skip("tool returning invalid audio MIME type should fail parsing", async () => {
+    // contentParser is now integrated into callTool()
+    test("tool returning invalid audio MIME type should fail parsing", async () => {
         // This tool returns audio with mimeType "audio/x-invalid-fake"
         // If contentParser.parseContent() is integrated, it should throw
         const result = await clientManager.callTool(sessionId, {
@@ -307,8 +307,8 @@ describe("ContentParser Integration Gap Detection", () => {
         expect(result.error?.message).toContain("Invalid audio MIME type");
     });
 
-    // SKIPPED: Enable after contentParser is integrated into callTool()
-    test.skip("tool returning invalid image MIME type should fail parsing", async () => {
+    // contentParser is now integrated into callTool()
+    test("tool returning invalid image MIME type should fail parsing", async () => {
         // This tool returns image with mimeType "image/x-invalid-fake"
         const result = await clientManager.callTool(sessionId, {
             name: "getInvalidImageMime",
@@ -319,17 +319,27 @@ describe("ContentParser Integration Gap Detection", () => {
         expect(result.error?.message).toContain("Invalid image MIME type");
     });
 
-    // SKIPPED: Enable after validateStructuredOutput is integrated
-    test.skip("tool returning invalid structuredContent should fail validation", async () => {
+    // validateStructuredOutput is now integrated into callTool()
+    test("tool returning invalid structuredContent should fail validation", async () => {
         // This tool returns structuredContent that doesn't match outputSchema
         // The outputSchema requires 'result' field which is missing
-        const result = await clientManager.callTool(sessionId, {
-            name: "getInvalidStructuredOutput",
-        });
+        const result = await clientManager.callTool(
+            sessionId,
+            { name: "getInvalidStructuredOutput" },
+            {
+                // Provide the outputSchema in options - implementation validates against this
+                outputSchema: {
+                    type: "object",
+                    properties: {
+                        result: { type: "string" },
+                    },
+                    required: ["result"],
+                },
+            },
+        );
 
         // Expected: validation should fail and be recorded in operation
-        // The exact behavior depends on implementation - could be error status
-        // or could store validation errors in operation metadata
         expect(result.status).toBe("error");
+        expect(result.error?.message).toContain("Invalid structured output");
     });
 });
