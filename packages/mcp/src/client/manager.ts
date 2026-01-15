@@ -377,6 +377,25 @@ export class McpClientManager {
 				return toolOperationStore.get(operation.id)!;
 			}
 
+			// Validate structured output if schema provided
+			const structuredContent = (result as any).structuredContent;
+			if (structuredContent && options?.outputSchema) {
+				const validation = contentParser.validateStructuredOutput(
+					structuredContent,
+					options.outputSchema,
+				);
+				if (!validation.valid) {
+					toolOperationStore.update(operation.id, {
+						status: "error",
+						error: {
+							code: -32602, // Invalid params
+							message: `Invalid structured output: ${validation.errors?.join(", ")}`,
+						},
+					});
+					return toolOperationStore.get(operation.id)!;
+				}
+			}
+
 			// Update operation with result
 			if (result.isError) {
 				toolOperationStore.update(operation.id, {

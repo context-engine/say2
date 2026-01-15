@@ -116,4 +116,6 @@ export interface CallToolOptions {
     timeout?: number;
     /** Whether to include a progress token for progress tracking. */
     includeProgress?: boolean;
+    /** JSON Schema for validating structuredContent. */
+    outputSchema?: Record<string, unknown>;
 }
