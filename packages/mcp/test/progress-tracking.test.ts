@@ -209,11 +209,11 @@ describe("Progress Tracking Integration", () => {
 			{ includeProgress: true },
 		);
 
-		// The implementation should store progress on the ToolOperation
-		expect(result.progress).toBeDefined();
-		expect(result.progress?.length).toBe(3);
-		expect(result.progress?.[0]?.progress).toBe(1);
-		expect(result.progress?.[2]?.progress).toBe(3);
+		// The implementation should store progress on the ToolOperation.progressUpdates
+		expect(result.progressUpdates).toBeDefined();
+		expect(result.progressUpdates?.length).toBe(3);
+		expect(result.progressUpdates?.[0]?.progress).toBe(1);
+		expect(result.progressUpdates?.[2]?.progress).toBe(3);
 	});
 
 	test("progress stops after tool response is received", async () => {

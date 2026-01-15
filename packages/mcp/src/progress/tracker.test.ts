@@ -3,8 +3,6 @@ import { randomUUID } from "node:crypto";
 import { ProgressTracker } from "./tracker";
 import { ToolOperationStore } from "../store/operation-store";
 
-// We need to use a fresh store instance for isolated tests
-// since the tracker uses the singleton by default
 describe("ProgressTracker", () => {
 	let tracker: ProgressTracker;
 	let store: ToolOperationStore;
@@ -43,7 +41,7 @@ describe("ProgressTracker", () => {
 		tracker.register(token, op.id);
 
 		// handleNotification uses the singleton store, so we need to use
-		// a different approach - verify the token is registered and 
+		// a different approach - verify the token is registered and
 		// the notification format is correct
 		expect(tracker.isRegistered(token)).toBe(true);
 
@@ -62,12 +60,6 @@ describe("ProgressTracker", () => {
 
 		// No side effects to check easily without access to all stores,
 		// but robust implementation shouldn't crash.
-	});
-
-	test("getProgress() returns empty array for unknown operation", () => {
-		const opId = randomUUID();
-		const updates = tracker.getProgress(opId);
-		expect(updates).toHaveLength(0);
 	});
 
 	test("unregister() removes mapping", () => {
@@ -95,4 +87,3 @@ describe("ProgressTracker", () => {
 		expect(tracker.activeCount()).toBe(1);
 	});
 });
-

@@ -87,4 +87,139 @@ describe("ToolOperationStore", () => {
 			store.update("fake-id", { status: "completed" });
 		}).toThrow();
 	});
+
+	describe("Task 03: Progress Tracking", () => {
+		it("initializes progressUpdates to empty array on create", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			expect(op.progressUpdates).toEqual([]);
+		});
+
+		it("updateProgress adds update to operation", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			const update = {
+				id: "pu-1234-5678-9012-3456",
+				operationId: op.id,
+				progress: 50,
+				total: 100,
+				message: "Processing...",
+				timestamp: new Date(),
+			};
+			store.updateProgress(op.id, update);
+
+			const updated = store.get(op.id);
+			expect(updated?.progressUpdates).toHaveLength(1);
+			expect(updated?.progressUpdates[0]!.progress).toBe(50);
+			expect(updated?.progressUpdates[0]!.message).toBe("Processing...");
+		});
+
+		it("updateProgress throws for non-existent operation", () => {
+			expect(() => {
+				store.updateProgress("fake-id", {
+					id: "pu-1",
+					operationId: "fake-id",
+					progress: 50,
+					timestamp: new Date(),
+				});
+			}).toThrow();
+		});
+
+		it("getProgress returns all updates for operation", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			store.updateProgress(op.id, {
+				id: "pu-1",
+				operationId: op.id,
+				progress: 25,
+				timestamp: new Date(),
+			});
+			store.updateProgress(op.id, {
+				id: "pu-2",
+				operationId: op.id,
+				progress: 50,
+				timestamp: new Date(),
+			});
+
+			const updates = store.getProgress(op.id);
+			expect(updates).toHaveLength(2);
+			expect(updates[0]!.progress).toBe(25);
+			expect(updates[1]!.progress).toBe(50);
+		});
+
+		it("getProgress returns empty array for non-existent operation", () => {
+			const updates = store.getProgress("fake-id");
+			expect(updates).toEqual([]);
+		});
+
+		it("getLatestProgress returns most recent update", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			store.updateProgress(op.id, {
+				id: "pu-1",
+				operationId: op.id,
+				progress: 25,
+				timestamp: new Date(),
+			});
+			store.updateProgress(op.id, {
+				id: "pu-2",
+				operationId: op.id,
+				progress: 75,
+				timestamp: new Date(),
+			});
+
+			const latest = store.getLatestProgress(op.id);
+			expect(latest?.progress).toBe(75);
+		});
+
+		it("getLatestProgress returns undefined for no updates", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			const latest = store.getLatestProgress(op.id);
+			expect(latest).toBeUndefined();
+		});
+	});
+
+	describe("Task 04: Cancellation", () => {
+		it("initializes cancelRequested to false on create", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			expect(op.cancelRequested).toBe(false);
+		});
+
+		it("markCancelled updates status to cancelled", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			store.markCancelled(op.id, "User requested");
+
+			const updated = store.get(op.id);
+			expect(updated?.status).toBe("cancelled");
+		});
+
+		it("markCancelled sets cancelRequested to true", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			store.markCancelled(op.id);
+
+			const updated = store.get(op.id);
+			expect(updated?.cancelRequested).toBe(true);
+		});
+
+		it("markCancelled sets cancelReason", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			store.markCancelled(op.id, "Operation timed out");
+
+			const updated = store.get(op.id);
+			expect(updated?.cancelReason).toBe("Operation timed out");
+		});
+
+		it("markCancelled sets completedAt", () => {
+			const op = store.create(sessionId, { name: "test" }, "req-1");
+			store.markCancelled(op.id);
+
+			const updated = store.get(op.id);
+			expect(updated?.completedAt).toBeDefined();
+			expect(updated?.completedAt!.getTime()).toBeGreaterThanOrEqual(
+				op.startedAt.getTime(),
+			);
+		});
+
+		it("markCancelled silently ignores non-existent operation", () => {
+			// Should not throw - silently ignores for safety in concurrent scenarios
+			store.markCancelled("fake-id", "Test");
+			// No assertion needed - just verifying no throw
+		});
+	});
 });
