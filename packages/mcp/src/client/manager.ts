@@ -225,6 +225,14 @@ export class McpClientManager {
 			cursor = result.nextCursor;
 		} while (cursor);
 
+		// Cache in session
+		const session = this.sessionManager.get(sessionId);
+		if (session?.serverCapabilities) {
+			const caps = session.serverCapabilities as any;
+			if (!caps.discovered) caps.discovered = {};
+			caps.discovered.tools = tools;
+		}
+
 		return { tools };
 	}
 
@@ -245,6 +253,14 @@ export class McpClientManager {
 			resources = resources.concat(result.resources);
 			cursor = result.nextCursor;
 		} while (cursor);
+
+		// Cache in session
+		const session = this.sessionManager.get(sessionId);
+		if (session?.serverCapabilities) {
+			const caps = session.serverCapabilities as any;
+			if (!caps.discovered) caps.discovered = {};
+			caps.discovered.resources = resources;
+		}
 
 		return { resources };
 	}
@@ -289,6 +305,14 @@ export class McpClientManager {
 			prompts = prompts.concat(result.prompts);
 			cursor = result.nextCursor;
 		} while (cursor);
+
+		// Cache in session
+		const session = this.sessionManager.get(sessionId);
+		if (session?.serverCapabilities) {
+			const caps = session.serverCapabilities as any;
+			if (!caps.discovered) caps.discovered = {};
+			caps.discovered.prompts = prompts;
+		}
 
 		return { prompts };
 	}
