@@ -121,6 +121,29 @@ describe("ContentParser", () => {
             expect(() => parser.parseContent(raw)).toThrow();
         });
 
+        // SKIPPED: Requires implementation changes to enforce strict mime type validation
+        test.skip("throws on invalid image mime type", () => {
+            const raw = [
+                {
+                    type: "image",
+                    data: "abc",
+                    mimeType: "image/x-unknown",
+                },
+            ];
+            expect(() => parser.parseContent(raw)).toThrow("Invalid image MIME type");
+        });
+
+        test.skip("throws on invalid audio mime type", () => {
+            const raw = [
+                {
+                    type: "audio",
+                    data: "abc",
+                    mimeType: "audio/unknown",
+                },
+            ];
+            expect(() => parser.parseContent(raw)).toThrow("Invalid audio MIME type");
+        });
+
         test("throws for non-array input", () => {
             expect(() => parser.parseContent({} as any)).toThrow(
                 "Content must be an array",
