@@ -35,11 +35,13 @@ const mockDetector = {
 		"method" in msg && msg.method === "notifications/initialized",
 	extractCapabilities: (msg: JsonRpcMessage) =>
 		"result" in msg && typeof msg.result === "object" && msg.result !== null
-			? (msg.result as any).capabilities
+			? // biome-ignore lint/suspicious/noExplicitAny: dynamic result object
+				(msg.result as any).capabilities
 			: undefined,
 	extractServerInfo: (msg: JsonRpcMessage) =>
 		"result" in msg && typeof msg.result === "object" && msg.result !== null
-			? (msg.result as any).serverInfo
+			? // biome-ignore lint/suspicious/noExplicitAny: dynamic result object
+				(msg.result as any).serverInfo
 			: undefined,
 };
 

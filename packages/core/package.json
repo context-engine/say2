@@ -9,7 +9,7 @@
 		"test": "bun test"
 	},
 	"dependencies": {
-		"@modelcontextprotocol/sdk": "^1.25.1",
+		"@modelcontextprotocol/sdk": "^1.25.2",
 		"koa-compose": "^4.1.0",
 		"xstate": "^5.25.0",
 		"zod": "^4.3.5"
