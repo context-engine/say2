@@ -72,11 +72,11 @@ export class ProgressTracker {
      */
     getProgress(operationId: string): ProgressUpdate[] {
         const operation = toolOperationStore.get(operationId);
-        if (!operation || !operation.progress) {
+        if (!operation || !operation.progressUpdates) {
             return [];
         }
         // Convert the stored progress to full ProgressUpdate objects
-        return operation.progress.map((p, index) => ({
+        return operation.progressUpdates.map((p, index) => ({
             id: `${operationId}-progress-${index}`,
             operationId,
             progress: p.progress,
