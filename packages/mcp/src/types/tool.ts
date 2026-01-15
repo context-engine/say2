@@ -194,7 +194,7 @@ export const ToolOperationSchema = z.object({
     completedAt: z.date().optional(),
     // Progress tracking
     progressToken: z.union([z.string(), z.number()]).optional(),
-    progress: z
+    progressUpdates: z
         .array(
             z.object({
                 progress: z.number(),
@@ -203,8 +203,9 @@ export const ToolOperationSchema = z.object({
                 timestamp: z.date(),
             }),
         )
-        .optional(),
+        .default([]),
     // Cancellation
+    cancelRequested: z.boolean().default(false),
     cancelReason: z.string().optional(),
 });
 

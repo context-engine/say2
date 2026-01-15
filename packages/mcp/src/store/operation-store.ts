@@ -40,6 +40,8 @@ export class ToolOperationStore {
             requestId,
             request,
             status: "pending",
+            progressUpdates: [],
+            cancelRequested: false,
             startedAt: new Date(),
         };
 
@@ -102,11 +104,7 @@ export class ToolOperationStore {
             throw new Error(`Tool operation not found: ${id}`);
         }
 
-        if (!operation.progress) {
-            operation.progress = [];
-        }
-
-        operation.progress.push({
+        operation.progressUpdates.push({
             progress: update.progress,
             total: update.total,
             message: update.message,
@@ -132,6 +130,7 @@ export class ToolOperationStore {
         }
 
         operation.status = "cancelled";
+        operation.cancelRequested = true;
         if (reason) {
             operation.cancelReason = reason;
         }
