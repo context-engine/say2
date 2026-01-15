@@ -20,5 +20,6 @@ import type { LoggingTransport } from "../transport";
 
 // Tool operation types (Phase 2a)
 export * from "./tool";
+export * from "./tool-annotations";
 export * from "./progress";
 export * from "./cancel";

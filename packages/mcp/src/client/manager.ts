@@ -31,6 +31,11 @@ import { progressTracker } from "../progress/tracker";
 import { McpProgressNotificationSchema } from "../types/progress";
 import { cancellationManager } from "../cancel/manager";
 import { ContentParser } from "../content/parser";
+import {
+	applyAnnotationDefaults,
+	type Tool,
+	type ToolAnnotations,
+} from "../types/tool-annotations";
 
 export class McpClientManager {
 	constructor(
@@ -286,6 +291,61 @@ export class McpClientManager {
 		} while (cursor);
 
 		return { prompts };
+	}
+
+	// =========================================================================
+	// Tool Annotations (Phase 2a Task 06)
+	// =========================================================================
+
+	/**
+	 * List all tools with full typing and annotations applied.
+	 * Returns cached tools from session with defaults applied to annotations.
+	 *
+	 * @param sessionId - The session ID
+	 * @returns Array of fully-typed Tool objects with annotation defaults
+	 */
+	listToolsTyped(sessionId: string): Tool[] {
+		const session = this.sessionManager.get(sessionId);
+		const discovered = session?.serverCapabilities?.discovered as
+			| { tools?: Tool[] }
+			| undefined;
+		const tools = discovered?.tools ?? [];
+
+		return tools.map((tool) => ({
+			...tool,
+			annotations: applyAnnotationDefaults(tool.annotations),
+		}));
+	}
+
+	/**
+	 * Retrieve annotations for a specific tool.
+	 * Tools are stored during Phase 1 capability discovery.
+	 *
+	 * @param sessionId - The session ID
+	 * @param toolName - The name of the tool
+	 * @returns ToolAnnotations with defaults applied, or undefined if not found
+	 */
+	getToolAnnotations(
+		sessionId: string,
+		toolName: string,
+	): ToolAnnotations | undefined {
+		const session = this.sessionManager.get(sessionId);
+		const discovered = session?.serverCapabilities?.discovered as
+			| { tools?: Tool[] }
+			| undefined;
+
+		if (!discovered?.tools) {
+			return undefined;
+		}
+
+		const tool = discovered.tools.find((t) => t.name === toolName);
+
+		if (!tool) {
+			return undefined;
+		}
+
+		// Apply defaults to ensure all fields are present
+		return applyAnnotationDefaults(tool.annotations);
 	}
 
 	// =========================================================================
