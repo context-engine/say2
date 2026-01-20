@@ -6,7 +6,7 @@
 
 set -e
 
-SPECS_REPO="git@github.com:context-engine/v0-docs.git"
+SPECS_REPO="git@github.com:context-engine/crystal.git"
 SPECS_DIR="specs"
 
 # Check if we're in a worktree (not a bare clone)
