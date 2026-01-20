@@ -29,4 +29,4 @@ coverageIgnorePatterns = [
 timeout = 10000
 
 # Preload test setup (UI package needs happy-dom for DOM environment)
-preload = ["./packages/ui/tests/setup.ts"]
+preload = ["./packages/ui/tests/svelte-plugin.ts", "./packages/ui/tests/setup.ts"]

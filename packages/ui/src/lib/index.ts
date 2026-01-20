@@ -1,4 +1,4 @@
 // Re-export all components
-// (empty for now, will be populated as components are created)
+export * from './primitives/Button';
 
-export {};
+export { };

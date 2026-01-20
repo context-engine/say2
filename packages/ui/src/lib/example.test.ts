@@ -12,6 +12,4 @@ describe("Test Setup", () => {
 	});
 });
 
-// NOTE: Svelte 5 component testing with @testing-library/svelte + Bun has known compatibility issues.
-// Component tests will be added as individual components are created and the ecosystem matures.
-// For now, this test verifies the testing infrastructure (bun test + happy-dom) is working.
+
