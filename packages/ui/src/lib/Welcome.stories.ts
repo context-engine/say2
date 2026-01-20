@@ -1,13 +1,13 @@
-import type { Meta, StoryObj } from '@storybook/svelte';
-import Welcome from './Welcome.svelte';
+import type { Meta, StoryObj } from "@storybook/svelte";
+import Welcome from "./Welcome.svelte";
 
 const meta: Meta<typeof Welcome> = {
-    title: 'Welcome',
-    component: Welcome,
-    tags: ['autodocs'],
-    parameters: {
-        layout: 'centered'
-    }
+	title: "Welcome",
+	component: Welcome,
+	tags: ["autodocs"],
+	parameters: {
+		layout: "centered",
+	},
 };
 
 export default meta;

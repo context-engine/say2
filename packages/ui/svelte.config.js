@@ -1,7 +1,7 @@
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 /** @type {import('@sveltejs/package').Config} */
 export default {
-    preprocess: vitePreprocess()
-    // No kit config needed for library mode
+	preprocess: vitePreprocess(),
+	// No kit config needed for library mode
 };
