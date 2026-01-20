@@ -12,7 +12,7 @@
   },
   "scripts": {
     "dev": "storybook dev -p 6006",
-    "build": "svelte-kit sync && svelte-package",
+    "build": "svelte-package",
     "build:storybook": "storybook build",
     "test": "bun test",
     "check": "svelte-check --tsconfig ./tsconfig.json"
