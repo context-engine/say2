@@ -1,5 +1,7 @@
 <!-- src/lib/primitives/Toggle/Toggle.svelte -->
 <script lang="ts">
+import { Switch } from "bits-ui";
+
 interface Props {
 	checked?: boolean;
 	disabled?: boolean;
@@ -9,28 +11,14 @@ interface Props {
 	onchange?: (checked: boolean) => void;
 }
 
-let {
-	checked = false,
+const {
+	checked = $bindable(false),
 	disabled = false,
 	size = "md",
 	label,
 	id = `toggle-${Math.random().toString(36).slice(2, 9)}`,
 	onchange,
 }: Props = $props();
-
-function handleClick() {
-	if (disabled) return;
-	checked = !checked;
-	onchange?.(checked);
-}
-
-function handleKeydown(e: KeyboardEvent) {
-	if (disabled) return;
-	if (e.key === " " || e.key === "Enter") {
-		e.preventDefault();
-		handleClick();
-	}
-}
 </script>
 
 <div class="toggle-wrapper" class:disabled>
@@ -39,20 +27,17 @@ function handleKeydown(e: KeyboardEvent) {
 			{label}
 		</label>
 	{/if}
-	<button
+	<Switch.Root
+		bind:checked
+		{disabled}
 		{id}
-		type="button"
-		role="switch"
-		aria-checked={checked}
-		aria-disabled={disabled}
-		class="toggle toggle--{size}"
-		class:checked
-		disabled
-		onclick={handleClick}
-		onkeydown={handleKeydown}
+		onCheckedChange={(v) => onchange?.(v ?? false)}
+		class="switch switch--{size}"
 	>
-		<span class="toggle-thumb" aria-hidden="true"></span>
-	</button>
+		<div class="switch-control">
+			<Switch.Thumb class="switch-thumb" />
+		</div>
+	</Switch.Root>
 </div>
 
 <style>
@@ -77,71 +62,68 @@ function handleKeydown(e: KeyboardEvent) {
 		cursor: not-allowed;
 	}
 
-	.toggle {
-		position: relative;
-		border: none;
-		background: var(--color-bg-tertiary);
+	.switch {
 		cursor: pointer;
-		transition: background var(--duration-fast) var(--ease-out);
-		flex-shrink: 0;
+		transition: opacity var(--duration-fast) var(--ease-out);
 	}
 
-	.toggle:focus-visible {
+	.switch:disabled {
+		cursor: not-allowed;
+		opacity: 0.5;
+	}
+
+	.switch:focus-visible {
 		outline: 2px solid var(--color-info);
 		outline-offset: 2px;
 	}
 
-	.toggle--sm {
+	.switch--sm {
 		width: 32px;
 		height: 18px;
-		border-radius: var(--radius-full);
 	}
 
-	.toggle--md {
+	.switch--md {
 		width: 44px;
 		height: 24px;
-		border-radius: var(--radius-full);
 	}
 
-	.toggle.checked {
+	.switch-control {
+		display: flex;
+		align-items: center;
+		width: 100%;
+		height: 100%;
+		background: var(--color-bg-tertiary);
+		border-radius: var(--radius-full);
+		padding: 2px;
+		transition: background var(--duration-fast) var(--ease-out);
+	}
+
+	.switch[data-state="checked"] .switch-control {
 		background: var(--color-request);
 	}
 
-	.toggle-thumb {
-		position: absolute;
-		top: 2px;
-		left: 2px;
+	.switch-thumb {
 		background: white;
 		border-radius: var(--radius-full);
-		transition: transform var(--duration-fast) var(--ease-out);
 		box-shadow: var(--shadow-sm);
+		transition: transform var(--duration-fast) var(--ease-out);
 	}
 
-	.toggle--sm .toggle-thumb {
+	.switch--sm .switch-thumb {
 		width: 14px;
 		height: 14px;
 	}
 
-	.toggle--md .toggle-thumb {
+	.switch--md .switch-thumb {
 		width: 20px;
 		height: 20px;
 	}
 
-	.toggle.checked .toggle-thumb {
-		transform: translateX(
-			var(
-				--toggle-translate-sm,
-				calc(32px - 18px + 2px)
-			)
-		);
+	.switch--sm.switch[data-state="checked"] .switch-thumb {
+		transform: translateX(14px);
 	}
 
-	.toggle--md.checked .toggle-thumb {
-		transform: translateX(
-			var(
-				--toggle-translate-md,
-				calc(44px - 24px + 2px)
-			)
-		);
+	.switch--md.switch[data-state="checked"] .switch-thumb {
+		transform: translateX(20px);
 	}
 </style>
