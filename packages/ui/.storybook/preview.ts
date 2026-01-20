@@ -1,7 +1,7 @@
 import type { Preview } from "@storybook/svelte";
 
-// Import design tokens (after Phase 0b)
-// import '../src/lib/tokens/index.css';
+// Import tokens (includes typography)
+import '../src/lib/tokens/index.css';
 
 const preview: Preview = {
 	parameters: {
@@ -19,6 +19,23 @@ const preview: Preview = {
 			],
 		},
 	},
+	decorators: [
+		// Ensure fonts are loaded
+		(Story) => {
+			// Add Google Fonts link if not present
+			if (typeof document !== 'undefined') {
+				const linkId = 'google-fonts';
+				if (!document.getElementById(linkId)) {
+					const link = document.createElement('link');
+					link.id = linkId;
+					link.rel = 'stylesheet';
+					link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap';
+					document.head.appendChild(link);
+				}
+			}
+			return Story();
+		}
+	]
 };
 
 export default preview;

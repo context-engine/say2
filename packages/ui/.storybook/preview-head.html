@@ -1,0 +1,8 @@
+<script>
+  // Inline script to prevent theme flash in Storybook
+  document.documentElement.classList.add('no-transition');
+  const theme = localStorage.getItem('say2-theme');
+  if (theme && theme !== 'system') {
+    document.documentElement.setAttribute('data-theme', theme);
+  }
+</script>

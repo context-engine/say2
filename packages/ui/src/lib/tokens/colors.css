@@ -1,0 +1,38 @@
+/* src/lib/tokens/colors.css */
+
+/* ===========================================
+   SEMANTIC COLORS - Light Mode (default)
+   =========================================== */
+:root {
+  /* Backgrounds */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f5f5f5;
+  --color-bg-tertiary: #ebebeb;
+
+  /* Text */
+  --color-text-primary: #1a1a1a;
+  --color-text-secondary: #666666;
+  --color-text-tertiary: #999999;
+
+  /* Borders */
+  --color-border: #e5e5e5;
+}
+
+/* ===========================================
+   STATUS COLORS (same in light/dark)
+   =========================================== */
+:root {
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+}
+
+/* ===========================================
+   PROTOCOL COLORS (MCP-specific)
+   =========================================== */
+:root {
+  --color-request: #8b5cf6;      /* purple - outbound */
+  --color-response: #06b6d4;     /* cyan - inbound */
+  --color-notification: #f97316; /* orange - notifications */
+}
