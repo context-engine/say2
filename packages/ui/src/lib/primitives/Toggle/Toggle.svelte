@@ -98,7 +98,7 @@ const {
 		transition: background var(--duration-fast) var(--ease-out);
 	}
 
-	.switch[data-state="checked"] .switch-control {
+	.switch[data-state='checked'] .switch-control {
 		background: var(--color-request);
 	}
 
@@ -119,11 +119,11 @@ const {
 		height: 20px;
 	}
 
-	.switch--sm.switch[data-state="checked"] .switch-thumb {
+	.switch--sm.switch[data-state='checked'] .switch-thumb {
 		transform: translateX(14px);
 	}
 
-	.switch--md.switch[data-state="checked"] .switch-thumb {
+	.switch--md.switch[data-state='checked'] .switch-thumb {
 		transform: translateX(20px);
 	}
 </style>

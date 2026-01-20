@@ -79,12 +79,12 @@ const {
 		outline-offset: 2px;
 	}
 
-	.checkbox[data-state="checked"] {
+	.checkbox[data-state='checked'] {
 		background: var(--color-info);
 		border-color: var(--color-info);
 	}
 
-	.checkbox[data-state="indeterminate"] {
+	.checkbox[data-state='indeterminate'] {
 		background: var(--color-warning);
 		border-color: var(--color-warning);
 	}

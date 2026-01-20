@@ -3,12 +3,21 @@
 import { Select } from "bits-ui";
 import { Check, ChevronDown } from "lucide-svelte";
 
-type SelectOption = {
+interface SelectOption {
 	value: string;
 	label: string;
 	icon?: any;
 	disabled?: boolean;
-};
+}
+
+interface Props {
+	value?: string;
+	options?: SelectOption[];
+	placeholder?: string;
+	disabled?: boolean;
+	size?: "sm" | "md";
+	onchange?: (value: string) => void;
+}
 
 const {
 	value = $bindable(""),
@@ -17,7 +26,7 @@ const {
 	disabled = false,
 	size = "md",
 	onchange,
-} = $props();
+}: Props = $props();
 
 const selectedOption = $derived(
 	options.find((o: SelectOption) => o.value === value),
