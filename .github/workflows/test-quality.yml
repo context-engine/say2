@@ -89,11 +89,9 @@ jobs:
       - name: Lint Check
         run: bun run lint
 
-  mutation-testing:
-    name: Mutation Testing
+  property-based-testing:
+    name: Property-Based Testing
     runs-on: ubuntu-latest
-    # Only run mutation testing on PRs to avoid slowing down every push
-    if: github.event_name == 'pull_request'
 
     steps:
       - name: Checkout
@@ -107,14 +105,12 @@ jobs:
       - name: Install dependencies
         run: bun install
 
-      - name: Run Mutation Testing
-        run: bun run test:mutate
+      - name: Run Property-Based Tests
+        run: bun run test:property
 
-      - name: Check Mutation Score
-        run: |
-          # Stryker outputs score in reports/mutation/index.html
-          # The threshold is configured in stryker.config.mjs (break: 50)
-          echo "✅ Mutation testing passed (score >= threshold)"
+  # NOTE: Full mutation testing removed from CI (too slow: ~2hrs for 1309 mutants)
+  # Run manually with: bun run test:mutate
+  # Consider scheduling nightly: add a separate workflow with schedule trigger
 
   pr-comment:
     name: PR Quality Summary

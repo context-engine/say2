@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import {
-    createPipeline,
-    createStateMachineMiddleware,
-    LATEST_PROTOCOL_VERSION,
-    SessionManager,
+	createPipeline,
+	createStateMachineMiddleware,
+	LATEST_PROTOCOL_VERSION,
+	SessionManager,
 } from "@say2/core";
 import { McpClientManager } from "../src/client/manager";
 import { McpClientRegistry } from "../src/client/registry";
 import { LoggingTransport } from "../src/transport";
 import {
-    createMockServerTransport,
-    type MockServerTransport,
+	createMockServerTransport,
+	type MockServerTransport,
 } from "./fixtures/mock-server";
 import { scenarioMockConfig } from "./fixtures/tool-scenarios";
 
@@ -25,198 +25,198 @@ import { scenarioMockConfig } from "./fixtures/tool-scenarios";
  * 4. Structured output is handled
  */
 describe("Content Parsing Integration", () => {
-    let sessionManager: SessionManager;
-    let pipeline: ReturnType<typeof createPipeline>;
-    let registry: McpClientRegistry;
-    let clientManager: McpClientManager;
-    let mockTransport: MockServerTransport;
-    let sessionId: string;
-    let client: Client;
+	let sessionManager: SessionManager;
+	let pipeline: ReturnType<typeof createPipeline>;
+	let registry: McpClientRegistry;
+	let clientManager: McpClientManager;
+	let mockTransport: MockServerTransport;
+	let sessionId: string;
+	let client: Client;
 
-    beforeEach(async () => {
-        sessionManager = new SessionManager();
-        pipeline = createPipeline();
+	beforeEach(async () => {
+		sessionManager = new SessionManager();
+		pipeline = createPipeline();
 
-        // Mock Protocol Detector
-        const mockDetector = {
-            isInitializeRequest: (msg: any) =>
-                msg.method === "initialize" && "id" in msg,
-            isInitializeResponse: (msg: any) =>
-                "result" in msg && "protocolVersion" in msg.result,
-            isInitializedNotification: (msg: any) =>
-                msg.method === "notifications/initialized",
-            extractCapabilities: (msg: any) => msg.result?.capabilities,
-            extractServerInfo: (msg: any) => msg.result?.serverInfo,
-        };
+		// Mock Protocol Detector
+		const mockDetector = {
+			isInitializeRequest: (msg: any) =>
+				msg.method === "initialize" && "id" in msg,
+			isInitializeResponse: (msg: any) =>
+				"result" in msg && "protocolVersion" in msg.result,
+			isInitializedNotification: (msg: any) =>
+				msg.method === "notifications/initialized",
+			extractCapabilities: (msg: any) => msg.result?.capabilities,
+			extractServerInfo: (msg: any) => msg.result?.serverInfo,
+		};
 
-        pipeline.use(
-            (createStateMachineMiddleware as any)(sessionManager, mockDetector),
-        );
+		pipeline.use(
+			(createStateMachineMiddleware as any)(sessionManager, mockDetector),
+		);
 
-        registry = new McpClientRegistry();
-        clientManager = new McpClientManager(registry, sessionManager, pipeline);
+		registry = new McpClientRegistry();
+		clientManager = new McpClientManager(registry, sessionManager, pipeline);
 
-        // Setup session
-        const session = sessionManager.create({
-            name: "content-test-session",
-            transport: "stdio",
-            command: "node",
-        });
-        sessionId = session.id;
+		// Setup session
+		const session = sessionManager.create({
+			name: "content-test-session",
+			transport: "stdio",
+			command: "node",
+		});
+		sessionId = session.id;
 
-        // Setup Transport with content-returning tools
-        mockTransport = createMockServerTransport(scenarioMockConfig);
-        client = new Client(
-            { name: "test-client", version: "1.0.0" },
-            { capabilities: {} },
-        );
+		// Setup Transport with content-returning tools
+		mockTransport = createMockServerTransport(scenarioMockConfig);
+		client = new Client(
+			{ name: "test-client", version: "1.0.0" },
+			{ capabilities: {} },
+		);
 
-        const loggingTransport = new LoggingTransport(
-            mockTransport,
-            session,
-            pipeline,
-        );
+		const loggingTransport = new LoggingTransport(
+			mockTransport,
+			session,
+			pipeline,
+		);
 
-        // Initialize connection
-        await client.connect(loggingTransport);
-        registry.register(sessionId, client, loggingTransport);
+		// Initialize connection
+		await client.connect(loggingTransport);
+		registry.register(sessionId, client, loggingTransport);
 
-        // Manually transition to ACTIVE
-        sessionManager.connect(sessionId);
-        sessionManager.initialize(sessionId);
-        sessionManager.activate(sessionId, {}, {}, LATEST_PROTOCOL_VERSION);
-    });
+		// Manually transition to ACTIVE
+		sessionManager.connect(sessionId);
+		sessionManager.initialize(sessionId);
+		sessionManager.activate(sessionId, {}, {}, LATEST_PROTOCOL_VERSION);
+	});
 
-    afterEach(async () => {
-        if (mockTransport && !mockTransport.isClosed) {
-            await mockTransport.close();
-        }
-    });
+	afterEach(async () => {
+		if (mockTransport && !mockTransport.isClosed) {
+			await mockTransport.close();
+		}
+	});
 
-    test("tool returns audio content and it is parsed correctly", async () => {
-        const result = await clientManager.callTool(sessionId, {
-            name: "getAudio",
-        });
+	test("tool returns audio content and it is parsed correctly", async () => {
+		const result = await clientManager.callTool(sessionId, {
+			name: "getAudio",
+		});
 
-        expect(result.status).toBe("completed");
-        expect(result.result?.content).toHaveLength(1);
+		expect(result.status).toBe("completed");
+		expect(result.result?.content).toHaveLength(1);
 
-        const content = result.result!.content[0];
-        expect(content?.type).toBe("audio");
-        if (content?.type === "audio") {
-            expect(content.data).toBeDefined();
-            expect(content.data.length).toBeGreaterThan(0);
-            expect(content.mimeType).toBe("audio/wav");
-        }
-    });
+		const content = result.result?.content[0];
+		expect(content?.type).toBe("audio");
+		if (content?.type === "audio") {
+			expect(content.data).toBeDefined();
+			expect(content.data.length).toBeGreaterThan(0);
+			expect(content.mimeType).toBe("audio/wav");
+		}
+	});
 
-    test("tool returns structuredContent and it is available in result", async () => {
-        const result = await clientManager.callTool(sessionId, {
-            name: "getStructured",
-        });
+	test("tool returns structuredContent and it is available in result", async () => {
+		const result = await clientManager.callTool(sessionId, {
+			name: "getStructured",
+		});
 
-        expect(result.status).toBe("completed");
-        expect(result.result?.structuredContent).toBeDefined();
+		expect(result.status).toBe("completed");
+		expect(result.result?.structuredContent).toBeDefined();
 
-        const structured = result.result!.structuredContent as any;
-        expect(structured.result).toBe("success");
-        expect(structured.count).toBe(42);
-        expect(structured.items).toEqual(["a", "b", "c"]);
-    });
+		const structured = result.result?.structuredContent as any;
+		expect(structured.result).toBe("success");
+		expect(structured.count).toBe(42);
+		expect(structured.items).toEqual(["a", "b", "c"]);
+	});
 
-    test("annotations are preserved in parsed content", async () => {
-        const result = await clientManager.callTool(sessionId, {
-            name: "getAnnotated",
-        });
+	test("annotations are preserved in parsed content", async () => {
+		const result = await clientManager.callTool(sessionId, {
+			name: "getAnnotated",
+		});
 
-        expect(result.status).toBe("completed");
-        expect(result.result?.content).toHaveLength(1);
+		expect(result.status).toBe("completed");
+		expect(result.result?.content).toHaveLength(1);
 
-        const content = result.result!.content[0];
-        expect(content?.annotations).toBeDefined();
-        expect(content?.annotations?.audience).toContain("user");
-        expect(content?.annotations?.priority).toBe(0.8);
-    });
+		const content = result.result?.content[0];
+		expect(content?.annotations).toBeDefined();
+		expect(content?.annotations?.audience).toContain("user");
+		expect(content?.annotations?.priority).toBe(0.8);
+	});
 
-    test("large base64 content is handled without memory issues", async () => {
-        // getImage returns a small image, but this test verifies the mechanism works
-        const result = await clientManager.callTool(sessionId, {
-            name: "getImage",
-        });
+	test("large base64 content is handled without memory issues", async () => {
+		// getImage returns a small image, but this test verifies the mechanism works
+		const result = await clientManager.callTool(sessionId, {
+			name: "getImage",
+		});
 
-        expect(result.status).toBe("completed");
+		expect(result.status).toBe("completed");
 
-        const content = result.result!.content[0];
-        expect(content?.type).toBe("image");
-        if (content?.type === "image") {
-            // Verify base64 data is present and valid
-            expect(content.data.length).toBeGreaterThan(10);
-            // Base64 should only contain valid characters
-            expect(content.data).toMatch(/^[A-Za-z0-9+/=]+$/);
-        }
-    });
+		const content = result.result?.content[0];
+		expect(content?.type).toBe("image");
+		if (content?.type === "image") {
+			// Verify base64 data is present and valid
+			expect(content.data.length).toBeGreaterThan(10);
+			// Base64 should only contain valid characters
+			expect(content.data).toMatch(/^[A-Za-z0-9+/=]+$/);
+		}
+	});
 
-    test("embedded resource content is parsed correctly", async () => {
-        const result = await clientManager.callTool(sessionId, {
-            name: "getEmbeddedResource",
-        });
+	test("embedded resource content is parsed correctly", async () => {
+		const result = await clientManager.callTool(sessionId, {
+			name: "getEmbeddedResource",
+		});
 
-        expect(result.status).toBe("completed");
+		expect(result.status).toBe("completed");
 
-        const content = result.result!.content[0];
-        expect(content?.type).toBe("resource");
-        if (content?.type === "resource") {
-            expect(content.resource.uri).toBe("file:///path/to/data.json");
-            expect(content.resource.text).toBe('{"key": "value"}');
-            expect(content.resource.mimeType).toBe("application/json");
-        }
-    });
+		const content = result.result?.content[0];
+		expect(content?.type).toBe("resource");
+		if (content?.type === "resource") {
+			expect(content.resource.uri).toBe("file:///path/to/data.json");
+			expect(content.resource.text).toBe('{"key": "value"}');
+			expect(content.resource.mimeType).toBe("application/json");
+		}
+	});
 
-    test("resource_link content is parsed correctly", async () => {
-        const result = await clientManager.callTool(sessionId, {
-            name: "getResourceLink",
-        });
+	test("resource_link content is parsed correctly", async () => {
+		const result = await clientManager.callTool(sessionId, {
+			name: "getResourceLink",
+		});
 
-        expect(result.status).toBe("completed");
+		expect(result.status).toBe("completed");
 
-        const content = result.result!.content[0];
-        expect(content?.type).toBe("resource_link");
-        if (content?.type === "resource_link") {
-            expect(content.uri).toBe("file:///path/to/resource.txt");
-            expect(content.name).toBe("Resource File");
-            expect(content.mimeType).toBe("text/plain");
-        }
-    });
+		const content = result.result?.content[0];
+		expect(content?.type).toBe("resource_link");
+		if (content?.type === "resource_link") {
+			expect(content.uri).toBe("file:///path/to/resource.txt");
+			expect(content.name).toBe("Resource File");
+			expect(content.mimeType).toBe("text/plain");
+		}
+	});
 
-    test("mixed content types are all parsed correctly", async () => {
-        const result = await clientManager.callTool(sessionId, {
-            name: "getMixed",
-        });
+	test("mixed content types are all parsed correctly", async () => {
+		const result = await clientManager.callTool(sessionId, {
+			name: "getMixed",
+		});
 
-        expect(result.status).toBe("completed");
-        expect(result.result?.content).toHaveLength(3);
+		expect(result.status).toBe("completed");
+		expect(result.result?.content).toHaveLength(3);
 
-        const types = result.result!.content.map((c) => c.type);
-        expect(types).toContain("text");
-        expect(types).toContain("image");
-        expect(types).toContain("resource_link");
-    });
+		const types = result.result?.content.map((c) => c.type);
+		expect(types).toContain("text");
+		expect(types).toContain("image");
+		expect(types).toContain("resource_link");
+	});
 
-    test("text content is parsed correctly", async () => {
-        const result = await clientManager.callTool(sessionId, {
-            name: "echo",
-            arguments: { message: "Hello World" },
-        });
+	test("text content is parsed correctly", async () => {
+		const result = await clientManager.callTool(sessionId, {
+			name: "echo",
+			arguments: { message: "Hello World" },
+		});
 
-        expect(result.status).toBe("completed");
-        expect(result.result?.content).toHaveLength(1);
+		expect(result.status).toBe("completed");
+		expect(result.result?.content).toHaveLength(1);
 
-        const content = result.result!.content[0];
-        expect(content?.type).toBe("text");
-        if (content?.type === "text") {
-            expect(content.text).toContain("Hello World");
-        }
-    });
+		const content = result.result?.content[0];
+		expect(content?.type).toBe("text");
+		if (content?.type === "text") {
+			expect(content.text).toContain("Hello World");
+		}
+	});
 });
 
 /**
@@ -231,115 +231,115 @@ describe("Content Parsing Integration", () => {
  * - Invalid structuredContent → validation error stored
  */
 describe("ContentParser Integration Gap Detection", () => {
-    let sessionManager: SessionManager;
-    let pipeline: ReturnType<typeof createPipeline>;
-    let registry: McpClientRegistry;
-    let clientManager: McpClientManager;
-    let mockTransport: MockServerTransport;
-    let sessionId: string;
-    let client: Client;
+	let sessionManager: SessionManager;
+	let pipeline: ReturnType<typeof createPipeline>;
+	let registry: McpClientRegistry;
+	let clientManager: McpClientManager;
+	let mockTransport: MockServerTransport;
+	let sessionId: string;
+	let client: Client;
 
-    beforeEach(async () => {
-        sessionManager = new SessionManager();
-        pipeline = createPipeline();
+	beforeEach(async () => {
+		sessionManager = new SessionManager();
+		pipeline = createPipeline();
 
-        const mockDetector = {
-            isInitializeRequest: (msg: any) =>
-                msg.method === "initialize" && "id" in msg,
-            isInitializeResponse: (msg: any) =>
-                "result" in msg && "protocolVersion" in msg.result,
-            isInitializedNotification: (msg: any) =>
-                msg.method === "notifications/initialized",
-            extractCapabilities: (msg: any) => msg.result?.capabilities,
-            extractServerInfo: (msg: any) => msg.result?.serverInfo,
-        };
+		const mockDetector = {
+			isInitializeRequest: (msg: any) =>
+				msg.method === "initialize" && "id" in msg,
+			isInitializeResponse: (msg: any) =>
+				"result" in msg && "protocolVersion" in msg.result,
+			isInitializedNotification: (msg: any) =>
+				msg.method === "notifications/initialized",
+			extractCapabilities: (msg: any) => msg.result?.capabilities,
+			extractServerInfo: (msg: any) => msg.result?.serverInfo,
+		};
 
-        pipeline.use(
-            (createStateMachineMiddleware as any)(sessionManager, mockDetector),
-        );
+		pipeline.use(
+			(createStateMachineMiddleware as any)(sessionManager, mockDetector),
+		);
 
-        registry = new McpClientRegistry();
-        clientManager = new McpClientManager(registry, sessionManager, pipeline);
+		registry = new McpClientRegistry();
+		clientManager = new McpClientManager(registry, sessionManager, pipeline);
 
-        const session = sessionManager.create({
-            name: "gap-test-session",
-            transport: "stdio",
-            command: "node",
-        });
-        sessionId = session.id;
+		const session = sessionManager.create({
+			name: "gap-test-session",
+			transport: "stdio",
+			command: "node",
+		});
+		sessionId = session.id;
 
-        mockTransport = createMockServerTransport(scenarioMockConfig);
-        client = new Client(
-            { name: "test-client", version: "1.0.0" },
-            { capabilities: {} },
-        );
+		mockTransport = createMockServerTransport(scenarioMockConfig);
+		client = new Client(
+			{ name: "test-client", version: "1.0.0" },
+			{ capabilities: {} },
+		);
 
-        const loggingTransport = new LoggingTransport(
-            mockTransport,
-            session,
-            pipeline,
-        );
+		const loggingTransport = new LoggingTransport(
+			mockTransport,
+			session,
+			pipeline,
+		);
 
-        await client.connect(loggingTransport);
-        registry.register(sessionId, client, loggingTransport);
+		await client.connect(loggingTransport);
+		registry.register(sessionId, client, loggingTransport);
 
-        sessionManager.connect(sessionId);
-        sessionManager.initialize(sessionId);
-        sessionManager.activate(sessionId, {}, {}, LATEST_PROTOCOL_VERSION);
-    });
+		sessionManager.connect(sessionId);
+		sessionManager.initialize(sessionId);
+		sessionManager.activate(sessionId, {}, {}, LATEST_PROTOCOL_VERSION);
+	});
 
-    afterEach(async () => {
-        if (mockTransport && !mockTransport.isClosed) {
-            await mockTransport.close();
-        }
-    });
+	afterEach(async () => {
+		if (mockTransport && !mockTransport.isClosed) {
+			await mockTransport.close();
+		}
+	});
 
-    // contentParser is now integrated into callTool()
-    test("tool returning invalid audio MIME type should fail parsing", async () => {
-        // This tool returns audio with mimeType "audio/x-invalid-fake"
-        // If contentParser.parseContent() is integrated, it should throw
-        const result = await clientManager.callTool(sessionId, {
-            name: "getInvalidAudioMime",
-        });
+	// contentParser is now integrated into callTool()
+	test("tool returning invalid audio MIME type should fail parsing", async () => {
+		// This tool returns audio with mimeType "audio/x-invalid-fake"
+		// If contentParser.parseContent() is integrated, it should throw
+		const result = await clientManager.callTool(sessionId, {
+			name: "getInvalidAudioMime",
+		});
 
-        // Expected: operation should have error status due to parsing failure
-        expect(result.status).toBe("error");
-        expect(result.error?.message).toContain("Invalid audio MIME type");
-    });
+		// Expected: operation should have error status due to parsing failure
+		expect(result.status).toBe("error");
+		expect(result.error?.message).toContain("Invalid audio MIME type");
+	});
 
-    // contentParser is now integrated into callTool()
-    test("tool returning invalid image MIME type should fail parsing", async () => {
-        // This tool returns image with mimeType "image/x-invalid-fake"
-        const result = await clientManager.callTool(sessionId, {
-            name: "getInvalidImageMime",
-        });
+	// contentParser is now integrated into callTool()
+	test("tool returning invalid image MIME type should fail parsing", async () => {
+		// This tool returns image with mimeType "image/x-invalid-fake"
+		const result = await clientManager.callTool(sessionId, {
+			name: "getInvalidImageMime",
+		});
 
-        // Expected: operation should have error status due to parsing failure
-        expect(result.status).toBe("error");
-        expect(result.error?.message).toContain("Invalid image MIME type");
-    });
+		// Expected: operation should have error status due to parsing failure
+		expect(result.status).toBe("error");
+		expect(result.error?.message).toContain("Invalid image MIME type");
+	});
 
-    // validateStructuredOutput is now integrated into callTool()
-    test("tool returning invalid structuredContent should fail validation", async () => {
-        // This tool returns structuredContent that doesn't match outputSchema
-        // The outputSchema requires 'result' field which is missing
-        const result = await clientManager.callTool(
-            sessionId,
-            { name: "getInvalidStructuredOutput" },
-            {
-                // Provide the outputSchema in options - implementation validates against this
-                outputSchema: {
-                    type: "object",
-                    properties: {
-                        result: { type: "string" },
-                    },
-                    required: ["result"],
-                },
-            },
-        );
+	// validateStructuredOutput is now integrated into callTool()
+	test("tool returning invalid structuredContent should fail validation", async () => {
+		// This tool returns structuredContent that doesn't match outputSchema
+		// The outputSchema requires 'result' field which is missing
+		const result = await clientManager.callTool(
+			sessionId,
+			{ name: "getInvalidStructuredOutput" },
+			{
+				// Provide the outputSchema in options - implementation validates against this
+				outputSchema: {
+					type: "object",
+					properties: {
+						result: { type: "string" },
+					},
+					required: ["result"],
+				},
+			},
+		);
 
-        // Expected: validation should fail and be recorded in operation
-        expect(result.status).toBe("error");
-        expect(result.error?.message).toContain("Invalid structured output");
-    });
+		// Expected: validation should fail and be recorded in operation
+		expect(result.status).toBe("error");
+		expect(result.error?.message).toContain("Invalid structured output");
+	});
 });

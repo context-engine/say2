@@ -19,18 +19,36 @@
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import type { MiddlewarePipeline, SessionManager } from "@say2/core";
-import { LoggingTransport } from "../transport";
-import type { McpClientRegistry } from "./registry";
-import type {
-	ToolCallRequest,
-	ToolOperation,
-	CallToolOptions,
-} from "../types/tool";
-import { toolOperationStore } from "../store";
-import { progressTracker } from "../progress/tracker";
-import { McpProgressNotificationSchema } from "../types/progress";
+import { z } from "zod";
 import { cancellationManager } from "../cancel/manager";
 import { ContentParser } from "../content/parser";
+import { progressTracker } from "../progress/tracker";
+import { toolOperationStore } from "../store";
+import { taskManager } from "../task/manager";
+import { LoggingTransport } from "../transport";
+import type { ToolContent } from "../types/content";
+import { McpProgressNotificationSchema } from "../types/progress";
+import {
+	type CreateTaskResult,
+	CreateTaskResultSchema,
+	EmptyResultSchema,
+	type Task,
+	TaskGetResultSchema,
+	TaskListResultSchema,
+	type TaskMetadata,
+	TaskStatusNotificationSchema,
+} from "../types/task";
+import type {
+	CallToolOptions,
+	ToolCallRequest,
+	ToolOperation,
+} from "../types/tool";
+import {
+	applyAnnotationDefaults,
+	type Tool,
+	type ToolAnnotations,
+} from "../types/tool-annotations";
+import type { McpClientRegistry } from "./registry";
 
 export class McpClientManager {
 	constructor(
@@ -41,7 +59,7 @@ export class McpClientManager {
 			clientInfo: { name: string; version: string },
 			options?: { capabilities: any },
 		) => Client = (info, opts) => new Client(info, opts),
-	) { }
+	) {}
 
 	/**
 	 * Connect to an MCP server for the given session.
@@ -116,6 +134,14 @@ export class McpClientManager {
 						total: notification.params.total,
 						message: notification.params.message,
 					});
+				},
+			);
+
+			// 9. Set up task status notification handler (optional per spec)
+			client.setNotificationHandler(
+				TaskStatusNotificationSchema,
+				(notification) => {
+					taskManager.handleStatusNotification(notification.params);
 				},
 			);
 
@@ -220,6 +246,14 @@ export class McpClientManager {
 			cursor = result.nextCursor;
 		} while (cursor);
 
+		// Cache in session
+		const session = this.sessionManager.get(sessionId);
+		if (session?.serverCapabilities) {
+			const caps = session.serverCapabilities as any;
+			if (!caps.discovered) caps.discovered = {};
+			caps.discovered.tools = tools;
+		}
+
 		return { tools };
 	}
 
@@ -240,6 +274,14 @@ export class McpClientManager {
 			resources = resources.concat(result.resources);
 			cursor = result.nextCursor;
 		} while (cursor);
+
+		// Cache in session
+		const session = this.sessionManager.get(sessionId);
+		if (session?.serverCapabilities) {
+			const caps = session.serverCapabilities as any;
+			if (!caps.discovered) caps.discovered = {};
+			caps.discovered.resources = resources;
+		}
 
 		return { resources };
 	}
@@ -285,7 +327,70 @@ export class McpClientManager {
 			cursor = result.nextCursor;
 		} while (cursor);
 
+		// Cache in session
+		const session = this.sessionManager.get(sessionId);
+		if (session?.serverCapabilities) {
+			const caps = session.serverCapabilities as any;
+			if (!caps.discovered) caps.discovered = {};
+			caps.discovered.prompts = prompts;
+		}
+
 		return { prompts };
+	}
+
+	// =========================================================================
+	// Tool Annotations (Phase 2a Task 06)
+	// =========================================================================
+
+	/**
+	 * List all tools with full typing and annotations applied.
+	 * Returns cached tools from session with defaults applied to annotations.
+	 *
+	 * @param sessionId - The session ID
+	 * @returns Array of fully-typed Tool objects with annotation defaults
+	 */
+	listToolsTyped(sessionId: string): Tool[] {
+		const session = this.sessionManager.get(sessionId);
+		const discovered = session?.serverCapabilities?.discovered as
+			| { tools?: Tool[] }
+			| undefined;
+		const tools = discovered?.tools ?? [];
+
+		return tools.map((tool) => ({
+			...tool,
+			annotations: applyAnnotationDefaults(tool.annotations),
+		}));
+	}
+
+	/**
+	 * Retrieve annotations for a specific tool.
+	 * Tools are stored during Phase 1 capability discovery.
+	 *
+	 * @param sessionId - The session ID
+	 * @param toolName - The name of the tool
+	 * @returns ToolAnnotations with defaults applied, or undefined if not found
+	 */
+	getToolAnnotations(
+		sessionId: string,
+		toolName: string,
+	): ToolAnnotations | undefined {
+		const session = this.sessionManager.get(sessionId);
+		const discovered = session?.serverCapabilities?.discovered as
+			| { tools?: Tool[] }
+			| undefined;
+
+		if (!discovered?.tools) {
+			return undefined;
+		}
+
+		const tool = discovered.tools.find((t) => t.name === toolName);
+
+		if (!tool) {
+			return undefined;
+		}
+
+		// Apply defaults to ensure all fields are present
+		return applyAnnotationDefaults(tool.annotations);
 	}
 
 	// =========================================================================
@@ -334,11 +439,20 @@ export class McpClientManager {
 		});
 
 		cancellationManager.setClient(entry.client);
-		cancellationManager.register(requestId, operation.id, options?.timeout, cancelReject);
+		cancellationManager.register(
+			requestId,
+			operation.id,
+			options?.timeout,
+			cancelReject,
+		);
 
 		try {
 			// Build request params with optional progress token
-			const callParams: { name: string; arguments: Record<string, unknown>; _meta?: { progressToken: string } } = {
+			const callParams: {
+				name: string;
+				arguments: Record<string, unknown>;
+				_meta?: { progressToken: string };
+			} = {
 				name: request.name,
 				arguments: request.arguments ?? {},
 			};
@@ -362,7 +476,7 @@ export class McpClientManager {
 
 			// Parse and validate content via ContentParser
 			const contentParser = new ContentParser();
-			let parsedContent;
+			let parsedContent: ToolContent[];
 			try {
 				parsedContent = contentParser.parseContent(result.content as unknown[]);
 			} catch (parseError) {
@@ -371,7 +485,10 @@ export class McpClientManager {
 					status: "error",
 					error: {
 						code: -32602, // Invalid params
-						message: parseError instanceof Error ? parseError.message : String(parseError),
+						message:
+							parseError instanceof Error
+								? parseError.message
+								: String(parseError),
 					},
 				});
 				return toolOperationStore.get(operation.id)!;
@@ -487,5 +604,225 @@ export class McpClientManager {
 		}
 
 		await cancellationManager.cancel(operationId, reason);
+	}
+
+	// =========================================================================
+	// Task Operations (Phase 2a Task 07)
+	// =========================================================================
+
+	/**
+	 * List all active tasks for a session.
+	 * @param sessionId - The session ID
+	 * @returns Array of active tasks
+	 */
+	async listTasks(sessionId: string): Promise<Task[]> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		const tasks: Task[] = [];
+		let cursor: string | undefined;
+
+		do {
+			const result = await client.request(
+				{ method: "tasks/list", params: { cursor } },
+				TaskListResultSchema,
+			);
+			tasks.push(...result.tasks);
+			cursor = result.nextCursor;
+		} while (cursor);
+
+		return tasks;
+	}
+
+	/**
+	 * Get a specific task's status.
+	 * @param sessionId - The session ID
+	 * @param taskId - The task identifier
+	 * @returns Task metadata
+	 */
+	async getTask(sessionId: string, taskId: string): Promise<Task> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		return await client.request(
+			{ method: "tasks/get", params: { taskId } },
+			TaskGetResultSchema,
+		);
+	}
+
+	/**
+	 * Get the actual result of a completed task.
+	 * @param sessionId - The session ID
+	 * @param taskId - The task identifier
+	 * @returns The tool call result
+	 */
+	async getTaskResult(sessionId: string, taskId: string): Promise<unknown> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		// Return unknown for now - will be typed when integrating with callTool
+		return await client.request(
+			{ method: "tasks/result", params: { taskId } },
+			z.unknown(),
+		);
+	}
+
+	/**
+	 * Cancel a running task.
+	 * @param sessionId - The session ID
+	 * @param taskId - The task identifier
+	 */
+	async cancelTask(sessionId: string, taskId: string): Promise<void> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		await client.request(
+			{ method: "tasks/cancel", params: { taskId } },
+			EmptyResultSchema,
+		);
+
+		// Update local cache
+		taskManager.removeTask(taskId);
+	}
+
+	/**
+	 * Check if a tool supports task-augmented execution.
+	 * @param sessionId - The session ID
+	 * @param toolName - The tool name
+	 * @returns Task support level
+	 */
+	getToolTaskSupport(
+		sessionId: string,
+		toolName: string,
+	): "forbidden" | "optional" | "required" {
+		const session = this.sessionManager.get(sessionId);
+		const discovered = session?.serverCapabilities?.discovered as
+			| { tools?: Tool[] }
+			| undefined;
+		const tool = discovered?.tools?.find((t) => t.name === toolName);
+
+		// Default to 'forbidden' if not specified
+		return tool?.execution?.taskSupport ?? "forbidden";
+	}
+
+	/**
+	 * Call a tool with task-augmented execution.
+	 * Returns a task that can be polled for completion.
+	 *
+	 * @param sessionId - The session ID
+	 * @param request - The tool call request
+	 * @param taskOptions - Task metadata (e.g., ttl)
+	 * @returns CreateTaskResult with the created task
+	 * @throws Error if tool doesn't support tasks
+	 */
+	async callToolAsTask(
+		sessionId: string,
+		request: ToolCallRequest,
+		taskOptions: TaskMetadata = {},
+	): Promise<CreateTaskResult> {
+		const client = this.getClient(sessionId);
+		if (!client) {
+			throw new Error(`Session ${sessionId} not connected`);
+		}
+
+		// 1. Check server-level capability first (per spec)
+		const session = this.sessionManager.get(sessionId);
+		const serverCaps = session?.serverCapabilities as
+			| { tasks?: { requests?: { tools?: { call?: boolean } } } }
+			| undefined;
+
+		if (!serverCaps?.tasks?.requests?.tools?.call) {
+			throw new Error("Server does not support task-augmented tool execution");
+		}
+
+		// 2. Check tool-level support
+		const taskSupport = this.getToolTaskSupport(sessionId, request.name);
+		if (taskSupport === "forbidden") {
+			throw new Error(
+				`Tool "${request.name}" does not support task-augmented execution`,
+			);
+		}
+
+		// Call tool with task metadata
+		const result = await client.request(
+			{
+				method: "tools/call",
+				params: {
+					name: request.name,
+					arguments: request.arguments,
+					task: taskOptions,
+				},
+			},
+			CreateTaskResultSchema,
+		);
+
+		// Register task in local manager
+		taskManager.registerTask(result.task.taskId, sessionId, result.task);
+
+		return result;
+	}
+
+	/**
+	 * Call a tool as a task and wait for completion.
+	 * Combines callToolAsTask with polling.
+	 *
+	 * @param sessionId - The session ID
+	 * @param request - The tool call request
+	 * @param taskOptions - Task metadata
+	 * @param onProgress - Optional progress callback
+	 * @returns The final tool result
+	 */
+	async callToolAsTaskAndWait(
+		sessionId: string,
+		request: ToolCallRequest,
+		taskOptions: TaskMetadata = {},
+		onProgress?: (task: Task) => void,
+	): Promise<unknown> {
+		// Start the task
+		const createResult = await this.callToolAsTask(
+			sessionId,
+			request,
+			taskOptions,
+		);
+
+		const taskId = createResult.task.taskId;
+
+		// Poll until complete or input_required (which needs user action)
+		const finalTask = await taskManager.pollUntilComplete(
+			taskId,
+			() => this.getTask(sessionId, taskId),
+			onProgress,
+			// Stop early on input_required since this method can't provide input
+			(task) => task.status === "input_required",
+		);
+
+		// Handle terminal states
+		if (finalTask.status === "failed") {
+			throw new Error(finalTask.statusMessage ?? `Task ${taskId} failed`);
+		}
+
+		if (finalTask.status === "cancelled") {
+			throw new Error(
+				finalTask.statusMessage ?? `Task ${taskId} was cancelled`,
+			);
+		}
+
+		// input_required requires user interaction - this method can't handle it
+		if (finalTask.status === "input_required") {
+			throw new Error(
+				`Task ${taskId} requires input: ${finalTask.statusMessage ?? "waiting for elicitation or sampling"}`,
+			);
+		}
+
+		// Get the actual result
+		return await this.getTaskResult(sessionId, taskId);
 	}
 }

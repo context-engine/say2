@@ -58,6 +58,12 @@ interface MockServerConfig {
 		tools?: boolean;
 		resources?: boolean;
 		prompts?: boolean;
+		/** Task-augmented execution capability (per MCP spec) */
+		tasks?: {
+			requests?: {
+				tools?: { call?: boolean };
+			};
+		};
 	};
 	tools?: Array<{
 		name: string;
@@ -106,7 +112,6 @@ const defaultConfig: MockServerConfig = {
 	failOnMethods: [],
 	strictToolValidation: true, // Default to strict for executed tests
 };
-
 
 /**
  * Process a JSON-RPC message and return the response.
@@ -189,6 +194,9 @@ function createInitializeResponse(
 				...(config.capabilities?.tools ? { tools: {} } : {}),
 				...(config.capabilities?.resources ? { resources: {} } : {}),
 				...(config.capabilities?.prompts ? { prompts: {} } : {}),
+				...(config.capabilities?.tasks
+					? { tasks: config.capabilities.tasks }
+					: {}),
 			},
 			serverInfo: {
 				name: config.name ?? "mock-mcp-server",
@@ -413,7 +421,6 @@ function createToolCallResponse(
 	};
 }
 
-
 /**
  * Create a mock transport that simulates MCP server behavior.
  * Use this in unit tests instead of spawning a real process.
@@ -598,4 +605,3 @@ export function createMockServerTransport(config: MockServerConfig = {}) {
 }
 
 export type MockServerTransport = ReturnType<typeof createMockServerTransport>;
-
