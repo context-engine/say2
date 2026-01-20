@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from "bun:test";
 import { randomUUID } from "node:crypto";
-import { ProgressTracker } from "./tracker";
 import { ToolOperationStore } from "../store/operation-store";
+import { ProgressTracker } from "./tracker";
 
 describe("ProgressTracker", () => {
 	let tracker: ProgressTracker;

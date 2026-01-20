@@ -18,36 +18,37 @@
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
-import { z } from "zod";
 import type { MiddlewarePipeline, SessionManager } from "@say2/core";
-import { LoggingTransport } from "../transport";
-import type { McpClientRegistry } from "./registry";
-import type {
-	ToolCallRequest,
-	ToolOperation,
-	CallToolOptions,
-} from "../types/tool";
-import { toolOperationStore } from "../store";
-import { progressTracker } from "../progress/tracker";
-import { McpProgressNotificationSchema } from "../types/progress";
+import { z } from "zod";
 import { cancellationManager } from "../cancel/manager";
 import { ContentParser } from "../content/parser";
+import { progressTracker } from "../progress/tracker";
+import { toolOperationStore } from "../store";
+import { taskManager } from "../task/manager";
+import { LoggingTransport } from "../transport";
+import type { ToolContent } from "../types/content";
+import { McpProgressNotificationSchema } from "../types/progress";
+import {
+	type CreateTaskResult,
+	CreateTaskResultSchema,
+	EmptyResultSchema,
+	type Task,
+	TaskGetResultSchema,
+	TaskListResultSchema,
+	type TaskMetadata,
+	TaskStatusNotificationSchema,
+} from "../types/task";
+import type {
+	CallToolOptions,
+	ToolCallRequest,
+	ToolOperation,
+} from "../types/tool";
 import {
 	applyAnnotationDefaults,
 	type Tool,
 	type ToolAnnotations,
 } from "../types/tool-annotations";
-import {
-	TaskListResultSchema,
-	TaskGetResultSchema,
-	EmptyResultSchema,
-	TaskStatusNotificationSchema,
-	CreateTaskResultSchema,
-	type Task,
-	type TaskMetadata,
-	type CreateTaskResult,
-} from "../types/task";
-import { taskManager } from "../task/manager";
+import type { McpClientRegistry } from "./registry";
 
 export class McpClientManager {
 	constructor(
@@ -58,7 +59,7 @@ export class McpClientManager {
 			clientInfo: { name: string; version: string },
 			options?: { capabilities: any },
 		) => Client = (info, opts) => new Client(info, opts),
-	) { }
+	) {}
 
 	/**
 	 * Connect to an MCP server for the given session.
@@ -438,11 +439,20 @@ export class McpClientManager {
 		});
 
 		cancellationManager.setClient(entry.client);
-		cancellationManager.register(requestId, operation.id, options?.timeout, cancelReject);
+		cancellationManager.register(
+			requestId,
+			operation.id,
+			options?.timeout,
+			cancelReject,
+		);
 
 		try {
 			// Build request params with optional progress token
-			const callParams: { name: string; arguments: Record<string, unknown>; _meta?: { progressToken: string } } = {
+			const callParams: {
+				name: string;
+				arguments: Record<string, unknown>;
+				_meta?: { progressToken: string };
+			} = {
 				name: request.name,
 				arguments: request.arguments ?? {},
 			};
@@ -466,7 +476,7 @@ export class McpClientManager {
 
 			// Parse and validate content via ContentParser
 			const contentParser = new ContentParser();
-			let parsedContent;
+			let parsedContent: ToolContent[];
 			try {
 				parsedContent = contentParser.parseContent(result.content as unknown[]);
 			} catch (parseError) {
@@ -475,7 +485,10 @@ export class McpClientManager {
 					status: "error",
 					error: {
 						code: -32602, // Invalid params
-						message: parseError instanceof Error ? parseError.message : String(parseError),
+						message:
+							parseError instanceof Error
+								? parseError.message
+								: String(parseError),
 					},
 				});
 				return toolOperationStore.get(operation.id)!;
@@ -727,9 +740,7 @@ export class McpClientManager {
 			| undefined;
 
 		if (!serverCaps?.tasks?.requests?.tools?.call) {
-			throw new Error(
-				"Server does not support task-augmented tool execution",
-			);
+			throw new Error("Server does not support task-augmented tool execution");
 		}
 
 		// 2. Check tool-level support
@@ -795,9 +806,7 @@ export class McpClientManager {
 
 		// Handle terminal states
 		if (finalTask.status === "failed") {
-			throw new Error(
-				finalTask.statusMessage ?? `Task ${taskId} failed`,
-			);
+			throw new Error(finalTask.statusMessage ?? `Task ${taskId} failed`);
 		}
 
 		if (finalTask.status === "cancelled") {

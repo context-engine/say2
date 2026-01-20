@@ -108,8 +108,8 @@ describe("ToolOperationStore", () => {
 
 			const updated = store.get(op.id);
 			expect(updated?.progressUpdates).toHaveLength(1);
-			expect(updated?.progressUpdates[0]!.progress).toBe(50);
-			expect(updated?.progressUpdates[0]!.message).toBe("Processing...");
+			expect(updated?.progressUpdates[0]?.progress).toBe(50);
+			expect(updated?.progressUpdates[0]?.message).toBe("Processing...");
 		});
 
 		it("updateProgress throws for non-existent operation", () => {
@@ -140,8 +140,8 @@ describe("ToolOperationStore", () => {
 
 			const updates = store.getProgress(op.id);
 			expect(updates).toHaveLength(2);
-			expect(updates[0]!.progress).toBe(25);
-			expect(updates[1]!.progress).toBe(50);
+			expect(updates[0]?.progress).toBe(25);
+			expect(updates[1]?.progress).toBe(50);
 		});
 
 		it("getProgress returns empty array for non-existent operation", () => {
@@ -211,7 +211,7 @@ describe("ToolOperationStore", () => {
 
 			const updated = store.get(op.id);
 			expect(updated?.completedAt).toBeDefined();
-			expect(updated?.completedAt!.getTime()).toBeGreaterThanOrEqual(
+			expect(updated?.completedAt?.getTime()).toBeGreaterThanOrEqual(
 				op.startedAt.getTime(),
 			);
 		});

@@ -12,50 +12,50 @@ import type { ToolBehavior, ToolContentConfig } from "./mock-server";
 
 /** Sample text content */
 export const sampleTextContent: ToolContentConfig = {
-    type: "text",
-    text: "Hello from the tool!",
+	type: "text",
+	text: "Hello from the tool!",
 };
 
 /** Sample image content (1x1 red PNG) */
 export const sampleImageContent: ToolContentConfig = {
-    type: "image",
-    data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==",
-    mimeType: "image/png",
+	type: "image",
+	data: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==",
+	mimeType: "image/png",
 };
 
 /** Sample audio content (short WAV header) */
 export const sampleAudioContent: ToolContentConfig = {
-    type: "audio",
-    data: "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=",
-    mimeType: "audio/wav",
+	type: "audio",
+	data: "UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=",
+	mimeType: "audio/wav",
 };
 
 /** Sample resource link */
 export const sampleResourceLinkContent: ToolContentConfig = {
-    type: "resource_link",
-    uri: "file:///path/to/resource.txt",
-    name: "Resource File",
-    mimeType: "text/plain",
+	type: "resource_link",
+	uri: "file:///path/to/resource.txt",
+	name: "Resource File",
+	mimeType: "text/plain",
 };
 
 /** Sample embedded resource */
 export const sampleEmbeddedResourceContent: ToolContentConfig = {
-    type: "resource",
-    resource: {
-        uri: "file:///path/to/data.json",
-        text: '{"key": "value"}',
-        mimeType: "application/json",
-    },
+	type: "resource",
+	resource: {
+		uri: "file:///path/to/data.json",
+		text: '{"key": "value"}',
+		mimeType: "application/json",
+	},
 };
 
 /** Sample content with annotations */
 export const sampleAnnotatedContent: ToolContentConfig = {
-    type: "text",
-    text: "This is for the user only",
-    annotations: {
-        audience: ["user"],
-        priority: 0.8,
-    },
+	type: "text",
+	text: "This is for the user only",
+	annotations: {
+		audience: ["user"],
+		priority: 0.8,
+	},
 };
 
 // =============================================================================
@@ -64,209 +64,205 @@ export const sampleAnnotatedContent: ToolContentConfig = {
 
 /** Default tool behaviors for scenarios */
 export const scenarioToolBehaviors: Record<string, ToolBehavior> = {
-    // Basic echo - uses default behavior
-    echo: {},
+	// Basic echo - uses default behavior
+	echo: {},
 
-    // Returns image content
-    getImage: {
-        content: [sampleImageContent],
-    },
+	// Returns image content
+	getImage: {
+		content: [sampleImageContent],
+	},
 
-    // Returns audio content
-    getAudio: {
-        content: [sampleAudioContent],
-    },
+	// Returns audio content
+	getAudio: {
+		content: [sampleAudioContent],
+	},
 
-    // Returns resource link
-    getResourceLink: {
-        content: [sampleResourceLinkContent],
-    },
+	// Returns resource link
+	getResourceLink: {
+		content: [sampleResourceLinkContent],
+	},
 
-    // Returns embedded resource
-    getEmbeddedResource: {
-        content: [sampleEmbeddedResourceContent],
-    },
+	// Returns embedded resource
+	getEmbeddedResource: {
+		content: [sampleEmbeddedResourceContent],
+	},
 
-    // Returns multiple content types
-    getMixed: {
-        content: [
-            sampleTextContent,
-            sampleImageContent,
-            sampleResourceLinkContent,
-        ],
-    },
+	// Returns multiple content types
+	getMixed: {
+		content: [sampleTextContent, sampleImageContent, sampleResourceLinkContent],
+	},
 
-    // Returns with annotations
-    getAnnotated: {
-        content: [sampleAnnotatedContent],
-    },
+	// Returns with annotations
+	getAnnotated: {
+		content: [sampleAnnotatedContent],
+	},
 
-    // Returns isError: true
-    failingTool: {
-        content: [{ type: "text", text: "Something went wrong" }],
-        isError: true,
-    },
+	// Returns isError: true
+	failingTool: {
+		content: [{ type: "text", text: "Something went wrong" }],
+		isError: true,
+	},
 
-    // Returns structured output
-    getStructured: {
-        content: [{ type: "text", text: "Structured data available" }],
-        structuredContent: {
-            result: "success",
-            count: 42,
-            items: ["a", "b", "c"],
-        },
-    },
+	// Returns structured output
+	getStructured: {
+		content: [{ type: "text", text: "Structured data available" }],
+		structuredContent: {
+			result: "success",
+			count: 42,
+			items: ["a", "b", "c"],
+		},
+	},
 
-    // Simulates slow operation (for timeout/cancel tests)
-    slowTool: {
-        content: [{ type: "text", text: "Completed after delay" }],
-        delayMs: 5000,
-    },
+	// Simulates slow operation (for timeout/cancel tests)
+	slowTool: {
+		content: [{ type: "text", text: "Completed after delay" }],
+		delayMs: 5000,
+	},
 
-    // Slow with progress notifications
-    slowWithProgress: {
-        content: [{ type: "text", text: "All steps complete" }],
-        delayMs: 3000,
-        progressSteps: 3,
-    },
+	// Slow with progress notifications
+	slowWithProgress: {
+		content: [{ type: "text", text: "All steps complete" }],
+		delayMs: 3000,
+		progressSteps: 3,
+	},
 
-    // Very slow (for timeout)
-    verySlowTool: {
-        content: [{ type: "text", text: "Should timeout" }],
-        delayMs: 60000,
-    },
+	// Very slow (for timeout)
+	verySlowTool: {
+		content: [{ type: "text", text: "Should timeout" }],
+		delayMs: 60000,
+	},
 
-    // GAP DETECTION: Returns audio with invalid MIME type
-    // Should fail if contentParser.parseContent() is integrated
-    getInvalidAudioMime: {
-        content: [
-            {
-                type: "audio",
-                data: "UklGRiQA",
-                mimeType: "audio/x-invalid-fake",
-            },
-        ],
-    },
+	// GAP DETECTION: Returns audio with invalid MIME type
+	// Should fail if contentParser.parseContent() is integrated
+	getInvalidAudioMime: {
+		content: [
+			{
+				type: "audio",
+				data: "UklGRiQA",
+				mimeType: "audio/x-invalid-fake",
+			},
+		],
+	},
 
-    // GAP DETECTION: Returns image with invalid MIME type
-    // Should fail if contentParser.parseContent() is integrated
-    getInvalidImageMime: {
-        content: [
-            {
-                type: "image",
-                data: "iVBORw0KGgo=",
-                mimeType: "image/x-invalid-fake",
-            },
-        ],
-    },
+	// GAP DETECTION: Returns image with invalid MIME type
+	// Should fail if contentParser.parseContent() is integrated
+	getInvalidImageMime: {
+		content: [
+			{
+				type: "image",
+				data: "iVBORw0KGgo=",
+				mimeType: "image/x-invalid-fake",
+			},
+		],
+	},
 
-    // GAP DETECTION: Returns structuredContent that doesn't match outputSchema
-    // Should fail if validateStructuredOutput() is called
-    getInvalidStructuredOutput: {
-        content: [{ type: "text", text: "Data with bad schema" }],
-        structuredContent: {
-            wrongField: "should fail validation",
-            // Missing required 'result' field per outputSchema
-        },
-    },
+	// GAP DETECTION: Returns structuredContent that doesn't match outputSchema
+	// Should fail if validateStructuredOutput() is called
+	getInvalidStructuredOutput: {
+		content: [{ type: "text", text: "Data with bad schema" }],
+		structuredContent: {
+			wrongField: "should fail validation",
+			// Missing required 'result' field per outputSchema
+		},
+	},
 };
 
 /** Tool definitions with full schema */
 export const scenarioToolDefinitions = [
-    {
-        name: "echo",
-        description: "Echoes input back",
-        inputSchema: {
-            type: "object",
-            properties: {
-                message: { type: "string" },
-            },
-            required: ["message"],
-        },
-    },
-    {
-        name: "greet",
-        description: "Returns a greeting",
-        inputSchema: {
-            type: "object",
-            properties: {
-                name: { type: "string" },
-            },
-        },
-    },
-    {
-        name: "getImage",
-        description: "Returns image content",
-    },
-    {
-        name: "getAudio",
-        description: "Returns audio content",
-    },
-    {
-        name: "getResourceLink",
-        description: "Returns resource link",
-    },
-    {
-        name: "getEmbeddedResource",
-        description: "Returns embedded resource",
-    },
-    {
-        name: "getMixed",
-        description: "Returns mixed content types",
-    },
-    {
-        name: "getAnnotated",
-        description: "Returns annotated content",
-    },
-    {
-        name: "failingTool",
-        description: "Always returns isError: true",
-    },
-    {
-        name: "getStructured",
-        description: "Returns structured output",
-        outputSchema: {
-            type: "object",
-            properties: {
-                result: { type: "string" },
-                count: { type: "number" },
-                items: { type: "array", items: { type: "string" } },
-            },
-            required: ["result"],
-        },
-    },
-    {
-        name: "slowTool",
-        description: "Simulates 5 second delay",
-    },
-    {
-        name: "slowWithProgress",
-        description: "Slow with progress updates",
-    },
-    {
-        name: "verySlowTool",
-        description: "60 second delay for timeout testing",
-    },
-    // GAP DETECTION: These tools return invalid data to test contentParser integration
-    {
-        name: "getInvalidAudioMime",
-        description: "Returns audio with invalid MIME type - should fail if parsed",
-    },
-    {
-        name: "getInvalidImageMime",
-        description: "Returns image with invalid MIME type - should fail if parsed",
-    },
-    {
-        name: "getInvalidStructuredOutput",
-        description: "Returns structuredContent that doesn't match outputSchema",
-        outputSchema: {
-            type: "object",
-            properties: {
-                result: { type: "string" },
-            },
-            required: ["result"],
-        },
-    },
+	{
+		name: "echo",
+		description: "Echoes input back",
+		inputSchema: {
+			type: "object",
+			properties: {
+				message: { type: "string" },
+			},
+			required: ["message"],
+		},
+	},
+	{
+		name: "greet",
+		description: "Returns a greeting",
+		inputSchema: {
+			type: "object",
+			properties: {
+				name: { type: "string" },
+			},
+		},
+	},
+	{
+		name: "getImage",
+		description: "Returns image content",
+	},
+	{
+		name: "getAudio",
+		description: "Returns audio content",
+	},
+	{
+		name: "getResourceLink",
+		description: "Returns resource link",
+	},
+	{
+		name: "getEmbeddedResource",
+		description: "Returns embedded resource",
+	},
+	{
+		name: "getMixed",
+		description: "Returns mixed content types",
+	},
+	{
+		name: "getAnnotated",
+		description: "Returns annotated content",
+	},
+	{
+		name: "failingTool",
+		description: "Always returns isError: true",
+	},
+	{
+		name: "getStructured",
+		description: "Returns structured output",
+		outputSchema: {
+			type: "object",
+			properties: {
+				result: { type: "string" },
+				count: { type: "number" },
+				items: { type: "array", items: { type: "string" } },
+			},
+			required: ["result"],
+		},
+	},
+	{
+		name: "slowTool",
+		description: "Simulates 5 second delay",
+	},
+	{
+		name: "slowWithProgress",
+		description: "Slow with progress updates",
+	},
+	{
+		name: "verySlowTool",
+		description: "60 second delay for timeout testing",
+	},
+	// GAP DETECTION: These tools return invalid data to test contentParser integration
+	{
+		name: "getInvalidAudioMime",
+		description: "Returns audio with invalid MIME type - should fail if parsed",
+	},
+	{
+		name: "getInvalidImageMime",
+		description: "Returns image with invalid MIME type - should fail if parsed",
+	},
+	{
+		name: "getInvalidStructuredOutput",
+		description: "Returns structuredContent that doesn't match outputSchema",
+		outputSchema: {
+			type: "object",
+			properties: {
+				result: { type: "string" },
+			},
+			required: ["result"],
+		},
+	},
 ];
 
 // =============================================================================
@@ -275,24 +271,24 @@ export const scenarioToolDefinitions = [
 
 /** Full mock config with all tools and behaviors */
 export const scenarioMockConfig = {
-    name: "scenario-mock-server",
-    version: "1.0.0",
-    protocolVersion: "2024-11-05",
-    capabilities: {
-        tools: true,
-        resources: true,
-        prompts: true,
-    },
-    tools: scenarioToolDefinitions,
-    toolBehaviors: scenarioToolBehaviors,
-    strictToolValidation: true,
+	name: "scenario-mock-server",
+	version: "1.0.0",
+	protocolVersion: "2024-11-05",
+	capabilities: {
+		tools: true,
+		resources: true,
+		prompts: true,
+	},
+	tools: scenarioToolDefinitions,
+	toolBehaviors: scenarioToolBehaviors,
+	strictToolValidation: true,
 };
 
 /** Minimal config for basic tests */
 export const minimalMockConfig = {
-    tools: [
-        { name: "echo", description: "Echo tool" },
-        { name: "greet", description: "Greeting tool" },
-    ],
-    strictToolValidation: true,
+	tools: [
+		{ name: "echo", description: "Echo tool" },
+		{ name: "greet", description: "Greeting tool" },
+	],
+	strictToolValidation: true,
 };

@@ -19,10 +19,10 @@ export type ProgressToken = z.infer<typeof ProgressTokenSchema>;
  * Progress notification params received from server.
  */
 export const ProgressNotificationSchema = z.object({
-    progressToken: ProgressTokenSchema,
-    progress: z.number(),
-    total: z.number().optional(),
-    message: z.string().optional(),
+	progressToken: ProgressTokenSchema,
+	progress: z.number(),
+	total: z.number().optional(),
+	message: z.string().optional(),
 });
 
 export type ProgressNotification = z.infer<typeof ProgressNotificationSchema>;
@@ -32,8 +32,8 @@ export type ProgressNotification = z.infer<typeof ProgressNotificationSchema>;
  * Used for setNotificationHandler to register progress notification handler.
  */
 export const McpProgressNotificationSchema = z.object({
-    method: z.literal("notifications/progress"),
-    params: ProgressNotificationSchema,
+	method: z.literal("notifications/progress"),
+	params: ProgressNotificationSchema,
 });
 
 /**
@@ -41,12 +41,12 @@ export const McpProgressNotificationSchema = z.object({
  * Adds timestamp and ID to the raw notification data.
  */
 export const ProgressUpdateSchema = z.object({
-    id: z.string().uuid(),
-    operationId: z.string().uuid(),
-    progress: z.number(),
-    total: z.number().optional(),
-    message: z.string().optional(),
-    timestamp: z.date(),
+	id: z.string().uuid(),
+	operationId: z.string().uuid(),
+	progress: z.number(),
+	total: z.number().optional(),
+	message: z.string().optional(),
+	timestamp: z.date(),
 });
 
 export type ProgressUpdate = z.infer<typeof ProgressUpdateSchema>;

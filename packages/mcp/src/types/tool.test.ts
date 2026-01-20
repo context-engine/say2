@@ -1,11 +1,5 @@
 import { describe, expect, it } from "bun:test";
 import {
-	ToolCallRequestSchema,
-	ToolCallResultSchema,
-	ToolContentSchema,
-	ToolOperationSchema,
-} from "./tool";
-import {
 	AnnotationsSchema,
 	AudioContentSchema,
 	EmbeddedResourceContentSchema,
@@ -13,6 +7,12 @@ import {
 	ResourceLinkContentSchema,
 	TextContentSchema,
 } from "./content";
+import {
+	ToolCallRequestSchema,
+	ToolCallResultSchema,
+	ToolContentSchema,
+	ToolOperationSchema,
+} from "./tool";
 
 describe("Tool Types Schemas", () => {
 	describe("ToolCallRequestSchema", () => {

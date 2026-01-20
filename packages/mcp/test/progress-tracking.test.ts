@@ -8,14 +8,14 @@ import {
 } from "@say2/core";
 import { McpClientManager } from "../src/client/manager";
 import { McpClientRegistry } from "../src/client/registry";
+import { progressTracker } from "../src/progress/tracker";
 import { LoggingTransport } from "../src/transport";
+import { McpProgressNotificationSchema } from "../src/types/progress";
 import {
 	createMockServerTransport,
 	type MockServerTransport,
 } from "./fixtures/mock-server";
 import { scenarioMockConfig } from "./fixtures/tool-scenarios";
-import { progressTracker } from "../src/progress/tracker";
-import { McpProgressNotificationSchema } from "../src/types/progress";
 
 /**
  * Progress Tracking Integration Tests
