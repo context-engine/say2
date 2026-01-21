@@ -96,6 +96,8 @@
         border-bottom: 1px solid var(--color-border);
         transition: background-color var(--duration-fast) var(--ease-out);
         background: var(--color-bg-primary);
+        height: 100%;
+        box-sizing: border-box;
     }
 
     .ce-message-row:hover {
@@ -110,7 +112,6 @@
         );
         border-left: 4px solid var(--color-info);
         padding-left: calc(var(--space-4) - 4px); /* Compensate for border */
-        outline: 1px solid var(--color-info); /* Extra visibility */
     }
 
     /* Icon Column */
