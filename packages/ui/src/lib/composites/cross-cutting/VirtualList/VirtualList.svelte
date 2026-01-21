@@ -27,7 +27,6 @@
 
 <script lang="ts" generics="T">
     import { createVirtualizer } from "@tanstack/svelte-virtual";
-    import { onMount } from "svelte";
 
     let {
         items,
@@ -40,30 +39,36 @@
 
     let containerElement: HTMLDivElement | undefined = $state();
 
-    // The estimateSize function needs to be reactive to itemHeight and items.
-    // By defining it directly within the virtualizer options as a getter,
-    // or as a derived value, it ensures reactivity.
-    // The original `estimateSize` variable was not reactive to changes in `itemHeight` or `items`.
-    // The user's proposed change for `estimateSize` variable was slightly off,
-    // but the change within `createVirtualizer` options correctly addresses reactivity.
-
-    const virtualizer = createVirtualizer({
-        get count() {
-            return items.length;
-        },
-        getScrollElement: () => containerElement!,
-        get estimateSize() {
-            return typeof itemHeight === "number"
+    // Create virtualizer with reactive options
+    const virtualizer = createVirtualizer<HTMLDivElement, HTMLDivElement>({
+        count: items.length,
+        getScrollElement: () => containerElement ?? null,
+        estimateSize:
+            typeof itemHeight === "number"
                 ? () => itemHeight
                 : (index: number) =>
                       (itemHeight as (item: T, index: number) => number)(
-                          items[index]!, // Added non-null assertion
+                          items[index]!,
                           index,
-                      );
-        },
-        get overscan() {
-            return overscan;
-        },
+                      ),
+        overscan,
+    });
+
+    // Update virtualizer options when props change
+    $effect(() => {
+        $virtualizer.setOptions({
+            count: items.length,
+            getScrollElement: () => containerElement ?? null,
+            estimateSize:
+                typeof itemHeight === "number"
+                    ? () => itemHeight
+                    : (index: number) =>
+                          (itemHeight as (item: T, index: number) => number)(
+                              items[index]!,
+                              index,
+                          ),
+            overscan,
+        });
     });
 
     // Exported methods for binding
@@ -81,22 +86,19 @@
         $virtualizer.scrollToOffset(offset, options);
     }
 
-    const virtualItems = $derived($virtualizer.getVirtualItems());
-    const totalSize = $derived($virtualizer.getTotalSize());
-
     function handleScroll(e: Event) {
         if (!containerElement) return;
 
         const { scrollTop, scrollHeight, clientHeight } = containerElement;
-        const items = $virtualizer.getVirtualItems();
+        const virtualItems = $virtualizer.getVirtualItems();
 
-        if (items.length > 0) {
+        if (virtualItems.length > 0) {
             onScroll?.({
                 scrollTop,
                 scrollHeight,
                 clientHeight,
-                startIndex: items[0]!.index,
-                endIndex: items[items.length - 1]!.index,
+                startIndex: virtualItems[0]!.index,
+                endIndex: virtualItems[virtualItems.length - 1]!.index,
             });
         }
     }
@@ -118,11 +120,11 @@
     {:else}
         <div
             class="ce-virtual-list__content"
-            style:height="{totalSize}px"
+            style:height="{$virtualizer.getTotalSize()}px"
             style:width="100%"
             style:position="relative"
         >
-            {#each virtualItems as virtualItem (virtualItem.index)}
+            {#each $virtualizer.getVirtualItems() as virtualItem (virtualItem.index)}
                 <div
                     class="ce-virtual-list__item-wrapper"
                     style:position="absolute"

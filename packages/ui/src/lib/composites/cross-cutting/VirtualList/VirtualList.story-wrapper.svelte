@@ -106,6 +106,8 @@
     .ce-virtual-list-demo__container {
         flex: 1;
         min-height: 0;
+        height: 400px;
+        overflow: hidden;
         border: 1px solid var(--color-border);
         border-radius: var(--radius-md);
     }
