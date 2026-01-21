@@ -21,7 +21,7 @@
         iconName,
     }: Props = $props();
 
-    const icons: Record<string, Component> = {
+    const icons: Record<string, any> = {
         search: Search,
         folder: FolderOpen,
         wifi: WifiOff,

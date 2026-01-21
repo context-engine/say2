@@ -52,7 +52,6 @@
     type="button"
     class="ce-session-card {selected ? 'ce-session-card--selected' : ''}"
     onclick={onClick}
-    role="listitem"
     aria-current={selected ? "true" : undefined}
 >
     <div class="ce-session-card__status">

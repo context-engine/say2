@@ -81,8 +81,10 @@
     <div
         class="ce-create-session-form__field ce-create-session-form__field--inline"
     >
-        <Toggle bind:checked={debugMode} disabled={loading} />
-        <label class="ce-create-session-form__label">Debug Mode</label>
+        <Toggle id="debugMode" bind:checked={debugMode} disabled={loading} />
+        <label for="debugMode" class="ce-create-session-form__label"
+            >Debug Mode</label
+        >
     </div>
 
     <div class="ce-create-session-form__actions">

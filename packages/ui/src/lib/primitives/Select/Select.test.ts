@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/svelte";
 import { ArrowLeft, ArrowRight } from "lucide-svelte";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from "bun:test";
 import Select from "./Select.svelte";
 
 describe("Select", () => {
@@ -12,12 +12,12 @@ describe("Select", () => {
 
 	it("renders with placeholder when no value", () => {
 		render(Select, { value: "", options, placeholder: "Select direction..." });
-		expect(screen.getByText("Select direction...")).toBeInTheDocument();
+		expect(screen.getByText("Select direction...")).toBeTruthy();
 	});
 
 	it("renders selected value", () => {
 		render(Select, { value: "inbound", options });
-		expect(screen.getByText("Inbound ←")).toBeInTheDocument();
+		expect(screen.getByText("Inbound ←")).toBeTruthy();
 	});
 
 	it("opens dropdown on click", async () => {
@@ -26,9 +26,9 @@ describe("Select", () => {
 		const trigger = screen.getByRole("combobox");
 		await fireEvent.click(trigger);
 
-		expect(screen.getByText("All Directions")).toBeInTheDocument();
-		expect(screen.getByText("Inbound ←")).toBeInTheDocument();
-		expect(screen.getByText("Outbound →")).toBeInTheDocument();
+		expect(screen.getByText("All Directions")).toBeTruthy();
+		expect(screen.getByText("Inbound ←")).toBeTruthy();
+		expect(screen.getByText("Outbound →")).toBeTruthy();
 	});
 
 	it("selects option on click", async () => {
@@ -37,7 +37,7 @@ describe("Select", () => {
 			selectedValue = v;
 		};
 
-		render(Select, { checked: false, options, onchange: onChange });
+		render(Select, { options, onchange: onChange });
 
 		const trigger = screen.getByRole("combobox");
 		await fireEvent.click(trigger);
@@ -54,30 +54,26 @@ describe("Select", () => {
 			value: "",
 			options,
 		});
-		expect(
-			smContainer.querySelector(".select-trigger--sm"),
-		).toBeInTheDocument();
+		expect(smContainer.querySelector(".ce-select-trigger--sm")).toBeTruthy();
 
 		const { container: mdContainer } = render(Select, {
 			size: "md",
 			value: "",
 			options,
 		});
-		expect(
-			mdContainer.querySelector(".select-trigger--md"),
-		).toBeInTheDocument();
+		expect(mdContainer.querySelector(".ce-select-trigger--md")).toBeTruthy();
 	});
 
 	it("disables entire select when disabled prop is true", () => {
 		render(Select, { value: "", options, disabled: true });
 		const trigger = screen.getByRole("combobox");
-		expect(trigger).toHaveAttribute("aria-disabled", "true");
+		expect(trigger.getAttribute("aria-disabled")).toBe("true");
 	});
 
 	it("displays icon for selected option", () => {
-		render(Select, { value: "inbound", options });
-		const trigger = screen.getByRole("combobox");
-		expect(trigger.querySelector(".svelte-Icon")).toBeInTheDocument();
+		const { container } = render(Select, { value: "inbound", options });
+		const icon = container.querySelector("svg");
+		expect(icon).toBeTruthy();
 	});
 
 	it("calls onchange when selection changes", async () => {

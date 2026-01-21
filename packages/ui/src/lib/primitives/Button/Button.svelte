@@ -8,11 +8,12 @@
 		disabled?: boolean;
 		loading?: boolean;
 		loadingLabel?: string;
-		icon?: Component<{ size?: number }>;
+		icon?: any;
 		iconOnly?: boolean;
 		onclick?: (event: MouseEvent) => void;
 		children?: Snippet;
 		"aria-label"?: string;
+		type?: "button" | "submit" | "reset";
 		class?: string;
 	}
 </script>

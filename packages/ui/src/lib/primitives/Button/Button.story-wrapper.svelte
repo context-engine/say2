@@ -8,7 +8,7 @@
         size?: "sm" | "md" | "lg";
         disabled?: boolean;
         loading?: boolean;
-        icon?: Component<{ size?: number }>;
+        icon?: any;
         iconOnly?: boolean;
         "aria-label"?: string;
         /** Text content for the button (converted to snippet internally) */

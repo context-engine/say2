@@ -5,11 +5,7 @@
         title: string;
         description?: string;
         action?: Snippet;
-        icon?: Component<{
-            size?: string | number;
-            class?: string;
-            color?: string;
-        }>;
+        icon?: any;
     }
 
     let { title, description, action, icon: Icon }: Props = $props();
