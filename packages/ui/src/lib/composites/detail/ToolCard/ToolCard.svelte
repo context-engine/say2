@@ -46,7 +46,7 @@
 
     <div class="ce-tool-card__badges">
         {#if tool.annotations?.destructiveHint}
-            <Badge variant="danger" size="sm">destructive</Badge>
+            <Badge variant="error" size="sm">destructive</Badge>
         {/if}
         {#if tool.annotations?.readOnlyHint}
             <Badge variant="info" size="sm">read-only</Badge>
