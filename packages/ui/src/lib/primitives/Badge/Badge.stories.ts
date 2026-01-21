@@ -1,61 +1,75 @@
 import type { Meta, StoryObj } from '@storybook/svelte';
-import Badge from './Badge.svelte';
+import BadgeStory from './Badge.story-wrapper.svelte';
 
 const meta = {
     title: 'Primitives/Badge',
-    component: Badge,
+    component: BadgeStory,
     tags: ['autodocs'],
     argTypes: {
         variant: {
             control: 'select',
             options: ['default', 'success', 'warning', 'error', 'info'],
+            description: 'Color variant',
         },
         size: {
             control: 'select',
             options: ['sm', 'md'],
+            description: 'Badge size',
         },
-        count: { control: 'number' },
-        dot: { control: 'boolean' },
+        count: {
+            control: 'number',
+            description: 'Numeric count (displays 99+ for values > 99)',
+        },
+        dot: {
+            control: 'boolean',
+            description: 'Dot-only mode (no text)',
+        },
+        text: {
+            control: 'text',
+            description: 'Badge text content',
+        },
     },
-} satisfies Meta<any>;
+} satisfies Meta<typeof BadgeStory>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// Basic variants
 export const Default: Story = {
     args: {
-        children: 'Badge' as any,
+        text: 'Badge',
     },
 };
 
 export const Success: Story = {
     args: {
         variant: 'success',
-        children: 'Success' as any,
+        text: 'Connected',
     },
 };
 
 export const Warning: Story = {
     args: {
         variant: 'warning',
-        children: 'Warning' as any,
+        text: 'Pending',
     },
 };
 
 export const Error: Story = {
     args: {
         variant: 'error',
-        children: 'Error' as any,
+        text: 'Failed',
     },
 };
 
 export const Info: Story = {
     args: {
         variant: 'info',
-        children: 'Info' as any,
+        text: 'Information',
     },
 };
 
+// Count badges
 export const WithCount: Story = {
     args: {
         variant: 'error',
@@ -70,17 +84,40 @@ export const HighCount: Story = {
     },
 };
 
-export const Dot: Story = {
+// Dot badges
+export const DotSuccess: Story = {
     args: {
         variant: 'success',
         dot: true,
-        size: 'sm',
     },
 };
 
+export const DotWarning: Story = {
+    args: {
+        variant: 'warning',
+        dot: true,
+    },
+};
+
+export const DotError: Story = {
+    args: {
+        variant: 'error',
+        dot: true,
+    },
+};
+
+// Size variations
 export const Small: Story = {
     args: {
         size: 'sm',
-        children: 'Small' as any,
+        text: 'Small',
+    },
+};
+
+export const SmallWithCount: Story = {
+    args: {
+        size: 'sm',
+        variant: 'info',
+        count: 12,
     },
 };

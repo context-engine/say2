@@ -1,24 +1,24 @@
 <!-- src/lib/primitives/Toggle/Toggle.svelte -->
 <script lang="ts">
-import { Switch } from "bits-ui";
+	import { Switch } from "bits-ui";
 
-interface Props {
-	checked?: boolean;
-	disabled?: boolean;
-	size?: "sm" | "md";
-	label?: string;
-	id?: string;
-	onchange?: (checked: boolean) => void;
-}
+	interface Props {
+		checked?: boolean;
+		disabled?: boolean;
+		size?: "sm" | "md";
+		label?: string;
+		id?: string;
+		onchange?: (checked: boolean) => void;
+	}
 
-const {
-	checked = $bindable(false),
-	disabled = false,
-	size = "md",
-	label,
-	id = `toggle-${Math.random().toString(36).slice(2, 9)}`,
-	onchange,
-}: Props = $props();
+	const {
+		checked = $bindable(false),
+		disabled = false,
+		size = "md",
+		label,
+		id = `toggle-${Math.random().toString(36).slice(2, 9)}`,
+		onchange,
+	}: Props = $props();
 </script>
 
 <div class="toggle-wrapper" class:disabled>
@@ -28,7 +28,7 @@ const {
 		</label>
 	{/if}
 	<Switch.Root
-		bind:checked
+		{checked}
 		{disabled}
 		{id}
 		onCheckedChange={(v) => onchange?.(v ?? false)}
@@ -98,7 +98,7 @@ const {
 		transition: background var(--duration-fast) var(--ease-out);
 	}
 
-	.switch[data-state='checked'] .switch-control {
+	.switch[data-state="checked"] .switch-control {
 		background: var(--color-request);
 	}
 
@@ -119,11 +119,11 @@ const {
 		height: 20px;
 	}
 
-	.switch--sm.switch[data-state='checked'] .switch-thumb {
+	.switch--sm.switch[data-state="checked"] .switch-thumb {
 		transform: translateX(14px);
 	}
 
-	.switch--md.switch[data-state='checked'] .switch-thumb {
+	.switch--md.switch[data-state="checked"] .switch-thumb {
 		transform: translateX(20px);
 	}
 </style>

@@ -1,56 +1,60 @@
 <!-- src/lib/primitives/Select/Select.svelte -->
 <script lang="ts">
-import { Select } from "bits-ui";
-import { Check, ChevronDown } from "lucide-svelte";
+	import { Select } from "bits-ui";
+	import { Check, ChevronDown } from "lucide-svelte";
 
-interface SelectOption {
-	value: string;
-	label: string;
-	icon?: any;
-	disabled?: boolean;
-}
+	interface SelectOption {
+		value: string;
+		label: string;
+		icon?: any;
+		disabled?: boolean;
+	}
 
-interface Props {
-	value?: string;
-	options?: SelectOption[];
-	placeholder?: string;
-	disabled?: boolean;
-	size?: "sm" | "md";
-	onchange?: (value: string) => void;
-}
+	interface Props {
+		value?: string;
+		options?: SelectOption[];
+		placeholder?: string;
+		disabled?: boolean;
+		size?: "sm" | "md";
+		onchange?: (value: string) => void;
+	}
 
-const {
-	value = $bindable(""),
-	options = [],
-	placeholder = "Select...",
-	disabled = false,
-	size = "md",
-	onchange,
-}: Props = $props();
+	const {
+		value = $bindable(""),
+		options = [],
+		placeholder = "Select...",
+		disabled = false,
+		size = "md",
+		onchange,
+	}: Props = $props();
 
-const selectedOption = $derived(
-	options.find((o: SelectOption) => o.value === value),
-);
+	const selectedOption = $derived(
+		options.find((o: SelectOption) => o.value === value),
+	);
 </script>
 
 <Select.Root
-	bind:value
-	onValueChange={(v) => onchange?.(v ?? '')}
+	{value}
+	onValueChange={(v) => onchange?.(v ?? "")}
 	{disabled}
 	type="single"
 >
 	<Select.Trigger
-		class="select-trigger select-trigger--{size}"
-		class:disabled
+		class="select-trigger select-trigger--{size} {disabled
+			? 'disabled'
+			: ''}"
 	>
 		{#if selectedOption?.icon}
-			<svelte:component this={selectedOption.icon} size={size === 'sm' ? 14 : 16} />
+			<svelte:component
+				this={selectedOption.icon}
+				size={size === "sm" ? 14 : 16}
+			/>
 		{/if}
 		<span class="select-value">
 			{selectedOption?.label ?? placeholder}
 		</span>
 		<span class="select-icon">
-			<ChevronDown size={size === 'sm' ? 14 : 16} />
+			<ChevronDown size={size === "sm" ? 14 : 16} />
 		</span>
 	</Select.Trigger>
 
@@ -61,18 +65,21 @@ const selectedOption = $derived(
 					<Select.Item
 						value={option.value}
 						disabled={option.disabled}
-						class="select-item"
-						class:disabled={option.disabled}
-						class:selected={value === option.value}
+						class="select-item {option.disabled
+							? 'disabled'
+							: ''} {value === option.value ? 'selected' : ''}"
 						label={option.label}
 					>
 						{#if option.icon}
-							<svelte:component this={option.icon} size={size === 'sm' ? 14 : 16} />
+							<svelte:component
+								this={option.icon}
+								size={size === "sm" ? 14 : 16}
+							/>
 						{/if}
 						<span class="select-item-label">{option.label}</span>
 						{#if value === option.value}
 							<span class="select-item-indicator">
-								<Check size={size === 'sm' ? 12 : 14} />
+								<Check size={size === "sm" ? 12 : 14} />
 							</span>
 						{/if}
 					</Select.Item>

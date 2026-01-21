@@ -1,30 +1,30 @@
 <!-- src/lib/primitives/Checkbox/Checkbox.svelte -->
 <script lang="ts">
-import { Checkbox } from "bits-ui";
-import { Check, Minus } from "lucide-svelte";
+	import { Checkbox } from "bits-ui";
+	import { Check, Minus } from "lucide-svelte";
 
-interface Props {
-	checked?: boolean;
-	disabled?: boolean;
-	label?: string;
-	id?: string;
-	indeterminate?: boolean;
-	onchange?: (checked: boolean) => void;
-}
+	interface Props {
+		checked?: boolean;
+		disabled?: boolean;
+		label?: string;
+		id?: string;
+		indeterminate?: boolean;
+		onchange?: (checked: boolean) => void;
+	}
 
-const {
-	checked = $bindable(false),
-	disabled = false,
-	label,
-	id = `checkbox-${Math.random().toString(36).slice(2, 9)}`,
-	indeterminate = false,
-	onchange,
-}: Props = $props();
+	const {
+		checked = $bindable(false),
+		disabled = false,
+		label,
+		id = `checkbox-${Math.random().toString(36).slice(2, 9)}`,
+		indeterminate = false,
+		onchange,
+	}: Props = $props();
 </script>
 
 <div class="checkbox-wrapper" class:disabled>
 	<Checkbox.Root
-		bind:checked
+		{checked}
 		{disabled}
 		{id}
 		onCheckedChange={(v) => onchange?.(v ?? false)}
@@ -79,12 +79,12 @@ const {
 		outline-offset: 2px;
 	}
 
-	.checkbox[data-state='checked'] {
+	.checkbox[data-state="checked"] {
 		background: var(--color-info);
 		border-color: var(--color-info);
 	}
 
-	.checkbox[data-state='indeterminate'] {
+	.checkbox[data-state="indeterminate"] {
 		background: var(--color-warning);
 		border-color: var(--color-warning);
 	}

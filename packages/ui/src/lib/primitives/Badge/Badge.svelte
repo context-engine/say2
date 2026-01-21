@@ -1,12 +1,12 @@
 <!-- src/lib/primitives/Badge/Badge.svelte -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
-  
+  import type { Snippet } from "svelte";
+
   interface Props {
     /** Color variant */
-    variant?: 'default' | 'success' | 'warning' | 'error' | 'info';
+    variant?: "default" | "success" | "warning" | "error" | "info";
     /** Badge size */
-    size?: 'sm' | 'md';
+    size?: "sm" | "md";
     /** Numeric count to display */
     count?: number;
     /** Dot-only mode (no text) */
@@ -14,20 +14,22 @@
     /** Badge content */
     children?: Snippet;
   }
-  
-  let { 
-    variant = 'default', 
-    size = 'md',
+
+  let {
+    variant = "default",
+    size = "md",
     count,
     dot = false,
-    children
+    children,
   }: Props = $props();
 
   // Helper to format large counts
-  let displayCount = $derived(count !== undefined && count > 99 ? '99+' : count);
+  let displayCount = $derived(
+    count !== undefined && count > 99 ? "99+" : count,
+  );
 </script>
 
-<div class="badge badge--{variant} badge--{size} {dot ? 'badge--dot' : ''}">
+<span class="badge badge--{variant} badge--{size} {dot ? 'badge--dot' : ''}">
   {#if dot}
     <!-- Dot mode renders nothing inside, just shape -->
   {:else if count !== undefined}
@@ -35,7 +37,7 @@
   {:else if children}
     {@render children()}
   {/if}
-</div>
+</span>
 
 <style>
   .badge {

@@ -1,7 +1,9 @@
-import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+// Minimal svelte config for library mode
+// vitePreprocess is configured in vite.config.ts instead
 
-/** @type {import('@sveltejs/package').Config} */
+/** @type {import('svelte/compiler').CompileOptions} */
 export default {
-	preprocess: vitePreprocess(),
-	// No kit config needed for library mode
+	// No preprocess here - handled by Vite config
+	// This prevents the Svelte Language Server from triggering
+	// rollup dependency errors in the IDE
 };

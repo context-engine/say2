@@ -59,6 +59,7 @@
       },
       "devDependencies": {
         "@happy-dom/global-registrator": "^20.3.4",
+        "@rollup/rollup-darwin-arm64": "^4.55.2",
         "@storybook/addon-essentials": "8.6.15",
         "@storybook/svelte": "8.6.15",
         "@storybook/svelte-vite": "8.6.15",

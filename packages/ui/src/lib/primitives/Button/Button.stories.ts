@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/svelte';
-import Button from './Button.svelte';
+import ButtonStory from './Button.story-wrapper.svelte';
 import { Save, Trash2, ArrowRight } from 'lucide-svelte';
 
 const meta = {
     title: 'Primitives/Button',
-    component: Button,
+    component: ButtonStory,
     tags: ['autodocs'],
     argTypes: {
         variant: {
@@ -18,8 +18,9 @@ const meta = {
         disabled: { control: 'boolean' },
         loading: { control: 'boolean' },
         iconOnly: { control: 'boolean' },
+        text: { control: 'text' },
     },
-} satisfies Meta<any>;
+} satisfies Meta<typeof ButtonStory>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -27,28 +28,28 @@ type Story = StoryObj<typeof meta>;
 export const Primary: Story = {
     args: {
         variant: 'primary',
-        children: 'Primary Action' as any,
+        text: 'Primary Action',
     },
 };
 
 export const Secondary: Story = {
     args: {
         variant: 'secondary',
-        children: 'Secondary Action' as any,
+        text: 'Secondary Action',
     },
 };
 
 export const Ghost: Story = {
     args: {
         variant: 'ghost',
-        children: 'Ghost Action' as any,
+        text: 'Ghost Action',
     },
 };
 
 export const Danger: Story = {
     args: {
         variant: 'danger',
-        children: 'Delete Item' as any,
+        text: 'Delete Item',
         icon: Trash2,
     },
 };
@@ -57,7 +58,7 @@ export const Loading: Story = {
     args: {
         variant: 'primary',
         loading: true,
-        children: 'Saving...' as any,
+        text: 'Saving...',
     },
 };
 
@@ -65,14 +66,14 @@ export const Disabled: Story = {
     args: {
         variant: 'primary',
         disabled: true,
-        children: 'Disabled' as any,
+        text: 'Disabled',
     },
 };
 
 export const WithIcon: Story = {
     args: {
         variant: 'primary',
-        children: 'Save Changes' as any,
+        text: 'Save Changes',
         icon: Save,
     },
 };
