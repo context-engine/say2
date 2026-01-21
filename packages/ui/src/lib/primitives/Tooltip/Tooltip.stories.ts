@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
 import { Info } from "lucide-svelte";
-import { Button } from "../Button/Button.svelte";
+import { Button } from "../Button";
 import Tooltip from "./Tooltip.svelte";
 
 const meta: Meta<typeof Tooltip> = {

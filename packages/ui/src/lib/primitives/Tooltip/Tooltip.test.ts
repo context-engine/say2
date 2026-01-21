@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/svelte";
 import { describe, expect, it } from "vitest";
-import { Button } from "../Button/Button.svelte";
+import { Button } from "../Button";
 import Tooltip from "./Tooltip.svelte";
 
 describe("Tooltip", () => {

@@ -34,7 +34,8 @@ describe('Button', () => {
         const button = screen.getByRole('button');
         expect(button.hasAttribute('aria-busy')).toBe(true);
         expect(button.hasAttribute('disabled')).toBe(true);
-        const spinner = button.querySelector('.spinner');
+        // Query by role="status" which is how the Spinner component is structured
+        const spinner = button.querySelector('[role="status"]');
         expect(spinner).toBeTruthy();
     });
 });

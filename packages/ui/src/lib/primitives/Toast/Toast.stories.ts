@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
-import { Button } from "../Button/Button.svelte";
+import { Button } from "../Button";
 import ToastContainer from "./ToastContainer.svelte";
 import { toasts } from "./toast.store";
 
