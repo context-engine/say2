@@ -105,7 +105,7 @@
     .ce-message-row--selected {
         background: color-mix(
             in srgb,
-            var(--color-primary) 12%,
+            var(--color-primary) 25%,
             var(--color-bg-primary)
         );
         border-left: 4px solid var(--color-primary);
