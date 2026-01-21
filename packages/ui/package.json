@@ -23,6 +23,7 @@
 	},
 	"dependencies": {
 		"bits-ui": "^2.15.4",
+		"focus-trap": "^7.8.0",
 		"lucide-svelte": "^0.562.0"
 	},
 	"devDependencies": {

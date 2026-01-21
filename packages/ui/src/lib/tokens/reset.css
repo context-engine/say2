@@ -1,0 +1,13 @@
+/* Basic box-sizing reset */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+/* Optional: Additional resets if needed */
+html,
+body {
+    margin: 0;
+    padding: 0;
+}

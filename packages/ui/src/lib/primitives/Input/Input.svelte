@@ -1,15 +1,17 @@
 <!-- src/lib/primitives/Input/Input.svelte -->
 <script lang="ts" module>
   import type { Component, SvelteComponent } from "svelte";
+  import type { HTMLInputAttributes } from "svelte/elements";
 
   // lucide-svelte icons are typed differently than Svelte's Component type
   type IconComponent = Component<any> | typeof SvelteComponent<any>;
 
-  export interface Props {
+  export interface Props
+    extends Omit<HTMLInputAttributes, "oninput" | "onchange" | "size"> {
     /** Input type (text, search, number, password) */
     type?: "text" | "search" | "number" | "password";
     /** Input value */
-    value?: string;
+    value?: any;
     /** Placeholder text */
     placeholder?: string;
     /** Disabled state */

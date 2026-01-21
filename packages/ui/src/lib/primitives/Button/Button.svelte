@@ -13,6 +13,7 @@
 		onclick?: (event: MouseEvent) => void;
 		children?: Snippet;
 		"aria-label"?: string;
+		class?: string;
 	}
 </script>
 
@@ -30,6 +31,7 @@
 		iconOnly = false,
 		onclick,
 		children,
+		class: className,
 		...rest
 	}: Props = $props();
 </script>
@@ -39,7 +41,7 @@
 	{onclick}
 	class="ce-button ce-button--{variant} ce-button--{size} {iconOnly
 		? 'ce-button--icon-only'
-		: ''}"
+		: ''} {className || ''}"
 	aria-busy={loading}
 	aria-label={rest["aria-label"]}
 	{...rest}
