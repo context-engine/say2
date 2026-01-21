@@ -19,7 +19,7 @@ const meta = {
         hasResponse: { control: 'boolean' },
         timestamp: { control: 'date' }
     }
-} satisfies Meta<ComponentProps<MessageRow>>;
+} satisfies Meta<typeof MessageRow>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

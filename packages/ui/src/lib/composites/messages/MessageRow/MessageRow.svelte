@@ -105,11 +105,11 @@
     .ce-message-row--selected {
         background: color-mix(
             in srgb,
-            var(--color-primary) 5%,
+            var(--color-primary) 12%,
             var(--color-bg-primary)
         );
-        border-left: 3px solid var(--color-primary);
-        padding-left: calc(var(--space-4) - 3px); /* Compensate for border */
+        border-left: 4px solid var(--color-primary);
+        padding-left: calc(var(--space-4) - 4px); /* Compensate for border */
     }
 
     /* Icon Column */
