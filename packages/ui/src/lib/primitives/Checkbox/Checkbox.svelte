@@ -22,26 +22,17 @@
 		indeterminate = false,
 		onchange,
 	}: Props = $props();
-
-	// When indeterminate is true, we want to ensure the visual state reflects it
-	// The bits-ui Checkbox might need the checked state to be 'indeterminate' if it supported it,
-	// or we just handle the visual overriding.
-	// In bits-ui, indeterminate is often a separate prop or state.
-	// We already passed {indeterminate} to Checkbox.Root, but the icon logic below is key.
 </script>
 
 <div class="checkbox-wrapper" class:disabled>
 	<Checkbox.Root
-		checked={indeterminate ? "indeterminate" : checked}
+		{checked}
+		{indeterminate}
 		{disabled}
 		{id}
 		onCheckedChange={(v) => {
-			if (v === "indeterminate") {
-				// We don't typically toggle INTO indeterminate state via click
-			} else {
-				checked = v;
-				onchange?.(v);
-			}
+			checked = v;
+			onchange?.(v);
 		}}
 		class="checkbox {indeterminate ? 'checkbox--indeterminate' : ''}"
 	>
