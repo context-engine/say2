@@ -87,13 +87,13 @@
 	}
 
 	:global(.ce-switch--sm) {
-		width: 32px;
-		height: 18px;
+		width: 2rem; /* 32px */
+		height: 1.125rem; /* 18px */
 	}
 
 	:global(.ce-switch--md) {
-		width: 44px;
-		height: 24px;
+		width: 2.75rem; /* 44px */
+		height: 1.5rem; /* 24px */
 	}
 
 	.ce-switch-control {
@@ -101,9 +101,9 @@
 		align-items: center;
 		width: 100%;
 		height: 100%;
-		background: var(--color-bg-tertiary);
+		background: var(--color-bg-control);
 		border-radius: var(--radius-full);
-		padding: 2px;
+		padding: 0.125rem; /* 2px */
 		transition: background var(--duration-fast) var(--ease-out);
 	}
 
@@ -112,27 +112,27 @@
 	}
 
 	:global(.ce-switch-thumb) {
-		background: white;
+		background: var(--color-text-inverse);
 		border-radius: var(--radius-full);
 		box-shadow: var(--shadow-sm);
 		transition: transform var(--duration-fast) var(--ease-out);
 	}
 
 	:global(.ce-switch--sm .ce-switch-thumb) {
-		width: 14px;
-		height: 14px;
+		width: 0.875rem; /* 14px */
+		height: 0.875rem;
 	}
 
 	:global(.ce-switch--md .ce-switch-thumb) {
-		width: 20px;
-		height: 20px;
+		width: 1.25rem; /* 20px */
+		height: 1.25rem;
 	}
 
 	:global(.ce-switch--sm.ce-switch[data-state="checked"] .ce-switch-thumb) {
-		transform: translateX(14px);
+		transform: translateX(0.875rem); /* 14px */
 	}
 
 	:global(.ce-switch--md.ce-switch[data-state="checked"] .ce-switch-thumb) {
-		transform: translateX(20px);
+		transform: translateX(1.25rem); /* 20px */
 	}
 </style>

@@ -86,19 +86,19 @@
 
 	/* Sizes */
 	:global(.ce-button--sm) {
-		height: 28px;
+		height: 1.75rem; /* 28px */
 		padding: 0 var(--space-3);
 		font-size: var(--text-sm);
 	}
 
 	:global(.ce-button--md) {
-		height: 36px;
+		height: 2.25rem; /* 36px */
 		padding: 0 var(--space-4);
 		font-size: var(--text-base);
 	}
 
 	:global(.ce-button--lg) {
-		height: 44px;
+		height: 2.75rem; /* 44px */
 		padding: 0 var(--space-6);
 		font-size: var(--text-base);
 	}
@@ -109,21 +109,21 @@
 	}
 
 	:global(.ce-button--icon-only.ce-button--sm) {
-		width: 28px;
+		width: 1.75rem; /* 28px */
 	}
 
 	:global(.ce-button--icon-only.ce-button--md) {
-		width: 36px;
+		width: 2.25rem; /* 36px */
 	}
 
 	:global(.ce-button--icon-only.ce-button--lg) {
-		width: 44px;
+		width: 2.75rem; /* 44px */
 	}
 
 	/* Variants */
 	:global(.ce-button--primary) {
 		background: var(--color-info);
-		color: white;
+		color: var(--color-text-inverse);
 	}
 
 	:global(.ce-button--primary:hover:not(:disabled)) {
@@ -166,7 +166,7 @@
 
 	:global(.ce-button--danger) {
 		background: var(--color-error);
-		color: white;
+		color: var(--color-text-inverse);
 	}
 
 	:global(.ce-button--danger:hover:not(:disabled)) {

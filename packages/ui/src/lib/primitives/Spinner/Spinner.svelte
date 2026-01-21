@@ -10,7 +10,7 @@
 <script lang="ts">
 	const {
 		size = "md",
-		color = "currentColor",
+		color = "var(--color-text-primary)",
 		label = "Loading",
 	}: Props = $props();
 </script>
@@ -69,18 +69,18 @@
 
 	/* Sizes */
 	.ce-spinner--sm {
-		width: 14px;
-		height: 14px;
+		width: 0.875rem; /* 14px */
+		height: 0.875rem;
 	}
 
 	.ce-spinner--md {
-		width: 20px;
-		height: 20px;
+		width: 1.25rem; /* 20px */
+		height: 1.25rem;
 	}
 
 	.ce-spinner--lg {
-		width: 32px;
-		height: 32px;
+		width: 2rem; /* 32px */
+		height: 2rem;
 	}
 
 	@keyframes spinner-rotate {

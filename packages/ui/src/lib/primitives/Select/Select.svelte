@@ -117,13 +117,13 @@
 	}
 
 	:global(.ce-select-trigger--sm) {
-		height: 28px;
+		height: 1.75rem; /* 28px */
 		padding: 0 var(--space-3);
 		font-size: var(--text-sm);
 	}
 
 	:global(.ce-select-trigger--md) {
-		height: 36px;
+		height: 2.25rem; /* 36px */
 		padding: 0 var(--space-4);
 		font-size: var(--text-base);
 	}

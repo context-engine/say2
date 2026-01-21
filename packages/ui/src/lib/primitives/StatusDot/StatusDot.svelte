@@ -48,18 +48,18 @@
 
   /* Sizes */
   .ce-status-dot--sm {
-    width: 6px;
-    height: 6px;
+    width: 0.375rem; /* 6px */
+    height: 0.375rem;
   }
 
   .ce-status-dot--md {
-    width: 8px;
-    height: 8px;
+    width: 0.5rem; /* 8px */
+    height: 0.5rem;
   }
 
   /* Variants */
   .ce-status-dot--neutral {
-    background-color: var(--color-text-tertiary);
+    background-color: var(--color-neutral);
   }
 
   .ce-status-dot--success {

@@ -1,7 +1,11 @@
 /* src/lib/tokens/shadows.css */
 
 :root {
-    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+    /* Shadow color tokens for theme adaptation */
+    --shadow-color: 0 0% 0%;
+    /* HSL values without alpha */
+
+    --shadow-sm: 0 1px 2px hsl(var(--shadow-color) / 0.05);
+    --shadow-md: 0 4px 6px hsl(var(--shadow-color) / 0.1);
+    --shadow-lg: 0 10px 15px hsl(var(--shadow-color) / 0.15);
 }

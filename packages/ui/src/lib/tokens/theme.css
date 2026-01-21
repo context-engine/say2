@@ -6,18 +6,20 @@
 
 /* Manual dark mode via data-theme attribute */
 :root[data-theme="dark"] {
-    /* Backgrounds */
+    /* Backgrounds - softer for less eye strain */
     --color-bg-primary: #1a1a1a;
-    --color-bg-secondary: #262626;
-    --color-bg-tertiary: #333333;
+    --color-bg-secondary: #252525;
+    --color-bg-tertiary: #303030;
+    --color-bg-control: #4a4a4a;
+    /* Visible in dark mode */
 
     /* Text */
     --color-text-primary: #e5e5e5;
     --color-text-secondary: #a3a3a3;
     --color-text-tertiary: #737373;
 
-    /* Borders */
-    --color-border: #404040;
+    /* Borders - lighter for better visibility */
+    --color-border: #525252;
 }
 
 /* Manual light mode via data-theme attribute */
@@ -39,18 +41,19 @@
 /* System preference (when no manual override) */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme]) {
-        /* Backgrounds */
+        /* Backgrounds - softer for less eye strain */
         --color-bg-primary: #1a1a1a;
-        --color-bg-secondary: #262626;
-        --color-bg-tertiary: #333333;
+        --color-bg-secondary: #252525;
+        --color-bg-tertiary: #303030;
+        --color-bg-control: #4a4a4a;
 
         /* Text */
         --color-text-primary: #e5e5e5;
         --color-text-secondary: #a3a3a3;
         --color-text-tertiary: #737373;
 
-        /* Borders */
-        --color-border: #404040;
+        /* Borders - lighter for better visibility */
+        --color-border: #525252;
     }
 }
 

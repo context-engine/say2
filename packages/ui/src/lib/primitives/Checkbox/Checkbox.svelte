@@ -65,11 +65,11 @@
 
 	:global(.ce-checkbox) {
 		cursor: pointer;
-		width: 18px;
-		height: 18px;
-		border: 1px solid var(--color-border);
+		width: 1.125rem; /* 18px */
+		height: 1.125rem;
+		border: 2px solid var(--color-bg-control);
 		border-radius: var(--radius-sm);
-		background: var(--color-bg-primary);
+		background: transparent;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -79,19 +79,17 @@
 	}
 
 	:global(.ce-checkbox:hover:not(:disabled)) {
-		border-color: var(--color-text-secondary);
-		background: var(--color-bg-secondary);
+		border-color: var(--color-text-primary);
+		background: var(--color-bg-tertiary);
 	}
 
 	:global(.ce-checkbox:active:not(:disabled)) {
 		transform: scale(0.95);
-		background: var(--color-bg-tertiary);
 	}
 
 	:global(.ce-checkbox:disabled) {
 		cursor: not-allowed;
-		opacity: 0.5;
-		background: var(--color-bg-secondary);
+		opacity: 0.4;
 	}
 
 	:global(.ce-checkbox:focus-visible) {
@@ -102,7 +100,7 @@
 	:global(.ce-checkbox[data-state="checked"]) {
 		background: var(--color-info);
 		border-color: var(--color-info);
-		color: white;
+		color: var(--color-text-inverse);
 	}
 
 	:global(.ce-checkbox[data-state="checked"]:hover:not(:disabled)) {
@@ -113,7 +111,7 @@
 	:global(.ce-checkbox.ce-checkbox--indeterminate) {
 		background: var(--color-info);
 		border-color: var(--color-info);
-		color: white;
+		color: var(--color-text-inverse);
 	}
 
 	.ce-checkbox-indicator {

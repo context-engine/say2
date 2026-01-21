@@ -1,17 +1,18 @@
 /* src/lib/tokens/spacing.css */
 
 :root {
-    /* Base unit: 4px */
-    --space-1: 4px;
-    --space-2: 8px;
-    --space-3: 12px;
-    --space-4: 16px;
-    --space-6: 24px;
-    --space-8: 32px;
+    /* Base unit: 0.25rem (4px at 16px root) */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
 
-    /* Border radius */
-    --radius-sm: 4px;
-    --radius-md: 6px;
-    --radius-lg: 8px;
+    /* Border radius - keep px for consistent rounding */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
     --radius-full: 9999px;
+    /* This stays px for true circles */
 }

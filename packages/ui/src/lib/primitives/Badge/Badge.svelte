@@ -53,13 +53,13 @@
 
   /* Sizes */
   .badge--sm {
-    height: 20px;
+    height: 1.25rem; /* 20px */
     padding: 0 var(--space-2);
     font-size: var(--text-xs);
   }
 
   .badge--md {
-    height: 24px;
+    height: 1.5rem; /* 24px */
     padding: 0 var(--space-3);
     font-size: var(--text-sm);
   }
@@ -70,12 +70,12 @@
     border-radius: 50%;
   }
   .badge--dot.badge--sm {
-    width: 6px;
-    height: 6px;
+    width: 0.375rem; /* 6px */
+    height: 0.375rem;
   }
   .badge--dot.badge--md {
-    width: 8px;
-    height: 8px;
+    width: 0.5rem; /* 8px */
+    height: 0.5rem;
   }
 
   /* Variants */

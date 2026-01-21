@@ -136,7 +136,7 @@
 
   /* Sizes */
   .ce-input-wrapper--sm {
-    height: 32px;
+    height: 2rem; /* 32px */
     padding: 0 var(--space-3);
   }
   .ce-input-wrapper--sm .ce-input {
@@ -144,7 +144,7 @@
   }
 
   .ce-input-wrapper--md {
-    height: 40px;
+    height: 2.5rem; /* 40px */
     padding: 0 var(--space-3);
   }
   .ce-input-wrapper--md .ce-input {

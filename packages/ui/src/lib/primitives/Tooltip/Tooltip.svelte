@@ -27,9 +27,8 @@
 			{@render children?.()}
 		</Tooltip.Trigger>
 		<Tooltip.Portal>
-			<Tooltip.Content class="ce-tooltip-content" {side} sideOffset={4}>
+			<Tooltip.Content class="ce-tooltip-content" {side} sideOffset={6}>
 				{content}
-				<Tooltip.Arrow class="ce-tooltip-arrow" />
 			</Tooltip.Content>
 		</Tooltip.Portal>
 	</Tooltip.Root>
@@ -49,21 +48,15 @@
 	}
 
 	:global(.ce-tooltip-content) {
-		background: var(--color-bg-primary);
+		background: var(--color-bg-secondary);
 		color: var(--color-text-primary);
 		padding: var(--space-2) var(--space-3);
 		border-radius: var(--radius-sm);
+		border: 1px solid var(--color-border);
 		font-family: var(--font-ui);
 		font-size: var(--text-sm);
-		box-shadow: var(--shadow-md);
+		box-shadow: var(--shadow-lg);
 		z-index: var(--z-tooltip);
 		max-width: 250px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-
-	:global(.ce-tooltip-arrow) {
-		fill: var(--color-bg-primary);
 	}
 </style>
