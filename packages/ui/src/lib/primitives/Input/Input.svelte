@@ -1,10 +1,10 @@
 <!-- src/lib/primitives/Input/Input.svelte -->
 <script lang="ts">
-  import type { ComponentType } from 'svelte';
-  
+  import type { Component } from "svelte";
+
   interface Props {
     /** Input type (text, search, number, password) */
-    type?: 'text' | 'search' | 'number' | 'password';
+    type?: "text" | "search" | "number" | "password";
     /** Input value */
     value?: string;
     /** Placeholder text */
@@ -14,9 +14,9 @@
     /** Error state */
     error?: boolean;
     /** Input size */
-    size?: 'sm' | 'md';
+    size?: "sm" | "md";
     /** Leading icon component */
-    icon?: ComponentType<any>;
+    icon?: Component<any>;
     /** ID for label association */
     id?: string;
     /** Input handler - called on every keystroke */
@@ -24,16 +24,16 @@
     /** Change handler - called on blur/enter */
     onchange?: (value: string) => void;
     /** Aria label for accessibility if no label associated */
-    'aria-label'?: string;
+    "aria-label"?: string;
   }
-  
-  let { 
-    type = 'text',
-    value = '',
+
+  let {
+    type = "text",
+    value = "",
     placeholder,
     disabled = false,
     error = false,
-    size = 'md',
+    size = "md",
     icon: Icon,
     id,
     oninput,
@@ -52,10 +52,14 @@
   }
 </script>
 
-<div class="input-wrapper input-wrapper--{size} {disabled ? 'input-wrapper--disabled' : ''} {error ? 'input-wrapper--error' : ''}">
+<div
+  class="input-wrapper input-wrapper--{size} {disabled
+    ? 'input-wrapper--disabled'
+    : ''} {error ? 'input-wrapper--error' : ''}"
+>
   {#if Icon}
     <span class="input-icon">
-      <Icon size={size === 'sm' ? '14' : '16'} />
+      <Icon size={size === "sm" ? "14" : "16"} />
     </span>
   {/if}
 
@@ -68,7 +72,7 @@
     {id}
     aria-invalid={error}
     aria-disabled={disabled}
-    aria-label={rest['aria-label']}
+    aria-label={rest["aria-label"]}
     oninput={handleInput}
     onchange={handleChange}
     {...rest}
@@ -96,7 +100,8 @@
     border-color: var(--color-error);
   }
   .input-wrapper--error:focus-within {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-error) 20%, transparent);
+    box-shadow: 0 0 0 2px
+      color-mix(in srgb, var(--color-error) 20%, transparent);
   }
 
   .input-wrapper--disabled {

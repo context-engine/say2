@@ -1,12 +1,12 @@
 <!-- src/lib/primitives/Icon/Icon.svelte -->
 <script lang="ts">
-  import type { ComponentType } from 'svelte';
-  
+  import type { Component } from "svelte";
+
   interface Props {
     /** Lucide icon component */
-    icon: ComponentType<any>;
+    icon: Component<any>;
     /** Icon size */
-    size?: number | 'sm' | 'md' | 'lg';
+    size?: number | "sm" | "md" | "lg";
     /** Icon color */
     color?: string;
     /** Stroke width */
@@ -16,11 +16,11 @@
     /** Additional classes */
     class?: string;
   }
-  
-  let { 
+
+  let {
     icon: IconComponent,
-    size = 'md',
-    color = 'currentColor',
+    size = "md",
+    color = "currentColor",
     strokeWidth = 2,
     label,
     class: className,
@@ -31,27 +31,23 @@
   const sizeMap = {
     sm: 14,
     md: 16,
-    lg: 20
+    lg: 20,
   };
 
-  let computedSize = $derived(typeof size === 'number' ? size : sizeMap[size]);
+  let computedSize = $derived(typeof size === "number" ? size : sizeMap[size]);
 </script>
 
 {#if label}
   <span class="sr-only">{label}</span>
 {/if}
 
-<span 
-  class="icon {className || ''}" 
-  aria-hidden={!label} 
-  role={label ? 'img' : undefined}
+<span
+  class="icon {className || ''}"
+  aria-hidden={!label}
+  role={label ? "img" : undefined}
   {...rest}
 >
-  <IconComponent 
-    size={computedSize} 
-    {color} 
-    {strokeWidth} 
-  />
+  <IconComponent size={computedSize} {color} {strokeWidth} />
 </span>
 
 <style>

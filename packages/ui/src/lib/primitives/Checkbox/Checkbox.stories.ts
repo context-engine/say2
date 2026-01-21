@@ -68,22 +68,4 @@ export const DisabledUnchecked: Story = {
 	},
 };
 
-export const AllStates: Story = {
-	render: () => ({
-		Component: Checkbox,
-		props: {},
-	}),
-	decorators: [
-		() => ({
-			template: `
-				<div style="display: flex; flex-direction: column; gap: 1rem;">
-					<story-component checked={false} label="Unchecked" />
-					<story-component checked={true} label="Checked" />
-					<story-component indeterminate={true} label="Indeterminate" />
-					<story-component checked={false} disabled={true} label="Disabled unchecked" />
-					<story-component checked={true} disabled={true} label="Disabled checked" />
-				</div>
-			`,
-		}),
-	],
-};
+
