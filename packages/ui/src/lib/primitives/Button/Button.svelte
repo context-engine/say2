@@ -1,6 +1,11 @@
 <!-- src/lib/primitives/Button/Button.svelte -->
 <script lang="ts" module>
-	import type { Component, Snippet } from "svelte";
+	import type {
+		Component,
+		Snippet,
+		ComponentType,
+		SvelteComponent,
+	} from "svelte";
 
 	export interface Props {
 		variant?: "primary" | "secondary" | "ghost" | "danger";
@@ -8,7 +13,7 @@
 		disabled?: boolean;
 		loading?: boolean;
 		loadingLabel?: string;
-		icon?: Component<{ size?: number }>;
+		icon?: Component<any> | ComponentType<SvelteComponent<any>>;
 		iconOnly?: boolean;
 		onclick?: (event: MouseEvent) => void;
 		children?: Snippet;
