@@ -36,7 +36,7 @@
 <script lang="ts">
   let {
     type = "text",
-    value = "",
+    value = $bindable(""),
     placeholder,
     disabled = false,
     error = false,
@@ -73,7 +73,7 @@
   <input
     class="ce-input {Icon ? 'ce-input--with-icon' : ''}"
     {type}
-    {value}
+    bind:value
     {placeholder}
     {disabled}
     {id}
