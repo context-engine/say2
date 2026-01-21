@@ -24,7 +24,7 @@
 	}: Props = $props();
 </script>
 
-<div class="checkbox-wrapper" class:disabled>
+<div class="ce-checkbox-wrapper" class:disabled>
 	<Checkbox.Root
 		{checked}
 		{indeterminate}
@@ -34,9 +34,9 @@
 			checked = v;
 			onchange?.(v);
 		}}
-		class="checkbox {indeterminate ? 'checkbox--indeterminate' : ''}"
+		class="ce-checkbox {indeterminate ? 'ce-checkbox--indeterminate' : ''}"
 	>
-		<div class="checkbox-indicator">
+		<div class="ce-checkbox-indicator">
 			{#if indeterminate}
 				<Minus size={12} strokeWidth={3} />
 			{:else if checked}
@@ -45,24 +45,25 @@
 		</div>
 	</Checkbox.Root>
 	{#if label}
-		<label for={id} class="checkbox-label">
+		<label for={id} class="ce-checkbox-label">
 			{label}
 		</label>
 	{/if}
 </div>
 
 <style>
-	.checkbox-wrapper {
+	/* Prefix: ce = Context Engine */
+	.ce-checkbox-wrapper {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-2);
 	}
 
-	.checkbox-wrapper.disabled {
+	.ce-checkbox-wrapper.disabled {
 		opacity: 0.5;
 	}
 
-	.checkbox {
+	:global(.ce-checkbox) {
 		cursor: pointer;
 		width: 18px;
 		height: 18px;
@@ -77,48 +78,45 @@
 		margin: 0;
 	}
 
-	.checkbox:hover:not(:disabled) {
+	:global(.ce-checkbox:hover:not(:disabled)) {
 		border-color: var(--color-text-secondary);
 		background: var(--color-bg-secondary);
 	}
 
-	/* Active state for better feel */
-	.checkbox:active:not(:disabled) {
+	:global(.ce-checkbox:active:not(:disabled)) {
 		transform: scale(0.95);
 		background: var(--color-bg-tertiary);
 	}
 
-	.checkbox:disabled {
+	:global(.ce-checkbox:disabled) {
 		cursor: not-allowed;
 		opacity: 0.5;
 		background: var(--color-bg-secondary);
 	}
 
-	.checkbox:focus-visible {
+	:global(.ce-checkbox:focus-visible) {
 		outline: 2px solid var(--color-info);
 		outline-offset: 2px;
 	}
 
-	.checkbox[data-state="checked"] {
+	:global(.ce-checkbox[data-state="checked"]) {
 		background: var(--color-info);
 		border-color: var(--color-info);
 		color: white;
 	}
 
-	.checkbox[data-state="checked"]:hover:not(:disabled) {
+	:global(.ce-checkbox[data-state="checked"]:hover:not(:disabled)) {
 		background: color-mix(in srgb, var(--color-info) 90%, black);
 		border-color: color-mix(in srgb, var(--color-info) 90%, black);
 	}
 
-	.checkbox.checkbox--indeterminate {
-		background: var(
-			--color-info
-		); /* Use info color for indeterminate too, usually standard */
+	:global(.ce-checkbox.ce-checkbox--indeterminate) {
+		background: var(--color-info);
 		border-color: var(--color-info);
 		color: white;
 	}
 
-	.checkbox-indicator {
+	.ce-checkbox-indicator {
 		color: currentColor;
 		display: flex;
 		align-items: center;
@@ -128,7 +126,7 @@
 		pointer-events: none;
 	}
 
-	.checkbox-label {
+	.ce-checkbox-label {
 		font-family: var(--font-ui);
 		font-size: var(--text-base);
 		color: var(--color-text-primary);
@@ -136,7 +134,7 @@
 		user-select: none;
 	}
 
-	.checkbox-wrapper.disabled .checkbox-label {
+	.ce-checkbox-wrapper.disabled .ce-checkbox-label {
 		cursor: not-allowed;
 	}
 </style>

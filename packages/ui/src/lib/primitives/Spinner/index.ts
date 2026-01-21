@@ -1,1 +1,1 @@
-export { default as Spinner } from "./Spinner.svelte";
+export { default as Spinner, type Props as SpinnerProps } from "./Spinner.svelte";

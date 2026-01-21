@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
 import { ArrowLeft, ArrowRight, Globe, User } from "lucide-svelte";
-import Select from "./Select.svelte";
+import Select, { type Props } from "./Select.svelte";
 
-const meta: Meta<typeof Select> = {
+const meta = {
 	title: "Primitives/Select",
 	component: Select,
 	tags: ["autodocs"],
@@ -15,7 +15,7 @@ const meta: Meta<typeof Select> = {
 			options: ["sm", "md"],
 		},
 	},
-};
+} satisfies Meta<Props>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -94,27 +94,4 @@ export const WithDisabledOption: Story = {
 		disabled: false,
 		size: "md",
 	},
-};
-
-export const AllSizes: Story = {
-	render: () => ({
-		Component: Select,
-		props: {},
-	}),
-	decorators: [
-		() => ({
-			template: `
-				<div style="display: flex; flex-direction: column; gap: 1rem;">
-					<story-component size="sm" value="" options={[
-						{ value: 'a', label: 'Small Option A' },
-						{ value: 'b', label: 'Small Option B' }
-					]} placeholder="Small" />
-					<story-component size="md" value="" options={[
-						{ value: 'a', label: 'Medium Option A' },
-						{ value: 'b', label: 'Medium Option B' }
-					]} placeholder="Medium" />
-				</div>
-			`,
-		}),
-	],
 };

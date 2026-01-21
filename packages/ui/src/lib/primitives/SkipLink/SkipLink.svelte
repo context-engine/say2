@@ -1,32 +1,40 @@
 <!-- src/lib/primitives/SkipLink/SkipLink.svelte -->
-<script lang="ts">
-interface Props {
-	href?: string;
-	targetId?: string;
-	label?: string;
-}
-
-const {
-	href = "#main-content",
-	targetId = "main-content",
-	label = "Skip to main content",
-}: Props = $props();
+<script lang="ts" module>
+	export interface Props {
+		href?: string;
+		targetId?: string;
+		label?: string;
+	}
 </script>
 
-<a class="skip-link" {href} data-sveltekit-preload-data="off" onclick={(e) => {
-	e.preventDefault();
-	const target = document.getElementById(targetId);
-	if (target) {
-		target.setAttribute('tabindex', '-1');
-		target.focus();
-		target.removeAttribute('tabindex');
-	}
-}}>
+<script lang="ts">
+	const {
+		href = "#main-content",
+		targetId = "main-content",
+		label = "Skip to main content",
+	}: Props = $props();
+</script>
+
+<a
+	class="ce-skip-link"
+	{href}
+	data-sveltekit-preload-data="off"
+	onclick={(e) => {
+		e.preventDefault();
+		const target = document.getElementById(targetId);
+		if (target) {
+			target.setAttribute("tabindex", "-1");
+			target.focus();
+			target.removeAttribute("tabindex");
+		}
+	}}
+>
 	{label}
 </a>
 
 <style>
-	.skip-link {
+	/* Prefix: ce = Context Engine */
+	.ce-skip-link {
 		position: absolute;
 		top: -100%;
 		left: 50%;
@@ -45,7 +53,7 @@ const {
 		transition: top var(--duration-fast) var(--ease-out);
 	}
 
-	.skip-link:focus {
+	.ce-skip-link:focus {
 		top: var(--space-4);
 		outline: 2px solid var(--color-info);
 		outline-offset: 2px;

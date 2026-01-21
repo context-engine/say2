@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/svelte';
-import StatusDot from './StatusDot.svelte';
+import StatusDot, { type Props } from './StatusDot.svelte';
 
 const meta = {
     title: 'Primitives/StatusDot',
@@ -16,7 +16,7 @@ const meta = {
         },
         pulse: { control: 'boolean' },
     },
-} satisfies Meta<any>;
+} satisfies Meta<Props>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

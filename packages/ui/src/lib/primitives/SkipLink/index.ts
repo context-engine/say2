@@ -1,1 +1,1 @@
-export { default as SkipLink } from "./SkipLink.svelte";
+export { default as SkipLink, type Props as SkipLinkProps } from "./SkipLink.svelte";

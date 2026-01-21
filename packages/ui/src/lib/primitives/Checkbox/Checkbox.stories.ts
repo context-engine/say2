@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
-import Checkbox from "./Checkbox.svelte";
+import Checkbox, { type Props } from "./Checkbox.svelte";
 
-const meta: Meta<typeof Checkbox> = {
+const meta = {
 	title: "Primitives/Checkbox",
 	component: Checkbox,
 	tags: ["autodocs"],
@@ -11,7 +11,7 @@ const meta: Meta<typeof Checkbox> = {
 		indeterminate: { control: "boolean" },
 		label: { control: "text" },
 	},
-};
+} satisfies Meta<Props>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

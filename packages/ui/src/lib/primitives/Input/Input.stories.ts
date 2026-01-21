@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/svelte';
-import Input from './Input.svelte';
+import Input, { type Props } from './Input.svelte';
 import { Search, Mail, Lock } from 'lucide-svelte';
 
 const meta = {
@@ -18,7 +18,7 @@ const meta = {
         disabled: { control: 'boolean' },
         error: { control: 'boolean' },
     },
-} satisfies Meta<any>;
+} satisfies Meta<Props>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

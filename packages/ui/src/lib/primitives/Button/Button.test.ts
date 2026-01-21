@@ -1,17 +1,21 @@
-import { describe, it, expect, vi } from 'bun:test';
-import { renderComponent, screen, fireEvent } from '../../../../tests/utils';
+import { describe, it, expect, vi, afterEach } from 'bun:test';
+import { renderComponent, screen, fireEvent, cleanup } from '../../../../tests/utils';
 import Button from './Button.svelte';
 import { createRawSnippet } from 'svelte';
 
 describe('Button', () => {
     const textSnippet = createRawSnippet(() => ({ render: () => 'Click me' }));
 
+    afterEach(() => {
+        cleanup();
+    });
+
     it('renders with default props', () => {
         renderComponent(Button, { children: textSnippet });
         const button = screen.getByRole('button', { name: 'Click me' });
         expect(button).toBeTruthy();
-        expect(button.className).toContain('button--primary');
-        expect(button.className).toContain('button--md');
+        expect(button.className).toContain('ce-button--primary');
+        expect(button.className).toContain('ce-button--md');
     });
 
     it('fires onclick handler', async () => {

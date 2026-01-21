@@ -1,8 +1,11 @@
 <!-- src/lib/primitives/Input/Input.svelte -->
-<script lang="ts">
-  import type { Component } from "svelte";
+<script lang="ts" module>
+  import type { Component, SvelteComponent } from "svelte";
 
-  interface Props {
+  // lucide-svelte icons are typed differently than Svelte's Component type
+  type IconComponent = Component<any> | typeof SvelteComponent<any>;
+
+  export interface Props {
     /** Input type (text, search, number, password) */
     type?: "text" | "search" | "number" | "password";
     /** Input value */
@@ -16,7 +19,7 @@
     /** Input size */
     size?: "sm" | "md";
     /** Leading icon component */
-    icon?: Component<any>;
+    icon?: IconComponent;
     /** ID for label association */
     id?: string;
     /** Input handler - called on every keystroke */
@@ -26,7 +29,9 @@
     /** Aria label for accessibility if no label associated */
     "aria-label"?: string;
   }
+</script>
 
+<script lang="ts">
   let {
     type = "text",
     value = "",
@@ -53,18 +58,18 @@
 </script>
 
 <div
-  class="input-wrapper input-wrapper--{size} {disabled
-    ? 'input-wrapper--disabled'
-    : ''} {error ? 'input-wrapper--error' : ''}"
+  class="ce-input-wrapper ce-input-wrapper--{size} {disabled
+    ? 'ce-input-wrapper--disabled'
+    : ''} {error ? 'ce-input-wrapper--error' : ''}"
 >
   {#if Icon}
-    <span class="input-icon">
+    <span class="ce-input-icon">
       <Icon size={size === "sm" ? "14" : "16"} />
     </span>
   {/if}
 
   <input
-    class="input {Icon ? 'input--with-icon' : ''}"
+    class="ce-input {Icon ? 'ce-input--with-icon' : ''}"
     {type}
     {value}
     {placeholder}
@@ -80,7 +85,8 @@
 </div>
 
 <style>
-  .input-wrapper {
+  /* Prefix: ce = Context Engine */
+  .ce-input-wrapper {
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -91,26 +97,26 @@
     transition: all var(--duration-fast) var(--ease-out);
   }
 
-  .input-wrapper:focus-within {
+  .ce-input-wrapper:focus-within {
     border-color: var(--color-info);
     box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-info) 20%, transparent);
   }
 
-  .input-wrapper--error {
+  .ce-input-wrapper--error {
     border-color: var(--color-error);
   }
-  .input-wrapper--error:focus-within {
+  .ce-input-wrapper--error:focus-within {
     box-shadow: 0 0 0 2px
       color-mix(in srgb, var(--color-error) 20%, transparent);
   }
 
-  .input-wrapper--disabled {
+  .ce-input-wrapper--disabled {
     background: var(--color-bg-secondary);
     cursor: not-allowed;
     opacity: 0.7;
   }
 
-  .input {
+  .ce-input {
     width: 100%;
     background: transparent;
     border: none;
@@ -120,33 +126,33 @@
     padding: 0;
   }
 
-  .input::placeholder {
+  .ce-input::placeholder {
     color: var(--color-text-tertiary);
   }
 
-  .input:disabled {
+  .ce-input:disabled {
     cursor: not-allowed;
   }
 
   /* Sizes */
-  .input-wrapper--sm {
+  .ce-input-wrapper--sm {
     height: 32px;
     padding: 0 var(--space-3);
   }
-  .input-wrapper--sm .input {
+  .ce-input-wrapper--sm .ce-input {
     font-size: var(--text-sm);
   }
 
-  .input-wrapper--md {
+  .ce-input-wrapper--md {
     height: 40px;
     padding: 0 var(--space-3);
   }
-  .input-wrapper--md .input {
+  .ce-input-wrapper--md .ce-input {
     font-size: var(--text-base);
   }
 
   /* Icon handling */
-  .input-icon {
+  .ce-input-icon {
     display: flex;
     align-items: center;
     justify-content: center;

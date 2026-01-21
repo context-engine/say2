@@ -1,10 +1,14 @@
 <!-- src/lib/primitives/Icon/Icon.svelte -->
-<script lang="ts">
-  import type { Component } from "svelte";
+<script lang="ts" module>
+  import type { Component, SvelteComponent } from "svelte";
 
-  interface Props {
+  // lucide-svelte icons are typed differently than Svelte's Component type
+  // We accept either Component or the legacy SvelteComponent class
+  type IconComponent = Component<any> | typeof SvelteComponent<any>;
+
+  export interface Props {
     /** Lucide icon component */
-    icon: Component<any>;
+    icon: IconComponent;
     /** Icon size */
     size?: number | "sm" | "md" | "lg";
     /** Icon color */
@@ -16,7 +20,9 @@
     /** Additional classes */
     class?: string;
   }
+</script>
 
+<script lang="ts">
   let {
     icon: IconComponent,
     size = "md",

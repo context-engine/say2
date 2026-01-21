@@ -50,7 +50,7 @@ describe("Checkbox", () => {
 	it("shows indeterminate state", () => {
 		renderComponent(Checkbox, { checked: false, indeterminate: true });
 		const checkbox = screen.getByRole("checkbox");
-		expect(checkbox.classList.contains("checkbox--indeterminate")).toBe(true);
+		expect(checkbox.classList.contains("ce-checkbox--indeterminate")).toBe(true);
 		// Indeterminate state should have aria-checked="mixed" per ARIA spec
 		expect(checkbox.getAttribute("aria-checked")).toBe("mixed");
 	});

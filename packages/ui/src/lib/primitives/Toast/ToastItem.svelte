@@ -1,37 +1,44 @@
 <!-- src/lib/primitives/Toast/ToastItem.svelte -->
-<script lang="ts">
-import { AlertTriangle, Check, Info, X, X as XIcon } from "lucide-svelte";
-import { type Toast, toasts } from "./toast.store";
+<script lang="ts" module>
+	import type { Toast } from "./toast.store";
 
-interface Props {
-	toast: Toast;
-}
-
-const { toast }: Props = $props();
-
-const iconMap = {
-	success: Check,
-	error: X,
-	warning: AlertTriangle,
-	info: Info,
-};
-
-const colorMap = {
-	success: "var(--color-success)",
-	error: "var(--color-error)",
-	warning: "var(--color-warning)",
-	info: "var(--color-info)",
-};
+	export interface Props {
+		toast: Toast;
+	}
 </script>
 
-<div class="toast toast-{toast.type}" role="alert">
-	<div class="toast-icon" style="color: {colorMap[toast.type]}">
-		<svelte:component this={iconMap[toast.type]} size={18} />
+<script lang="ts">
+	import { TriangleAlert, Check, Info, X, X as XIcon } from "lucide-svelte";
+	import { toasts } from "./toast.store";
+
+	const { toast }: Props = $props();
+
+	const iconMap = {
+		success: Check,
+		error: X,
+		warning: TriangleAlert,
+		info: Info,
+	};
+
+	const colorMap = {
+		success: "var(--color-success)",
+		error: "var(--color-error)",
+		warning: "var(--color-warning)",
+		info: "var(--color-info)",
+	};
+
+	// Get icon component dynamically
+	const IconComponent = $derived(iconMap[toast.type]);
+</script>
+
+<div class="ce-toast ce-toast-{toast.type}" role="alert">
+	<div class="ce-toast-icon" style="color: {colorMap[toast.type]}">
+		<IconComponent size={18} />
 	</div>
-	<p class="toast-message">{toast.message}</p>
+	<p class="ce-toast-message">{toast.message}</p>
 	{#if toast.dismissable}
 		<button
-			class="toast-close"
+			class="ce-toast-close"
 			onclick={() => toasts.removeToast(toast.id)}
 			aria-label="Dismiss"
 		>
@@ -41,7 +48,8 @@ const colorMap = {
 </div>
 
 <style>
-	.toast {
+	/* Prefix: ce = Context Engine */
+	.ce-toast {
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
@@ -55,13 +63,13 @@ const colorMap = {
 		animation: slideIn var(--duration-normal) var(--ease-out);
 	}
 
-	.toast-icon {
+	.ce-toast-icon {
 		flex-shrink: 0;
 		display: flex;
 		align-items: center;
 	}
 
-	.toast-message {
+	.ce-toast-message {
 		flex: 1;
 		font-family: var(--font-ui);
 		font-size: var(--text-sm);
@@ -69,7 +77,7 @@ const colorMap = {
 		margin: 0;
 	}
 
-	.toast-close {
+	.ce-toast-close {
 		flex-shrink: 0;
 		display: flex;
 		align-items: center;
@@ -85,24 +93,24 @@ const colorMap = {
 		transition: all var(--duration-fast) var(--ease-out);
 	}
 
-	.toast-close:hover {
+	.ce-toast-close:hover {
 		background: var(--color-bg-secondary);
 		color: var(--color-text-primary);
 	}
 
-	.toast-success {
+	.ce-toast-success {
 		border-left: 3px solid var(--color-success);
 	}
 
-	.toast-error {
+	.ce-toast-error {
 		border-left: 3px solid var(--color-error);
 	}
 
-	.toast-warning {
+	.ce-toast-warning {
 		border-left: 3px solid var(--color-warning);
 	}
 
-	.toast-info {
+	.ce-toast-info {
 		border-left: 3px solid var(--color-info);
 	}
 

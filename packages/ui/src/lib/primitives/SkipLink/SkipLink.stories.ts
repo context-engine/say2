@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
-import SkipLink from "./SkipLink.svelte";
+import SkipLink, { type Props } from "./SkipLink.svelte";
 
-const meta: Meta<typeof SkipLink> = {
+const meta = {
 	title: "Primitives/SkipLink",
 	component: SkipLink,
 	tags: ["autodocs"],
@@ -10,7 +10,7 @@ const meta: Meta<typeof SkipLink> = {
 		targetId: { control: "text" },
 		label: { control: "text" },
 	},
-};
+} satisfies Meta<Props>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;

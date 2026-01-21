@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
-import Spinner from "./Spinner.svelte";
+import Spinner, { type Props } from "./Spinner.svelte";
 
-const meta: Meta<typeof Spinner> = {
+const meta = {
 	title: "Primitives/Spinner",
 	component: Spinner,
 	tags: ["autodocs"],
@@ -13,7 +13,7 @@ const meta: Meta<typeof Spinner> = {
 		color: { control: "color" },
 		label: { control: "text" },
 	},
-};
+} satisfies Meta<Props>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -45,22 +45,4 @@ export const CustomColor: Story = {
 		color: "#3b82f6",
 		label: "Loading",
 	},
-};
-
-export const AllSizes: Story = {
-	render: () => ({
-		Component: Spinner,
-		props: {},
-	}),
-	decorators: [
-		() => ({
-			template: `
-				<div style="display: flex; gap: 2rem; align-items: center;">
-					<story-component size="sm" />
-					<story-component size="md" />
-					<story-component size="lg" />
-				</div>
-			`,
-		}),
-	],
 };
