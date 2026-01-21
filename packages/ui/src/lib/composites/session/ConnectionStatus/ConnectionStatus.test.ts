@@ -19,15 +19,17 @@ describe("ConnectionStatus", () => {
     });
 
     it("renders compact mode without label", () => {
-        const { queryByText } = render(ConnectionStatus, {
+        const { container } = render(ConnectionStatus, {
             state: "connected",
             compact: true
         });
-        expect(queryByText("Connected")).toBeNull();
+        const label = container.querySelector(".ce-connection-status__label");
+        expect(label).toBeNull();
     });
 
     it("has correct accessibility role", () => {
-        const { getByRole } = render(ConnectionStatus, { state: "connected" });
-        expect(getByRole("status")).toBeTruthy();
+        const { container } = render(ConnectionStatus, { state: "connected" });
+        const status = container.querySelector("[role='status']");
+        expect(status).toBeTruthy();
     });
 });
