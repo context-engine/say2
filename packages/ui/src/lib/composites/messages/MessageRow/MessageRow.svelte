@@ -102,14 +102,15 @@
         background: var(--color-bg-secondary);
     }
 
-    .ce-message-row--selected {
+    .ce-message-row.ce-message-row--selected {
         background: color-mix(
             in srgb,
-            var(--color-primary) 25%,
+            var(--color-info) 15%,
             var(--color-bg-primary)
         );
-        border-left: 4px solid var(--color-primary);
+        border-left: 4px solid var(--color-info);
         padding-left: calc(var(--space-4) - 4px); /* Compensate for border */
+        outline: 1px solid var(--color-info); /* Extra visibility */
     }
 
     /* Icon Column */

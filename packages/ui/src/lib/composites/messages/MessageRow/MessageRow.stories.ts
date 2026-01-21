@@ -86,6 +86,7 @@ export const LongPreview: Story = {
 };
 
 export const SelectionDemo: Story = {
+    args: {} as any,
     render: () => ({
         Component: SelectionWrapper
     })
