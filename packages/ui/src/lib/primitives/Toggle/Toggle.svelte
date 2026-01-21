@@ -1,8 +1,6 @@
 <!-- src/lib/primitives/Toggle/Toggle.svelte -->
-<script lang="ts">
-	import { Switch } from "bits-ui";
-
-	interface Props {
+<script lang="ts" module>
+	export interface Props {
 		checked?: boolean;
 		disabled?: boolean;
 		size?: "sm" | "md";
@@ -10,6 +8,10 @@
 		id?: string;
 		onchange?: (checked: boolean) => void;
 	}
+</script>
+
+<script lang="ts">
+	import { Switch } from "bits-ui";
 
 	const {
 		checked = $bindable(false),
@@ -21,9 +23,9 @@
 	}: Props = $props();
 </script>
 
-<div class="toggle-wrapper" class:disabled>
+<div class="ce-toggle-wrapper" class:disabled>
 	{#if label}
-		<label for={id} class="toggle-label">
+		<label for={id} class="ce-toggle-label">
 			{label}
 		</label>
 	{/if}
@@ -32,62 +34,69 @@
 		{disabled}
 		{id}
 		onCheckedChange={(v) => onchange?.(v ?? false)}
-		class="switch switch--{size}"
+		class="ce-switch ce-switch--{size}"
 	>
-		<div class="switch-control">
-			<Switch.Thumb class="switch-thumb" />
+		<div class="ce-switch-control">
+			<Switch.Thumb class="ce-switch-thumb" />
 		</div>
 	</Switch.Root>
 </div>
 
 <style>
-	.toggle-wrapper {
+	/* Prefix: ce = Context Engine */
+	.ce-toggle-wrapper {
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-2);
 	}
 
-	.toggle-wrapper.disabled {
+	.ce-toggle-wrapper.disabled {
 		opacity: 0.5;
 	}
 
-	.toggle-label {
+	.ce-toggle-label {
 		font-family: var(--font-ui);
 		font-size: var(--text-base);
 		color: var(--color-text-primary);
 		cursor: pointer;
 	}
 
-	.toggle-wrapper.disabled .toggle-label {
+	.ce-toggle-wrapper.disabled .ce-toggle-label {
 		cursor: not-allowed;
 	}
 
-	.switch {
+	/* bits-ui renders elements, so we need :global() */
+	:global(.ce-switch) {
 		cursor: pointer;
 		transition: opacity var(--duration-fast) var(--ease-out);
+		/* Reset button defaults from bits-ui */
+		border: none;
+		background: transparent;
+		padding: 0;
+		margin: 0;
 	}
 
-	.switch:disabled {
+	:global(.ce-switch:disabled) {
 		cursor: not-allowed;
 		opacity: 0.5;
 	}
 
-	.switch:focus-visible {
+	:global(.ce-switch:focus-visible) {
 		outline: 2px solid var(--color-info);
 		outline-offset: 2px;
 	}
 
-	.switch--sm {
+	:global(.ce-switch--sm) {
 		width: 32px;
 		height: 18px;
 	}
 
-	.switch--md {
+	:global(.ce-switch--md) {
 		width: 44px;
 		height: 24px;
 	}
 
-	.switch-control {
+	.ce-switch-control {
 		display: flex;
 		align-items: center;
 		width: 100%;
@@ -98,32 +107,32 @@
 		transition: background var(--duration-fast) var(--ease-out);
 	}
 
-	.switch[data-state="checked"] .switch-control {
+	:global(.ce-switch[data-state="checked"]) .ce-switch-control {
 		background: var(--color-request);
 	}
 
-	.switch-thumb {
+	:global(.ce-switch-thumb) {
 		background: white;
 		border-radius: var(--radius-full);
 		box-shadow: var(--shadow-sm);
 		transition: transform var(--duration-fast) var(--ease-out);
 	}
 
-	.switch--sm .switch-thumb {
+	:global(.ce-switch--sm .ce-switch-thumb) {
 		width: 14px;
 		height: 14px;
 	}
 
-	.switch--md .switch-thumb {
+	:global(.ce-switch--md .ce-switch-thumb) {
 		width: 20px;
 		height: 20px;
 	}
 
-	.switch--sm.switch[data-state="checked"] .switch-thumb {
+	:global(.ce-switch--sm.ce-switch[data-state="checked"] .ce-switch-thumb) {
 		transform: translateX(14px);
 	}
 
-	.switch--md.switch[data-state="checked"] .switch-thumb {
+	:global(.ce-switch--md.ce-switch[data-state="checked"] .ce-switch-thumb) {
 		transform: translateX(20px);
 	}
 </style>

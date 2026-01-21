@@ -1,4 +1,4 @@
-import { type Writable, writable } from "svelte/store";
+import { writable } from "svelte/store";
 
 export interface Toast {
 	id: string;
@@ -8,17 +8,7 @@ export interface Toast {
 	dismissable?: boolean;
 }
 
-interface ToastStore {
-	toasts: Toast[];
-	addToast: (toast: Omit<Toast, "id">) => string;
-	removeToast: (id: string) => void;
-	success: (message: string) => string;
-	error: (message: string) => string;
-	warning: (message: string) => string;
-	info: (message: string) => string;
-}
-
-function createToastStore(): ToastStore {
+function createToastStore() {
 	const { subscribe, update } = writable<Toast[]>([]);
 
 	const generateId = () => Math.random().toString(36).slice(2, 9);
@@ -56,10 +46,4 @@ function createToastStore(): ToastStore {
 	};
 }
 
-export const toasts: Writable<Toast[]> & Omit<ToastStore, "toasts"> =
-	createToastStore() as any;
-
-toasts.subscribe = ((set: (value: Toast[]) => void) => {
-	const store = createToastStore();
-	return store.subscribe;
-})();
+export const toasts = createToastStore();

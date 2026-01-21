@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/svelte";
-import Toggle from "./Toggle.svelte";
+import Toggle, { type Props } from "./Toggle.svelte";
 
-const meta: Meta<typeof Toggle> = {
+const meta = {
 	title: "Primitives/Toggle",
 	component: Toggle,
 	tags: ["autodocs"],
@@ -14,7 +14,7 @@ const meta: Meta<typeof Toggle> = {
 		},
 		label: { control: "text" },
 	},
-};
+} satisfies Meta<Props>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -78,23 +78,4 @@ export const DisabledOn: Story = {
 		size: "md",
 		label: "Disabled on",
 	},
-};
-
-export const AllSizes: Story = {
-	render: () => ({
-		Component: Toggle,
-		props: {},
-	}),
-	decorators: [
-		() => ({
-			template: `
-				<div style="display: flex; flex-direction: column; gap: 1rem;">
-					<story-component checked={false} size="sm" label="Small off" />
-					<story-component checked={true} size="sm" label="Small on" />
-					<story-component checked={false} size="md" label="Medium off" />
-					<story-component checked={true} size="md" label="Medium on" />
-				</div>
-			`,
-		}),
-	],
 };

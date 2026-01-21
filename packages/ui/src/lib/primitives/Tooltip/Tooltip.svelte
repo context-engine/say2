@@ -1,41 +1,54 @@
 <!-- src/lib/primitives/Tooltip/Tooltip.svelte -->
-<script lang="ts">
-import { Tooltip } from "bits-ui";
-import type { Snippet } from "svelte";
+<script lang="ts" module>
+	import type { Snippet } from "svelte";
 
-interface Props {
-	content?: string;
-	side?: "top" | "right" | "bottom" | "left";
-	delay?: number;
-	children?: Snippet;
-}
-
-const { content = "", side = "top", delay = 300, children }: Props = $props();
+	export interface Props {
+		content?: string;
+		side?: "top" | "right" | "bottom" | "left";
+		delay?: number;
+		children?: Snippet;
+	}
 </script>
 
-<Tooltip.Root delayDuration={delay}>
-	<Tooltip.Trigger class="tooltip-trigger">
-		{@render children?.()}
-	</Tooltip.Trigger>
-	<Tooltip.Portal>
-		<Tooltip.Content
-			class="tooltip-content"
-			{side}
-			sideOffset={4}
-		>
-			{content}
-			<Tooltip.Arrow class="tooltip-arrow" />
-		</Tooltip.Content>
-	</Tooltip.Portal>
-</Tooltip.Root>
+<script lang="ts">
+	import { Tooltip } from "bits-ui";
+
+	const {
+		content = "",
+		side = "top",
+		delay = 300,
+		children,
+	}: Props = $props();
+</script>
+
+<Tooltip.Provider>
+	<Tooltip.Root delayDuration={delay}>
+		<Tooltip.Trigger class="ce-tooltip-trigger">
+			{@render children?.()}
+		</Tooltip.Trigger>
+		<Tooltip.Portal>
+			<Tooltip.Content class="ce-tooltip-content" {side} sideOffset={4}>
+				{content}
+				<Tooltip.Arrow class="ce-tooltip-arrow" />
+			</Tooltip.Content>
+		</Tooltip.Portal>
+	</Tooltip.Root>
+</Tooltip.Provider>
 
 <style>
-	.tooltip-trigger {
+	/* Prefix: ce = Context Engine */
+	/* bits-ui renders elements, so we need :global() */
+	:global(.ce-tooltip-trigger) {
 		display: inline-flex;
 		cursor: pointer;
+		/* Reset button defaults from bits-ui */
+		border: none;
+		background: transparent;
+		padding: 0;
+		margin: 0;
 	}
 
-	.tooltip-content {
+	:global(.ce-tooltip-content) {
 		background: var(--color-bg-primary);
 		color: var(--color-text-primary);
 		padding: var(--space-2) var(--space-3);
@@ -50,7 +63,7 @@ const { content = "", side = "top", delay = 300, children }: Props = $props();
 		white-space: nowrap;
 	}
 
-	.tooltip-arrow {
+	:global(.ce-tooltip-arrow) {
 		fill: var(--color-bg-primary);
 	}
 </style>

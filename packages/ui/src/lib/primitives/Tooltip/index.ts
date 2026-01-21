@@ -1,1 +1,1 @@
-export { default as Tooltip } from "./Tooltip.svelte";
+export { default as Tooltip, type Props as TooltipProps } from "./Tooltip.svelte";
