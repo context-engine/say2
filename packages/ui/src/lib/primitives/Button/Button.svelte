@@ -18,6 +18,7 @@
 		onclick?: (event: MouseEvent) => void;
 		children?: Snippet;
 		"aria-label"?: string;
+		type?: "button" | "submit" | "reset";
 		class?: string;
 	}
 </script>
