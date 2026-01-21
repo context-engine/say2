@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/svelte';
 import MessageRow from './MessageRow.svelte';
-import type { ComponentProps } from 'svelte';
+import SelectionWrapper from './MessageRow.story-wrapper.svelte';
 
 const meta = {
     title: 'Composites/Messages/MessageRow',
@@ -24,6 +24,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// ... existing stories ...
 export const InboundRequest: Story = {
     args: {
         id: '1',
@@ -42,10 +43,10 @@ export const OutboundResponse: Story = {
         id: '2',
         direction: 'outbound',
         type: 'response',
-        method: 'mcp.prompts.list', // Display the method related to the response
+        method: 'mcp.prompts.list',
         preview: '{ "prompts": [ ... ] }',
         timestamp: new Date(Date.now() + 1000),
-        hasResponse: true, // Typically implicit for response but good for visual test
+        hasResponse: true,
         selected: false
     }
 };
@@ -82,4 +83,10 @@ export const LongPreview: Story = {
         hasResponse: false,
         selected: false
     }
+};
+
+export const SelectionDemo: Story = {
+    render: () => ({
+        Component: SelectionWrapper
+    })
 };
