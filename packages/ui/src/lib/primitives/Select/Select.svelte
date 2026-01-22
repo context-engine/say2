@@ -1,0 +1,185 @@
+<!-- src/lib/primitives/Select/Select.svelte -->
+<script lang="ts" module>
+	export interface SelectOption {
+		value: string;
+		label: string;
+		icon?: any;
+		disabled?: boolean;
+	}
+
+	export interface Props {
+		value?: string;
+		options?: SelectOption[];
+		placeholder?: string;
+		disabled?: boolean;
+		size?: "sm" | "md";
+		onchange?: (value: string) => void;
+	}
+</script>
+
+<script lang="ts">
+	import { Select } from "bits-ui";
+	import { Check, ChevronDown } from "lucide-svelte";
+
+	const {
+		value = $bindable(""),
+		options = [],
+		placeholder = "Select...",
+		disabled = false,
+		size = "md",
+		onchange,
+	}: Props = $props();
+
+	const selectedOption = $derived(
+		options.find((o: SelectOption) => o.value === value),
+	);
+</script>
+
+<Select.Root
+	{value}
+	onValueChange={(v) => onchange?.(v ?? "")}
+	{disabled}
+	type="single"
+>
+	<Select.Trigger
+		class="ce-select-trigger ce-select-trigger--{size} {disabled
+			? 'disabled'
+			: ''}"
+	>
+		{#if selectedOption?.icon}
+			{@const IconComponent = selectedOption.icon}
+			<IconComponent size={size === "sm" ? 14 : 16} />
+		{/if}
+		<span class="ce-select-value">
+			{selectedOption?.label ?? placeholder}
+		</span>
+		<span class="ce-select-icon">
+			<ChevronDown size={size === "sm" ? 14 : 16} />
+		</span>
+	</Select.Trigger>
+
+	<Select.Portal>
+		<Select.Content class="ce-select-content" sideOffset={4}>
+			<Select.Viewport>
+				{#each options as option}
+					<Select.Item
+						value={option.value}
+						disabled={option.disabled}
+						class="ce-select-item {option.disabled
+							? 'disabled'
+							: ''} {value === option.value ? 'selected' : ''}"
+						label={option.label}
+					>
+						{#if option.icon}
+							{@const IconComponent = option.icon}
+							<IconComponent size={size === "sm" ? 14 : 16} />
+						{/if}
+						<span class="ce-select-item-label">{option.label}</span>
+						{#if value === option.value}
+							<span class="ce-select-item-indicator">
+								<Check size={size === "sm" ? 12 : 14} />
+							</span>
+						{/if}
+					</Select.Item>
+				{/each}
+			</Select.Viewport>
+		</Select.Content>
+	</Select.Portal>
+</Select.Root>
+
+<style>
+	/* Prefix: ce = Context Engine */
+	/* bits-ui renders elements, so we need :global() */
+	:global(.ce-select-trigger) {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		background: var(--color-bg-primary);
+		cursor: pointer;
+		font-family: var(--font-ui);
+		transition: all var(--duration-fast) var(--ease-out);
+	}
+
+	:global(.ce-select-trigger:focus-visible) {
+		outline: 2px solid var(--color-info);
+		outline-offset: 2px;
+	}
+
+	:global(.ce-select-trigger:hover:not(.disabled)) {
+		background: var(--color-bg-secondary);
+	}
+
+	:global(.ce-select-trigger.disabled) {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	:global(.ce-select-trigger--sm) {
+		height: 1.75rem; /* 28px */
+		padding: 0 var(--space-3);
+		font-size: var(--text-sm);
+	}
+
+	:global(.ce-select-trigger--md) {
+		height: 2.25rem; /* 36px */
+		padding: 0 var(--space-4);
+		font-size: var(--text-base);
+	}
+
+	.ce-select-value {
+		flex: 1;
+		text-align: left;
+	}
+
+	.ce-select-icon {
+		display: flex;
+		align-items: center;
+		opacity: 0.5;
+	}
+
+	:global(.ce-select-content) {
+		background: var(--color-bg-primary);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-lg);
+		overflow: hidden;
+		z-index: var(--z-dropdown);
+	}
+
+	:global(.ce-select-item) {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-2) var(--space-4);
+		cursor: pointer;
+		font-family: var(--font-ui);
+		font-size: var(--text-base);
+		transition: background var(--duration-fast) var(--ease-out);
+	}
+
+	:global(.ce-select-item:hover),
+	:global(.ce-select-item[data-highlighted]) {
+		background: var(--color-bg-secondary);
+	}
+
+	:global(.ce-select-item.selected) {
+		background: var(--color-bg-tertiary);
+	}
+
+	:global(.ce-select-item.disabled) {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.ce-select-item-label {
+		flex: 1;
+	}
+
+	.ce-select-item-indicator {
+		display: flex;
+		align-items: center;
+		color: var(--color-text-secondary);
+	}
+</style>

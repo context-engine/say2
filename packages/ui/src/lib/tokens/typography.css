@@ -1,0 +1,87 @@
+/* src/lib/tokens/typography.css */
+
+/* ===========================================
+   FONT STACKS
+   =========================================== */
+:root {
+    --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+}
+
+/* ===========================================
+   TYPE SCALE
+   =========================================== */
+:root {
+    /* Size tokens */
+    --text-xs: 11px;
+    --text-sm: 13px;
+    --text-base: 14px;
+    --text-lg: 16px;
+    --text-xl: 20px;
+    --text-2xl: 24px;
+
+    /* Weight tokens */
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+
+    /* Line height tokens */
+    --leading-tight: 1.25;
+    --leading-normal: 1.5;
+    --leading-relaxed: 1.75;
+}
+
+/* ===========================================
+   CODE TYPOGRAPHY
+   =========================================== */
+:root {
+    --code-sm: 12px;
+    --code-base: 13px;
+}
+
+/* ===========================================
+   UTILITY CLASSES (Internal Development Only)
+   -------------------------------------------
+   These classes are provided for internal use in Storybook stories
+   and component development. They are NOT intended for library
+   consumers, who typically bring their own utility layer (Tailwind,
+   UnoCSS, etc.) or use the CSS custom properties directly.
+   =========================================== */
+.text-xs {
+    font-size: var(--text-xs);
+}
+
+.text-sm {
+    font-size: var(--text-sm);
+}
+
+.text-base {
+    font-size: var(--text-base);
+}
+
+.text-lg {
+    font-size: var(--text-lg);
+}
+
+.text-xl {
+    font-size: var(--text-xl);
+}
+
+.text-2xl {
+    font-size: var(--text-2xl);
+}
+
+.font-mono {
+    font-family: var(--font-mono);
+}
+
+.code-sm {
+    font-family: var(--font-mono);
+    font-size: var(--code-sm);
+}
+
+.code-base {
+    font-family: var(--font-mono);
+    font-size: var(--code-base);
+}

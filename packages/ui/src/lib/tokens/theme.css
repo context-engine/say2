@@ -1,0 +1,89 @@
+/* src/lib/tokens/theme.css */
+
+/* ===========================================
+   DARK MODE OVERRIDES
+   =========================================== */
+
+/* Manual dark mode via data-theme attribute */
+:root[data-theme="dark"] {
+    /* Backgrounds - softer for less eye strain */
+    --color-bg-primary: #1a1a1a;
+    --color-bg-secondary: #252525;
+    --color-bg-tertiary: #303030;
+    --color-bg-surface: #252525;
+    --color-bg-control: #4a4a4a;
+    /* Visible in dark mode */
+
+    /* Text */
+    --color-text-primary: #e5e5e5;
+    --color-text-secondary: #a3a3a3;
+    --color-text-tertiary: #737373;
+
+    /* Borders - lighter for better visibility */
+    --color-border: #525252;
+}
+
+/* Manual light mode via data-theme attribute */
+:root[data-theme="light"] {
+    /* Backgrounds */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f5f5f5;
+    --color-bg-tertiary: #ebebeb;
+    --color-bg-surface: #ffffff;
+    --color-bg-control: #d4d4d4;
+
+    /* Text */
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #666666;
+    --color-text-tertiary: #999999;
+
+    /* Borders */
+    --color-border: #e5e5e5;
+}
+
+/* System preference (when no manual override) */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+        /* Backgrounds - softer for less eye strain */
+        --color-bg-primary: #1a1a1a;
+        --color-bg-secondary: #252525;
+        --color-bg-tertiary: #303030;
+        --color-bg-surface: #252525;
+        --color-bg-control: #4a4a4a;
+
+        /* Text */
+        --color-text-primary: #e5e5e5;
+        --color-text-secondary: #a3a3a3;
+        --color-text-tertiary: #737373;
+
+        /* Borders - lighter for better visibility */
+        --color-border: #525252;
+    }
+}
+
+/* ===========================================
+   THEME TRANSITION
+   =========================================== */
+
+/*
+ * Performance Note: This transition on :root uses CSS custom property
+ * inheritance. It's a common pattern (used by Tailwind, Radix, shadcn/ui)
+ * and doesn't force transitions on every element. Elements that override
+ * these properties locally won't be affected.
+ *
+ * For very heavy DOM trees, consider scoping transitions to specific
+ * containers if performance issues arise.
+ */
+:root {
+    /* Apply to properties that change between themes */
+    transition:
+        background-color var(--duration-normal) var(--ease-out),
+        color var(--duration-normal) var(--ease-out),
+        border-color var(--duration-normal) var(--ease-out);
+}
+
+/* Disable transition on initial load */
+:root.no-transition,
+:root.no-transition * {
+    transition: none !important;
+}

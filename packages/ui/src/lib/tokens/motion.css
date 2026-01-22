@@ -1,0 +1,22 @@
+/* src/lib/tokens/motion.css */
+
+:root {
+    /* Duration */
+    --duration-fast: 100ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+
+    /* Easing - functional, not decorative */
+    --ease-out: cubic-bezier(0.0, 0.0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0.0, 1, 1);
+    --ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+/* Respect user preference */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --duration-fast: 0ms;
+        --duration-normal: 0ms;
+        --duration-slow: 0ms;
+    }
+}

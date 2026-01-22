@@ -1,0 +1,27 @@
+/* src/lib/tokens/index.css */
+
+/*
+ * Design Tokens Entry Point
+ * =========================
+ * Import this single file to get all design tokens.
+ * 
+ * Usage in consuming apps:
+ *   import '@say2/ui/tokens/index.css';
+ * 
+ * Usage in Storybook:
+ *   import '../src/lib/tokens/index.css';
+ */
+
+/* Core tokens from 02-css-variables.md */
+@import './reset.css';
+@import './colors.css';
+@import './spacing.css';
+@import './shadows.css';
+@import './z-index.css';
+@import './motion.css';
+
+/* Theme support from 03-theme-provider.md */
+@import './theme.css';
+
+/* Typography from 04-typography.md */
+@import './typography.css';

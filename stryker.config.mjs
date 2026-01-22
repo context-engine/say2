@@ -9,7 +9,7 @@ const config = {
 	// Use command runner since Bun doesn't have a native Stryker plugin yet
 	testRunner: "command",
 	commandRunner: {
-		// Only run tests from packages/ to avoid v0-docs reference project
+		// Only run tests from packages/ to avoid crystal reference project
 		command: "bun test packages/",
 	},
 
@@ -26,9 +26,9 @@ const config = {
 		"!packages/*/src/**/index.ts", // Skip barrel exports
 	],
 
-	// Exclude v0-docs from being copied to sandbox (has uninstalled deps)
+	// Exclude crystal from being copied to sandbox (has uninstalled deps)
 	ignorePatterns: [
-		"v0-docs/**",
+		"crystal/**",
 		".git/**",
 		"node_modules/**",
 		"reports/**",
